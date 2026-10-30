@@ -122,6 +122,12 @@ input[type="time"],input[type="date"]{-webkit-appearance:none;appearance:none}
 .kcard.mine .tiles{margin-top:14px;grid-template-columns:repeat(2,minmax(0,1fr))}
 .sum.neg{color:var(--bad)}
 .kcard.mine .list{text-align:left}
+.fw b{font-size:16px}
+.fgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:8px}
+.fgrid figure{margin:0;display:grid;gap:4px;min-width:0}
+.fgrid .ph{width:100%;height:auto;aspect-ratio:3/4;min-height:96px;border-radius:12px}
+.fgrid .ref .ph{outline:2px dashed var(--line);outline-offset:-2px;opacity:.85}
+.fgrid figcaption{font-size:12px;color:var(--mut);font-weight:650;line-height:1.3;text-align:center}
 .sched{display:grid;gap:6px}
 .sd{display:grid;grid-template-columns:62px minmax(0,1fr) auto minmax(0,1fr);gap:6px;align-items:center;min-height:48px}
 .sd .tg{min-height:40px;font-size:15px}
@@ -728,6 +734,7 @@ function kSave(w, k, photo) {
   const ps = [ref.set(doc)];
   if (photo) ps.push(FS.collection('photos').doc(ref.id).set({d: photo, w: w.id, day: d}));
   Promise.all(ps).catch(e => toast('Отметка не сохранилась: ' + errText(e), true));
+  try { tgOnMark(w, k, at, photo); } catch (e) {}
   kDone(w, k, at, false);
 }
 function kDone(w, k, at, again) {
@@ -779,6 +786,7 @@ function renderAdmin() {
 function bindAdmin(app) {
   $$('[data-wd]', app).forEach(b => b.onclick = () => dayWorkerSheet(b.dataset.wd, A.d));
   $$('[data-it]', app).forEach(b => b.onclick = () => { A.it = b.dataset.it; render(); });
+  $$('[data-faces]', app).forEach(b => b.onclick = () => facesSheet(A.d));
   $$('[data-tab2]', app).forEach(b => b.onclick = () => { A.tab = b.dataset.tab2; window.scrollTo(0, 0); render(); });
   $$('[data-dd]', app).forEach(b => b.onclick = () => { A.d = addD(A.d, Number(b.dataset.dd)); if (A.d > TODAY()) A.d = TODAY(); render(); });
   const dp = $('#dPick', app); if (dp) dp.onchange = () => { if (isDate(dp.value)) { A.d = dp.value > TODAY() ? TODAY() : dp.value; render(); } };
@@ -807,6 +815,8 @@ function dayView() {
   rows.forEach(x => { const r = x.r; if (!r.active) return; if ((r.state === 'in' || r.state === 'lunch') && !r.noOut) c.now++; if (r.late || r.lateNow) c.late++; if (r.absent || r.lateNow) c.absent++; if (r.sc.off && !r.came) c.off++; if (r.came) c.came++; if (r.early) c.early++; });
   h += '<div class="tiles">' + (isT ? tile('На работе', c.now, 'good') + tile('Опоздали', c.late, c.late ? 'warn' : '') + tile('Нет на месте', c.absent, c.absent ? 'bad' : '') + tile('Выходной', c.off, '')
     : tile('Пришли', c.came, 'good') + tile('Опоздали', c.late, c.late ? 'warn' : '') + tile('Прогулы', c.absent, c.absent ? 'bad' : '') + tile('Ушли раньше', c.early, c.early ? 'warn' : '')) + '</div>';
+  const nph = (MK[ym(d)] || []).filter(m => m.d === d).length;
+  if (nph) h += `<button class="btn ghost full mt" data-faces>${I.cam}Все фото за день</button>`;
   h += '<div class="list mt">' + rows.map(x => `<button class="row" data-wd="${esc(x.r.w.id)}">${av(x.r.w.name, x.s.tone)}<span class="t"><b>${esc(x.r.w.name)}</b><span class="st ${x.s.tone}">${esc(x.s.t)}</span>${x.f.length ? `<span class="chips">${x.f.map(f => chip(f[0], f[1])).join('')}</span>` : ''}</span>${I.right}</button>`).join('') + '</div>';
   if (isT) h += '<p class="hint center mt">Обновляется само. Нажмите на работника, чтобы увидеть фото и время отметок.</p>';
   return h;
@@ -1035,6 +1045,7 @@ function settingsSheet() {
       ${F.lunch ? `<label class="f" for="sLm">Обед, минут не больше<input id="sLm" type="number" inputmode="numeric" min="10" max="240" value="${F.lunchMax}"></label>` : ''}
       <label class="f" for="sKeep">Хранить фото, дней<select id="sKeep">${[30, 60, 90, 180].map(n => `<option value="${n}" ${F.keep === n ? 'selected' : ''}>${n}</option>`).join('')}</select></label>
       <p class="err" id="sErr"></p><button class="btn" id="sSave">Сохранить</button></div>
+      <section class="card mt"><h3>Уведомления в Telegram</h3><p class="small">${tgOn() ? 'Включены: получают ' + esc(TG.chats.map(c => c.name).join(', ')) + '.' : 'Опоздания с фото, кто ещё не пришёл и итог дня — прямо в Telegram.'}</p><button class="btn ghost full mt8" id="sTg">${I.chat}${tgOn() ? 'Настроить' : 'Подключить'}</button></section>
       <section class="card mt"><h3>Экран отметки</h3><p class="small">Проверьте, как работник отмечается, прямо на этом телефоне.</p><div class="row2 mt8"><button class="btn ghost" id="sKiosk">${I.door}Открыть</button><button class="btn ghost" id="sHelp">Как подготовить</button></div></section>
       <section class="card mt"><h3>Вход</h3><p class="small">Вы вошли как ${esc((USER && USER.email) || '')}.</p><button class="btn ghost full mt8" id="sOut">${I.out}Выйти на этом телефоне</button></section>`, {kind: 'set'});
     const sync = () => { F.shop = $('#sShop').value.trim(); F.grace = int($('#sGr').value, 0, 60, F.grace); F.photo = $('#sPh').checked; F.lunch = $('#sLu').checked; const lm = $('#sLm'); if (lm) F.lunchMax = int(lm.value, 10, 240, F.lunchMax); F.keep = int($('#sKeep').value, 7, 365, 60); };
@@ -1042,6 +1053,7 @@ function settingsSheet() {
     $('#sSave').onclick = async () => { sync(); if (await act(() => wr(FS.collection('meta').doc('settings').set(cleanSet(F))), 'Настройки сохранены.')) closeSheet(); };
     $('#sKiosk').onclick = () => { closeSheet(); setView('kiosk'); };
     $('#sHelp').onclick = helpSheet;
+    $('#sTg').onclick = tgSheet;
     armed($('#sOut'), 'Нажмите ещё раз, чтобы выйти', () => { closeSheet(); firebase.auth().signOut(); });
   };
   draw();
@@ -1105,6 +1117,184 @@ function bindPay(w, m, st, draw) {
   }));
 }
 
+/* ---------- уведомления в Telegram ---------- */
+let TG = null;
+const TGAPI = 'https://api.telegram.org/bot';
+function cleanTG(x) {
+  x = x && typeof x === 'object' ? x : {};
+  const token = /^\d{5,15}:[A-Za-z0-9_-]{20,80}$/.test(String(x.token || '')) ? String(x.token) : '';
+  return {token, bot: str(x.bot, 64), chats: (Array.isArray(x.chats) ? x.chats : []).filter(c => c && /^-?\d{3,20}$/.test(String(c.id))).slice(0, 10).map(c => ({id: String(c.id), name: str(c.name, 60)})),
+    late: x.late !== false, early: x.early !== false, absent: x.absent !== false, after: int(x.after, 5, 240, 15), sum: x.sum !== false, sumAt: isHM(x.sumAt) ? x.sumAt : '21:00', lunch: x.lunch !== false, photo: x.photo !== false};
+}
+const tgOn = () => !!(TG && TG.token && TG.chats.length);
+function dataToBlob(d) { const a = String(d).split(','), b = atob(a[1] || ''), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return new Blob([u], {type: 'image/jpeg'}); }
+/* отправка «в одну сторону»: ответ Telegram не читаем, поэтому браузер её не блокирует */
+function tgRaw(item, cfg) {
+  const t = cfg || TG, base = TGAPI + t.token + '/';
+  return Promise.all(t.chats.map(c => {
+    if (item.photo && t.photo) {
+      const fd = new FormData(); fd.append('chat_id', c.id); fd.append('caption', item.text.slice(0, 1000)); fd.append('photo', dataToBlob(item.photo), 'photo.jpg');
+      return fetch(base + 'sendPhoto', {method: 'POST', body: fd, mode: 'no-cors'});
+    }
+    const p = new URLSearchParams(); p.append('chat_id', c.id); p.append('text', item.text.slice(0, 4000));
+    return fetch(base + 'sendMessage', {method: 'POST', body: p, mode: 'no-cors'});
+  }));
+}
+/* без интернета сообщение ждёт в телефоне и уходит позже */
+function tgPush(item) {
+  if (!tgOn()) return;
+  const it = {text: item.text, photo: item.photo || '', at: Date.now()};
+  const later = () => { const q = lsGet('otm-tgq', []); q.push({text: it.text, at: it.at}); lsSet('otm-tgq', q.slice(-30)); };
+  if (navigator.onLine === false) { later(); return; }
+  tgRaw(it).catch(later);
+}
+function tgFlush() {
+  if (!tgOn() || navigator.onLine === false) return;
+  const q = lsGet('otm-tgq', []); if (!q.length) return;
+  lsSet('otm-tgq', []);
+  q.filter(x => Date.now() - x.at < 6 * 3600000).forEach(x => tgRaw({text: x.text + '\n(с задержкой: не было интернета)'}).catch(() => { const r = lsGet('otm-tgq', []); r.push(x); lsSet('otm-tgq', r.slice(-30)); }));
+}
+const tgHead = () => SET.shop ? SET.shop + '\n' : '';
+/* сразу после отметки: опоздание, ранний уход, долгий обед */
+function tgOnMark(w, k, at, photo) {
+  if (!tgOn()) return;
+  const T = ds(new Date(at)), sc = schedFor(w, T), m = minOf(at), prev = marksOf(w.id, T).filter(x => x.at < at - 1000);
+  let text = '';
+  if (k === 'in' && TG.late && !sc.off && m > tm(sc.f) + SET.grace && !prev.some(x => x.k === 'in')) text = '⏰ Опоздание: ' + w.name + '\nПриход в ' + fT(at) + ', начало в ' + sc.f + ' — на ' + durTxt(m - tm(sc.f)) + '.';
+  else if (k === 'out' && TG.early && !sc.off && m < tm(sc.t) - SET.grace) text = '🚪 Ранний уход: ' + w.name + '\nУход в ' + fT(at) + ', конец в ' + sc.t + ' — раньше на ' + durTxt(tm(sc.t) - m) + '.';
+  else if (k === 'lout' && TG.lunch && SET.lunch) { const l = prev.filter(x => x.k === 'lin').pop(); if (l && at - l.at > SET.lunchMax * 60000) text = '🍽 Долгий обед: ' + w.name + '\nОбед ' + durTxt((at - l.at) / 60000) + ' вместо ' + durTxt(SET.lunchMax) + '.'; }
+  if (text) tgPush({text: tgHead() + text, photo: k === 'in' || k === 'out' ? photo : ''});
+}
+/* раз в минуту на телефоне у входа: кого ещё нет и итог дня */
+function tgTick() {
+  if (!tgOn() || ROLE !== 'kiosk' || !ready()) return;
+  tgFlush();
+  const T = TODAY(), now = nowS(), nowM = minOf(now);
+  if (TG.absent) {
+    const key = 'otm-tga-' + T, sent = lsGet(key, []);
+    const list = WK.filter(w => activeOn(w, T)).map(w => ({w, r: dayInfo(w, T, marksOf(w.id, T), now)})).filter(x => !x.r.sc.off && !x.r.came && nowM >= tm(x.r.sc.f) + TG.after && nowM < tm(x.r.sc.t) && sent.indexOf(x.w.id) < 0);
+    if (list.length) { tgPush({text: tgHead() + '❗ ' + fT(now) + ' ещё нет на работе:\n' + list.map(x => '• ' + x.w.name + ' (с ' + x.r.sc.f + ')').join('\n')}); lsSet(key, sent.concat(list.map(x => x.w.id))); }
+  }
+  if (TG.sum && nowM >= tm(TG.sumAt) && lsGet('otm-tgs', '') !== T) { lsSet('otm-tgs', T); tgPush({text: tgSummary(T, now)}); }
+}
+function tgSummary(T, now) {
+  const rows = WK.filter(w => activeOn(w, T)).map(w => dayInfo(w, T, marksOf(w.id, T), now)), plan = rows.filter(r => !r.sc.off);
+  const nm = r => r.w.name;
+  const late = rows.filter(r => r.late), early = rows.filter(r => r.early), absent = plan.filter(r => !r.came && (r.absent || r.lateNow)), noOut = rows.filter(r => r.noOut), exc = rows.filter(r => r.excused);
+  const work = rows.reduce((a, r) => a + r.work, 0);
+  let t = tgHead() + '📋 Итог дня: ' + fDay(T) + '\nПришли: ' + plan.filter(r => r.came).length + ' из ' + plan.length;
+  t += late.length ? '\n⏰ Опоздали: ' + late.map(r => nm(r) + ' (' + durTxt(r.late) + ')').join(', ') : '\n✅ Опозданий нет';
+  if (absent.length) t += '\n❌ Не пришли: ' + absent.map(nm).join(', ');
+  if (early.length) t += '\n🚪 Ушли раньше: ' + early.map(r => nm(r) + ' (' + durTxt(r.early) + ')').join(', ');
+  if (noOut.length) t += '\n❔ Уход не отмечен: ' + noOut.map(nm).join(', ');
+  if (exc.length) t += '\n🩺 Больничный, отпуск, отгул: ' + exc.map(r => nm(r) + ' — ' + OVRK[r.sc.k].toLowerCase()).join(', ');
+  return t + '\nОтработано всего: ' + durTxt(work / 60000);
+}
+
+/* ---------- настройка бота (владелец) ---------- */
+function tgSheet() {
+  const F = cleanTG(TG || {}), st = {kind: 'tg', found: null, err: '', manual: false};
+  const draw = () => {
+    const link = F.bot ? 'https://t.me/' + F.bot : '';
+    let h = head('Уведомления', 'Telegram') + '<p class="small">Медет и вы получаете сообщения в Telegram: кто опоздал (с фото), кто ещё не пришёл, кто ушёл раньше, и итог дня вечером.</p>';
+    if (!F.token) {
+      h += `<section class="card mt"><h3>1. Создайте бота</h3><ol class="steps small">
+        <li>Откройте Telegram и найдите <b>@BotFather</b> (с синей галочкой). Нажмите «Start».</li>
+        <li>Отправьте ему <b>/newbot</b>.</li>
+        <li>Придумайте имя, например: <b>Отметка ${esc(SET.shop || 'магазин')}</b>.</li>
+        <li>Придумайте адрес на латинице, который заканчивается на <b>bot</b>, например: <b>medet_otmetka_bot</b>.</li>
+        <li>BotFather пришлёт длинный ключ вида <b>1234567890:AAH…</b>. Скопируйте его и вставьте ниже.</li></ol>
+        <label class="f mt8" for="tgT">Ключ бота<input id="tgT" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="1234567890:AAH…"></label>
+        <p class="err" id="tgErr">${esc(st.err)}</p><button class="btn full mt8" id="tgCheck">Проверить и сохранить</button></section>`;
+    } else {
+      h += `<section class="card mt"><h3>2. Кто получает сообщения</h3>
+        <p class="small">Бот: <b>@${esc(F.bot || 'без имени')}</b>. Каждый, кто хочет получать сообщения, откройте ссылку на бота и нажмите <b>«Start» («Запустить»)</b>, затем нажмите «Найти».</p>
+        ${link ? `<div class="row2 mt8"><a class="btn ghost" href="${esc(link)}" target="_blank" rel="noopener">Открыть бота</a><button class="btn ghost" id="tgLink">${I.copy}Ссылка</button></div>` : ''}
+        <button class="btn full mt8" id="tgFind">Найти, кто нажал Start</button>
+        ${st.found ? (st.found.length ? '<div class="stack mt8">' + st.found.map(c => `<label class="tg big"><input type="checkbox" data-chat="${esc(c.id)}" ${F.chats.some(x => x.id === c.id) ? 'checked' : ''}><span>${esc(c.name)}</span></label>`).join('') + '</div>' : '<p class="small mut mt8">Пока никто не нажал Start. Откройте бота, нажмите Start и попробуйте снова.</p>') : ''}
+        ${F.chats.length ? `<p class="small mt8">Получают: <b>${esc(F.chats.map(c => c.name).join(', '))}</b></p>` : ''}
+        ${st.manual ? `<label class="f mt8" for="tgId">Номер чата<input id="tgId" inputmode="numeric" autocomplete="off"></label><button class="btn ghost full mt8" id="tgIdAdd">Добавить</button>` : '<button class="linkbtn mt8" id="tgMan">Ввести номер чата вручную</button>'}
+        <p class="err" id="tgErr">${esc(st.err)}</p></section>
+        <section class="card mt"><h3>3. О чём сообщать</h3><div class="stack mt8">
+        <label class="tg big"><input type="checkbox" id="tgLate" ${F.late ? 'checked' : ''}><span>Опоздания</span></label>
+        <label class="tg big"><input type="checkbox" id="tgPh" ${F.photo ? 'checked' : ''}><span>С фото работника</span></label>
+        <label class="tg big"><input type="checkbox" id="tgAbs" ${F.absent ? 'checked' : ''}><span>Кого ещё нет на работе</span></label>
+        <label class="f" for="tgAfter">Через сколько минут после начала смены<input id="tgAfter" type="number" inputmode="numeric" min="5" max="240" value="${F.after}"></label>
+        <label class="tg big"><input type="checkbox" id="tgEarly" ${F.early ? 'checked' : ''}><span>Ранний уход</span></label>
+        ${SET.lunch ? `<label class="tg big"><input type="checkbox" id="tgLun" ${F.lunch ? 'checked' : ''}><span>Долгий обед</span></label>` : ''}
+        <label class="tg big"><input type="checkbox" id="tgSum" ${F.sum ? 'checked' : ''}><span>Итог дня</span></label>
+        <label class="f" for="tgAt">Во сколько присылать итог<input id="tgAt" type="time" value="${F.sumAt}"></label></div>
+        <button class="btn full mt" id="tgSave">Сохранить</button><button class="btn ghost full mt8" id="tgTest" ${F.chats.length ? '' : 'disabled'}>Отправить пробное сообщение</button>
+        <p class="hint mt8">Сообщения отправляет телефон у входа, поэтому он должен быть включён и с интернетом. Если интернета нет, сообщение уйдёт, когда он появится.</p></section>
+        <button class="btn ghost danger full mt" id="tgOff">Отключить уведомления</button>`;
+    }
+    openSheet(h, st);
+    const save = async (msg) => act(() => wr(FS.collection('meta').doc('tg').set(F)), msg);
+    const ck = $('#tgCheck'); if (ck) ck.onclick = async () => {
+      const tok = $('#tgT').value.trim().replace(/\s+/g, '');
+      if (!/^\d{5,15}:[A-Za-z0-9_-]{20,80}$/.test(tok)) { st.err = 'Это не похоже на ключ бота. Скопируйте его из сообщения BotFather целиком.'; draw(); return; }
+      ck.disabled = true; ck.textContent = 'Проверяю…';
+      let bot = '';
+      try { const r = await (await fetch(TGAPI + tok + '/getMe')).json(); if (!r.ok) { st.err = 'Telegram не принял ключ. Проверьте, что скопировали его полностью.'; draw(); return; } bot = r.result && r.result.username || ''; }
+      catch (e) { bot = ''; }
+      F.token = tok; F.bot = bot; st.err = '';
+      if (await save(bot ? 'Бот @' + bot + ' подключён.' : 'Ключ сохранён.')) draw();
+    };
+    const lk = $('#tgLink'); if (lk) lk.onclick = () => copy(link, 'Ссылка на бота скопирована');
+    const fd = $('#tgFind'); if (fd) fd.onclick = async () => {
+      fd.disabled = true; fd.textContent = 'Ищу…'; st.err = '';
+      try {
+        const r = await (await fetch(TGAPI + F.token + '/getUpdates')).json();
+        const map = {};
+        (r.result || []).forEach(u => { const m = u.message || u.my_chat_member || u.edited_message; const c = m && m.chat; if (c && c.type === 'private') map[c.id] = {id: String(c.id), name: [c.first_name, c.last_name].filter(Boolean).join(' ') || (c.username ? '@' + c.username : String(c.id))}; });
+        st.found = Object.keys(map).map(k => map[k]);
+        F.chats.forEach(c => { if (!st.found.some(x => x.id === c.id)) st.found.push(c); });
+      } catch (e) { st.err = 'Не получилось связаться с Telegram с этого телефона. Введите номер чата вручную или напишите Claude.'; st.manual = true; }
+      draw();
+    };
+    $$('[data-chat]').forEach(c => c.onchange = async () => {
+      const ch = (st.found || []).find(x => x.id === c.dataset.chat); if (!ch) return;
+      F.chats = c.checked ? F.chats.filter(x => x.id !== ch.id).concat([ch]) : F.chats.filter(x => x.id !== ch.id);
+      if (await save(c.checked ? ch.name + ' будет получать сообщения.' : ch.name + ' больше не получает сообщения.')) draw();
+    });
+    const mn = $('#tgMan'); if (mn) mn.onclick = () => { st.manual = true; draw(); };
+    const ia = $('#tgIdAdd'); if (ia) ia.onclick = async () => { const v = $('#tgId').value.trim(); if (!/^-?\d{3,20}$/.test(v)) { st.err = 'Номер чата — это только цифры.'; draw(); return; } F.chats = F.chats.filter(x => x.id !== v).concat([{id: v, name: 'Чат ' + v}]); st.manual = false; st.err = ''; if (await save('Получатель добавлен.')) draw(); };
+    const sv = $('#tgSave'); if (sv) sv.onclick = async () => {
+      F.late = $('#tgLate').checked; F.photo = $('#tgPh').checked; F.absent = $('#tgAbs').checked; F.after = int($('#tgAfter').value, 5, 240, F.after); F.early = $('#tgEarly').checked; const lu = $('#tgLun'); if (lu) F.lunch = lu.checked; F.sum = $('#tgSum').checked; if (isHM($('#tgAt').value)) F.sumAt = $('#tgAt').value;
+      if (await save('Настройки уведомлений сохранены.')) closeSheet();
+    };
+    const ts = $('#tgTest'); if (ts) ts.onclick = async () => {
+      ts.disabled = true;
+      try { await tgRaw({text: tgHead() + '✅ Проверка: уведомления о работниках будут приходить сюда.'}, F); toast('Отправлено. Проверьте Telegram.'); }
+      catch (e) { toast('Не удалось отправить. Проверьте интернет.', true); }
+      ts.disabled = false;
+    };
+    const of = $('#tgOff'); if (of) armed(of, 'Точно отключить?', async () => { if (await act(() => wr(FS.collection('meta').doc('tg').delete()), 'Уведомления отключены.')) closeSheet(); });
+  };
+  draw();
+}
+
+/* ---------- все фото за день ---------- */
+function facesSheet(d) {
+  const all = (MK[ym(d)] || []).concat(MK[ym(addD(d.slice(0, 7) + '-01', -1))] || []);
+  const day = all.filter(m => m.d === d).sort((a, b) => a.at - b.at);
+  const by = {};
+  day.forEach(m => { (by[m.w] = by[m.w] || []).push(m); });
+  const ids = Object.keys(by).sort((a, b) => (by[a][0].nm || '').localeCompare(by[b][0].nm || '', 'ru'));
+  let h = head(relDay(d) ? relDay(d) + ', ' + fDs(d) : fDay(d), 'Все фото за день') + '<p class="small mut">Слева — фото этого работника с прошлого дня для сравнения. Если лицо не совпадает, нажмите на фото, чтобы рассмотреть.</p>';
+  if (!ids.length) h += '<p class="mut mt">В этот день отметок нет.</p>';
+  ids.forEach(id => {
+    const w = wk(id), list = by[id], ref = all.filter(m => m.w === id && m.ph && m.d < d).sort((a, b) => b.at - a.at)[0];
+    h += `<section class="fw mt"><b>${esc(w ? w.name : list[0].nm)}</b><div class="fgrid">`;
+    if (ref) h += `<figure class="ref"><span class="ph"><img data-ph="${esc(ref.id)}" alt="Ранее: ${esc(list[0].nm)}"></span><figcaption>ранее, ${esc(fDs(ref.d))}</figcaption></figure>`;
+    h += list.map(m => `<figure><span class="ph ${m.ph ? '' : 'none'}">${m.ph ? `<img data-ph="${esc(m.id)}" alt="${esc(list[0].nm + ', ' + fT(m.at))}">` : I.cam}</span><figcaption>${fT(m.at)} · ${esc(KINDS[m.k].toLowerCase())}${m.ph ? '' : '<br><span class="chip warn">без фото</span>'}</figcaption></figure>`).join('');
+    h += '</div></section>';
+  });
+  openSheet(h, {kind: 'faces' + d});
+  fillPhotos($('#sheet'));
+  $$('#sheet img').forEach(i => i.onclick = () => { if (i.src) photoView(i.src, i.alt); });
+}
+
 /* ---------- запуск: облако, вход, подписки ---------- */
 const CFG = window.FB_CFG || null, APP = window.APP_CFG || {admins: [], kiosk: ''};
 let FS = null, USER = null, UNSUB = [], MSUB = {}, TODAYSUB = '';
@@ -1125,10 +1315,11 @@ function setView(v) {
   if (v === 'kiosk') { subToday(); keepAwake(); }
   render();
 }
-function stopAll() { UNSUB.forEach(f => { try { f(); } catch (e) {} }); Object.keys(MSUB).forEach(k => { try { MSUB[k](); } catch (e) {} }); UNSUB = []; MSUB = {}; TODAYSUB = ''; MK = {}; Object.keys(GOT).forEach(k => delete GOT[k]); WK = []; OVR = {}; PAY = {rates: {}, m: {}}; SET = cleanSet({}); }
+function stopAll() { UNSUB.forEach(f => { try { f(); } catch (e) {} }); Object.keys(MSUB).forEach(k => { try { MSUB[k](); } catch (e) {} }); UNSUB = []; MSUB = {}; TODAYSUB = ''; MK = {}; Object.keys(GOT).forEach(k => delete GOT[k]); WK = []; OVR = {}; PAY = {rates: {}, m: {}}; TG = null; SET = cleanSet({}); }
 const onErr = e => { const c = String((e && e.code) || ''); toast(/permission/.test(c) ? 'Нет доступа к данным. Проверьте, что почта добавлена владельцем.' : 'Связь с облаком прервалась. Закройте и откройте приложение.', true); };
 function subBase() {
   UNSUB.push(FS.collection('workers').onSnapshot(s => { WK = s.docs.map(x => cleanW(x.id, x.data())).sort(byName); GOT.workers = 1; changed(); }, onErr));
+  UNSUB.push(FS.collection('meta').doc('tg').onSnapshot(s => { TG = s.exists ? cleanTG(s.data()) : null; if (SHEET && SHEET.kind !== 'tg' && SHEET.redraw) SHEET.redraw(); }, () => {}));
   UNSUB.push(FS.collection('meta').doc('settings').onSnapshot(s => { SET = cleanSet(s.exists ? s.data() : {}); GOT.meta = 1; changed(); }, onErr));
   UNSUB.push(FS.collection('days').onSnapshot(s => { const o = {}; s.docs.forEach(x => { const v = x.data(); if (isDate(x.id) && v && v.o) o[x.id] = v.o; }); OVR = o; GOT.days = 1; changed(); }, onErr));
   if (ROLE === 'admin') UNSUB.push(FS.collection('pay').onSnapshot(s => {
@@ -1197,6 +1388,7 @@ $('#openSet').onclick = settingsSheet;
 setInterval(() => {
   if (!USER) return;
   if (TODAYSUB && TODAYSUB !== ym(TODAY()) && ROLE === 'kiosk') { subToday(); }
+  try { tgTick(); } catch (e) {}
   if (VIEW === 'admin' && A.tab === 'day' && !SHEET) render();
   else if (VIEW === 'admin' && SHEET && SHEET.redraw && SHEET.kind && SHEET.kind.indexOf('wd') === 0) SHEET.redraw();
 }, 60000);

@@ -1,5 +1,5 @@
 /* Отметка: работа без интернета. Своё — сначала из сети, библиотеки — из запаса. */
-var C = 'otmetka-v3';
+var C = 'otmetka-v4';
 self.addEventListener('install', function () { self.skipWaiting(); });
 self.addEventListener('activate', function (e) { e.waitUntil(self.clients.claim()); });
 self.addEventListener('fetch', function (e) {
