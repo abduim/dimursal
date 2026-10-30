@@ -1,0 +1,1075 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Табун"><meta name="theme-color" content="#F5F1E9">
+<link rel="apple-touch-icon" href="icon.png"><link rel="icon" href="icon.png"><link rel="manifest" href="manifest.json">
+</head><body>
+<title>Табун</title>
+<style>
+/* Учёт табуна: тёплый песок степи, зелень пастбища, лошади окрашены по масти */
+:root{
+  --bg:#F5F1E9; --surface:#FFFFFF; --soft:#ECE5D8; --ink:#2A2118; --mut:#6B5F52; --line:#E2D8C7;
+  --acc:#2F6A47; --acc-ink:#FFFFFF; --acc-soft:#E1EEE4;
+  --good:#1D7A47; --good-soft:#DFF2E6; --warn:#8F5300; --warn-soft:#FBEED6; --bad:#B3261E; --bad-soft:#FBE3E1; --info:#5644B0; --info-soft:#ECE8FA;
+  --wa:#1F7A4D; --scrim:rgba(15,25,35,.45); --shadow:0 10px 30px -16px rgba(15,25,35,.45);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#15120E; --surface:#201B15; --soft:#2B241C; --ink:#EEE6DA; --mut:#ADA090; --line:#3A3127;
+  --acc:#7CC79A; --acc-ink:#0C2416; --acc-soft:#1E3326;
+  --good:#5CC98C; --good-soft:#15352A; --warn:#F0B55A; --warn-soft:#3A2C12; --bad:#FF8A80; --bad-soft:#3D1C1A; --info:#B3A6FF; --info-soft:#29234A;
+  --wa:#1F7A4D; --scrim:rgba(0,0,0,.6); --shadow:0 10px 30px -16px rgba(0,0,0,.85); color-scheme:dark}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui,sans-serif;-webkit-font-smoothing:antialiased;
+  padding:0 max(16px,env(safe-area-inset-right,0px)) calc(96px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+body.kiosk{padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
+body.lock{overflow:hidden}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+[hidden]{display:none!important}
+svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}
+h1,h2,h3,p{margin:0}
+h2{font-size:22px;line-height:1.2;font-weight:750;letter-spacing:-.01em}
+h3{font-size:17px;font-weight:700}
+.small{font-size:14px}.hint{font-size:13px;color:var(--mut)}.mut{color:var(--mut)}.center{text-align:center}
+.mt{margin-top:16px}.mt8{margin-top:8px}
+.kicker{font-size:13px;color:var(--mut);font-weight:650;text-transform:none}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px}
+.stack{display:grid;gap:8px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 16px;border-radius:14px;border:1px solid var(--acc);background:var(--acc);color:var(--acc-ink);font-weight:700;font-size:16px;text-decoration:none;text-align:center;line-height:1.15}
+.btn.ghost{background:var(--surface);color:var(--ink);border-color:var(--line)}
+.btn.small{min-height:40px;padding:0 12px;font-size:14px;border-radius:12px}
+.btn.full{width:100%}
+.btn.wa{background:var(--wa);border-color:var(--wa);color:#fff}
+.btn.danger{color:var(--bad)}
+.btn.armed,.ib.armed{background:var(--bad);border-color:var(--bad);color:#fff}
+.btn:disabled{opacity:.5}
+.ib{display:inline-grid;place-items:center;width:44px;height:44px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);flex:none;padding:0}
+.ib.sm{width:40px;height:40px;border-radius:12px}
+.ib:disabled{opacity:.35}
+.ib.armed{width:auto;padding:0 10px;font-size:13px;font-weight:700}
+.linkbtn{background:none;border:0;color:var(--acc);font-weight:650;padding:6px 0;min-height:40px;display:inline-flex;align-items:center;gap:6px}
+.form{display:grid;gap:12px}
+label.f{display:grid;gap:6px;font-size:14px;color:var(--mut);font-weight:600}
+input,select{width:100%;min-height:48px;border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:10px 12px;font-size:16px;color:var(--ink)}
+input[type="time"],input[type="date"]{-webkit-appearance:none;appearance:none}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.err{color:var(--bad);font-size:14px;font-weight:600;min-height:1.2em}.err:empty{min-height:0}
+.tg{display:flex;align-items:center;gap:10px;font-weight:600;min-height:44px}
+.tg input{width:22px;height:22px;min-height:0;margin:0;accent-color:var(--acc);flex:none}
+.tg.big{font-size:16px;color:var(--ink)}
+/* шапка и вкладки */
+.top{display:flex;align-items:center;gap:10px;padding-top:max(12px,env(safe-area-inset-top,0px));padding-bottom:8px}
+.logo{width:40px;height:40px;border-radius:12px;background:var(--acc);color:var(--acc-ink);display:grid;place-items:center;flex:none}
+.logo svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+.logo.big{width:56px;height:56px;border-radius:16px;margin-bottom:12px}.logo.big svg{width:32px;height:32px}
+.brand{min-width:0;flex:1;display:grid;line-height:1.2}
+.brand b{font-size:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.brand span{font-size:13px;color:var(--mut);font-weight:600}
+.tabs{position:fixed;z-index:20;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface);border-top:1px solid var(--line);padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
+.tabs button{border:0;background:none;display:grid;justify-items:center;gap:2px;font-size:12px;font-weight:700;color:var(--mut);min-height:52px;padding:4px 0;border-radius:12px}
+.tabs button svg{width:22px;height:22px}
+.tabs button[aria-current="page"]{color:var(--acc);background:var(--acc-soft)}
+/* день и списки */
+.dnav{display:flex;align-items:center;gap:8px;margin:8px 0 12px}
+.dlab{flex:1;min-width:0;display:grid;text-align:center;line-height:1.2;position:relative}
+.dlab b{font-size:18px}.dlab span{font-size:13px;color:var(--mut);font-weight:600}
+.dlab input{position:absolute;inset:0;top:0;left:0;width:100%;height:100%;opacity:0;min-height:0}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 8px;display:grid;gap:2px;text-align:center;min-width:0}
+.tile .v{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1}
+.tile .l{font-size:12px;color:var(--mut);font-weight:650;line-height:1.2;overflow-wrap:anywhere}
+.tile.good .v{color:var(--good)}.tile.warn{background:var(--warn-soft);border-color:transparent}.tile.warn .v{color:var(--warn)}.tile.bad{background:var(--bad-soft);border-color:transparent}.tile.bad .v{color:var(--bad)}
+.list{display:grid;gap:8px}
+.row{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px;color:var(--ink);min-height:64px}
+.row .t{flex:1;min-width:0;display:grid;gap:2px}
+.row .t b{font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row>svg{color:var(--mut)}
+.st{font-size:14px;font-weight:600;line-height:1.3}
+.st.good{color:var(--good)}.st.warn{color:var(--warn)}.st.bad{color:var(--bad)}.st.mut{color:var(--mut)}.st.info{color:var(--info)}
+.chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:2px}
+.chip{display:inline-block;font-size:12px;font-weight:700;border-radius:99px;padding:2px 8px;line-height:1.5;background:var(--soft);color:var(--mut)}
+.chip.good{background:var(--good-soft);color:var(--good)}.chip.warn{background:var(--warn-soft);color:var(--warn)}.chip.bad{background:var(--bad-soft);color:var(--bad)}.chip.info{background:var(--info-soft);color:var(--info)}
+.av{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:15px;background:var(--acc-soft);color:var(--acc);flex:none}
+.av.good{background:var(--good-soft);color:var(--good)}.av.warn{background:var(--warn-soft);color:var(--warn)}.av.bad{background:var(--bad-soft);color:var(--bad)}.av.mut{background:var(--soft);color:var(--mut)}.av.info{background:var(--info-soft);color:var(--info)}
+.av.xl{width:84px;height:84px;font-size:30px;margin:0 auto 10px}
+.pin{font-variant-numeric:tabular-nums;font-weight:800;letter-spacing:.12em;color:var(--mut);font-size:15px}
+.pin.big{font-size:30px;color:var(--ink)}
+.pinrow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:8px}
+.sec-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:20px 0 10px}
+.onb ol,.steps{margin:10px 0 0;padding-left:20px;display:grid;gap:8px}
+.busy{display:flex;align-items:center;gap:10px;color:var(--mut)}
+.spin{width:18px;height:18px;border-radius:50%;border:2.5px solid var(--line);border-top-color:var(--acc);animation:sp .8s linear infinite;flex:none}
+@keyframes sp{to{transform:rotate(360deg)}}
+.seg{display:flex;gap:6px}.seg.wrap{flex-wrap:wrap}
+.seg button{min-height:40px;padding:0 12px;border-radius:99px;border:1px solid var(--line);background:var(--surface);font-weight:650;font-size:14px;color:var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--acc);border-color:var(--acc);color:var(--acc-ink)}
+.seg.two{display:grid;grid-template-columns:1fr 1fr;background:var(--soft);border-radius:14px;padding:4px;gap:4px}
+.seg.two button{border:0;border-radius:11px;background:transparent;min-height:40px;color:var(--mut)}
+.seg.two button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.mb{margin-bottom:12px}
+.tiles.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.tiles.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.tiles.three .v{font-size:17px}
+.tile.acc{background:var(--acc-soft);border-color:transparent}.tile.acc .v{color:var(--acc)}
+.sum{font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap;font-size:16px}
+.pays{display:grid;gap:6px}
+.pi{display:flex;align-items:center;gap:10px;border-top:1px solid var(--line);padding-top:6px}
+.pi .t{flex:1;min-width:0;display:grid}
+.kmon{margin-top:12px;font-size:15px;color:var(--mut);font-weight:600}
+.kcard.mine .tiles{margin-top:14px;grid-template-columns:repeat(2,minmax(0,1fr))}
+.sum.neg{color:var(--bad)}
+.kcard.mine .list{text-align:left}
+.fw b{font-size:16px}
+.fgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:8px}
+.fgrid figure{margin:0;display:grid;gap:4px;min-width:0}
+.fgrid .ph{width:100%;height:auto;aspect-ratio:3/4;min-height:96px;border-radius:12px}
+.fgrid .ref .ph{outline:2px dashed var(--line);outline-offset:-2px;opacity:.85}
+.fgrid figcaption{font-size:12px;color:var(--mut);font-weight:650;line-height:1.3;text-align:center}
+.sched{display:grid;gap:6px}
+.sd{display:grid;grid-template-columns:62px minmax(0,1fr) auto minmax(0,1fr);gap:6px;align-items:center;min-height:48px}
+.sd .tg{min-height:40px;font-size:15px}
+.sd input[type="time"]{min-height:42px;padding:6px 6px;font-size:15px;text-align:center}
+.sd .small{grid-column:2/5}
+/* отметки с фото */
+.marks{display:grid;gap:8px}
+.mk{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px}
+.mk .t{flex:1;min-width:0;display:grid;gap:2px}
+.ph{width:64px;height:64px;border-radius:12px;background:var(--soft);display:grid;place-items:center;overflow:hidden;flex:none;color:var(--mut)}
+.ph img{width:100%;height:100%;object-fit:cover;cursor:zoom-in}
+.ph.none img{display:none}
+.pv{position:fixed;z-index:200;top:0;right:0;bottom:0;left:0;background:rgba(0,0,0,.88);display:grid;place-items:center;padding:24px}
+.pv img{max-width:100%;max-height:85vh;border-radius:12px}
+.pv .ib{position:absolute;top:max(16px,env(safe-area-inset-top,0px));right:16px}
+/* календарь месяца */
+.cal{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px}
+.cw,.cg{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.cw span{text-align:center;font-size:12px;color:var(--mut);font-weight:700}
+.cd{border:0;background:none;border-radius:10px;min-height:44px;display:grid;justify-items:center;align-content:center;gap:3px;padding:2px;color:var(--ink)}
+.cd b{font-size:14px;font-variant-numeric:tabular-nums}
+.cd i{width:18px;height:5px;border-radius:3px;background:var(--line)}
+.cd.good i{background:var(--good)}.cd.warn i{background:var(--warn)}.cd.bad i{background:var(--bad)}.cd.info i{background:var(--info)}.cd.mut i{background:var(--line)}
+.cd.bad{background:var(--bad-soft)}.cd.warn{background:var(--warn-soft)}
+.cd.fut{color:var(--mut);opacity:.5}.cd.fut i{background:transparent}
+.legend{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:8px}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:14px;height:5px;border-radius:3px;display:inline-block}
+.legend i.good{background:var(--good)}.legend i.warn{background:var(--warn)}.legend i.bad{background:var(--bad)}.legend i.info{background:var(--info)}.legend i.mut{background:var(--line)}
+/* лист снизу */
+#sheet{position:fixed;z-index:50;top:0;right:0;bottom:0;left:0;background:var(--scrim);display:flex;align-items:flex-end;justify-content:center}
+#sheet .panel{background:var(--bg);width:100%;max-width:640px;max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch;border-radius:22px 22px 0 0;padding:8px max(16px,env(safe-area-inset-right,0px)) calc(28px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));box-shadow:var(--shadow)}
+.grab{width:40px;height:5px;border-radius:3px;background:var(--line);margin:4px auto 10px}
+.sh-head{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}
+.sh-head .t{flex:1;min-width:0}
+#toast{position:fixed;z-index:300;left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));bottom:calc(84px + env(safe-area-inset-bottom,0px));max-width:560px;margin:0 auto;background:var(--ink);color:var(--bg);padding:12px 16px;border-radius:14px;font-weight:650;text-align:center;box-shadow:var(--shadow)}
+#toast.bad{background:var(--bad);color:#fff}
+body.kiosk #toast{bottom:calc(20px + env(safe-area-inset-bottom,0px))}
+/* вход */
+#login{position:fixed;z-index:100;top:0;right:0;bottom:0;left:0;background:var(--bg);overflow-y:auto;padding:max(48px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 40px max(16px,env(safe-area-inset-left,0px))}
+.lgbox{max-width:420px;margin:0 auto}.lgbox h2{margin-bottom:6px}
+/* экран у входа */
+.kwrap{max-width:520px;margin:0 auto;padding-top:max(14px,env(safe-area-inset-top,0px))}
+.kh{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:14px}
+.kt{display:grid;min-width:0;line-height:1.25}.kt b{font-size:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.kt span{font-size:14px;color:var(--mut);font-weight:600}
+.kclock{font-size:44px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.kcard{background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:20px 16px;text-align:center;box-shadow:var(--shadow)}
+.kq{font-size:20px;font-weight:750}
+.dots{display:flex;justify-content:center;gap:14px;margin:16px 0 6px}
+.dots i{width:16px;height:16px;border-radius:50%;border:2px solid var(--acc);display:block}
+.dots i.on{background:var(--acc)}
+.dots.shake{animation:sh .35s}
+@keyframes sh{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.kerr{color:var(--bad);font-weight:650;min-height:1.5em;font-size:15px}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px}
+.pad button{min-height:68px;border-radius:18px;border:1px solid var(--line);background:var(--bg);font-size:28px;font-weight:700;color:var(--ink);display:grid;place-items:center;font-variant-numeric:tabular-nums}
+.pad button:active{background:var(--acc-soft)}
+.pad button svg{width:28px;height:28px}
+.kcard.who h2{font-size:26px;margin-bottom:4px}
+.kacts{display:grid;gap:10px;margin-top:18px}
+.btn.xl{min-height:64px;font-size:20px;border-radius:18px}
+.btn.xl svg{width:24px;height:24px}
+.vbox{position:relative;width:min(100%,320px);aspect-ratio:3/4;min-height:240px;margin:14px auto 0;border-radius:20px;overflow:hidden;background:#000}
+.vbox video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+
+.kcard.done{padding-top:28px}
+.big-ok{width:76px;height:76px;border-radius:50%;display:grid;place-items:center;margin:0 auto 12px;background:var(--good-soft);color:var(--good)}
+.big-ok svg{width:42px;height:42px;stroke-width:2.6}
+.kcard.done.warn .big-ok{background:var(--warn-soft);color:var(--warn)}
+.kcard.done h2{font-size:26px}.kcard.done p{font-size:18px;margin-top:6px}
+.kstat{display:flex;align-items:center;justify-content:center;gap:8px;border-radius:14px;padding:12px;margin-top:14px;font-size:18px;font-weight:750}
+.kstat.good{background:var(--good-soft);color:var(--good)}.kstat.warn{background:var(--warn-soft);color:var(--warn)}.kstat.mut{background:var(--soft);color:var(--mut)}
+.kstat svg{width:24px;height:24px;stroke-width:2.6}
+.btn.in{background:var(--good);border-color:var(--good);color:#fff}
+.btn.out{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.ktime{font-size:56px!important;font-weight:800;line-height:1.05;font-variant-numeric:tabular-nums;letter-spacing:-.02em;margin:4px 0 2px!important}
+.kbar{height:5px;border-radius:3px;background:var(--soft);overflow:hidden;margin-top:16px}
+.kbar i{display:block;height:100%;width:100%;background:var(--acc);transform-origin:left;animation:kb linear forwards}
+@keyframes kb{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+.big-ok.q{background:var(--warn-soft);color:var(--warn);font-size:44px;font-weight:800}
+.kcard.conf p{font-size:18px;margin-top:8px}
+.klast{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;padding:10px 12px;border-radius:14px;background:var(--good-soft);color:var(--good);font-weight:700;text-align:center}
+.klast svg{flex:none}
+.knote{background:var(--warn-soft);color:var(--warn);font-weight:700;border-radius:14px;padding:12px;margin-top:14px!important;font-size:16px!important}
+@media (max-width:360px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.kclock{font-size:36px}.pad button{min-height:60px}}
+@media (min-width:700px){#app{max-width:680px;margin:0 auto}.top{max-width:680px;margin:0 auto}}
+
+.hero{display:grid;justify-items:center;text-align:center;padding:10px 0 4px}
+.hero .big{font-size:56px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.hero .l{color:var(--mut);font-weight:650;margin-top:4px}
+.bars{display:grid;gap:6px}
+.bar{display:grid;grid-template-columns:minmax(0,9.5em) minmax(0,1fr) 3em;align-items:center;gap:10px;border:0;background:none;padding:4px 0;text-align:left;color:var(--ink);min-height:40px}
+.bar .bl{display:grid;line-height:1.2;min-width:0}.bar .bl b{font-size:15px}.bar .bl span{font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .bt{height:12px;border-radius:6px;background:var(--soft);overflow:hidden}.bar .bt i{display:block;height:100%;background:var(--acc);border-radius:0 6px 6px 0}
+.bar .bv{text-align:right;font-weight:800;font-variant-numeric:tabular-nums}
+.acts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.acts button{min-height:72px;border-radius:16px;border:1px solid var(--line);background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:13px;font-weight:700;color:var(--ink);padding:6px 4px;line-height:1.15;text-align:center}
+.acts button svg{width:24px;height:24px;color:var(--acc)}
+.acts:has(> :nth-child(4)){grid-template-columns:repeat(4,minmax(0,1fr))}
+.tile .s{font-size:12px;color:var(--mut);line-height:1.25;overflow-wrap:anywhere}
+.tiles.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.tiles:not(.two){grid-template-columns:repeat(3,minmax(0,1fr))}
+.lhead{display:flex;gap:8px}
+.srch{flex:1;display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:0 12px;min-height:48px;color:var(--mut)}
+.srch input{border:0;padding:0;min-height:44px;background:transparent;-webkit-appearance:none;appearance:none}
+.srch input:focus{outline:none}.srch:focus-within{outline:2px solid var(--acc);outline-offset:1px}
+.chips.scroll{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-left:-16px;margin-right:-16px;padding:2px 16px 4px;gap:6px}
+.chips.scroll::-webkit-scrollbar{display:none}
+.fchip{flex:none;min-height:38px;padding:0 14px;border-radius:99px;border:1px solid var(--line);background:var(--surface);font-weight:700;font-size:14px;color:var(--ink)}
+.fchip[aria-pressed="true"]{background:var(--acc);border-color:var(--acc);color:var(--acc-ink)}
+.ib[aria-pressed="true"]{background:var(--acc);border-color:var(--acc);color:var(--acc-ink)}
+select{-webkit-appearance:none;appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--mut) 50%),linear-gradient(135deg,var(--mut) 50%,transparent 50%);background-position:calc(100% - 18px) 50%,calc(100% - 13px) 50%;background-size:5px 5px;background-repeat:no-repeat;padding-right:30px}
+.hi{width:44px;height:44px;border-radius:50%;background:color-mix(in srgb,var(--hc) 16%,var(--surface));display:grid;place-items:center;flex:none}
+.hi svg{width:30px;height:30px}
+.hi.lg{width:64px;height:64px}.hi.lg svg{width:44px;height:44px}
+@supports not (background:color-mix(in srgb,red 10%,white)){.hi{background:var(--soft)}}
+.tag{font-size:13px;color:var(--mut);font-weight:700}
+.cnt{font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--ink)}
+.ic{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;flex:none;background:var(--acc-soft);color:var(--acc)}
+.ic.bad{background:var(--bad-soft);color:var(--bad)}
+.row.static{cursor:default}
+.hrow.on{border-color:var(--acc);background:var(--acc-soft)}
+.ck{width:24px;height:24px;border-radius:7px;border:2px solid var(--acc);display:grid;place-items:center;flex:none;color:var(--acc-ink)}
+.hrow.on .ck{background:var(--acc)}
+.ck svg{width:16px;height:16px;stroke-width:3}
+.banner{background:var(--acc-soft);border-radius:16px;padding:12px 14px;margin-top:8px;font-size:14px}
+.banner.bad{background:var(--bad-soft);color:var(--bad);margin:0 0 12px}
+.sh-head .hh{display:flex;gap:12px;align-items:center;flex:1;min-width:0}
+dl.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:0;font-size:15px;align-items:center}
+dl.kv dt{color:var(--mut);font-weight:600}dl.kv dd{margin:0;min-width:0}
+dl.kv .linkbtn{min-height:0;padding:0;text-align:left}
+.spark{width:100%;height:auto;display:block;margin-bottom:6px}
+.hist{display:grid;gap:0;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:4px 12px}
+.he{display:grid;grid-template-columns:5.6em 1fr auto;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.he:first-child{border-top:0}
+.he .d{font-size:13px;color:var(--mut);font-weight:650}.he .t{display:grid;min-width:0}.he .t b{font-size:14px}
+.row3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.row3 .btn{padding:0 6px}
+#selbar{position:fixed;z-index:30;left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));bottom:calc(76px + env(safe-area-inset-bottom,0px));max-width:620px;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:8px 8px 8px 14px;display:flex;align-items:center;gap:8px}
+#selbar>span{flex:1;font-size:14px;min-width:0}
+#selbar .btn{padding:0 10px}
+@media (prefers-color-scheme:dark){.hi svg path{stroke:#EEE6DA;stroke-opacity:.35;stroke-width:1.2}}
+.vlist{display:grid;gap:6px}
+.vi{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px 4px 4px 12px}
+</style>
+<header class="top" id="top"><span class="logo"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M29 4 L32.5 11 C37.5 13 41 18.5 41 25.5 L41 44 L25 44 C25 39 23.5 36.5 21 35 C17.5 35.5 13.5 37.5 10 37.5 C6.5 37.5 4.5 34.5 5.5 31.5 C8 25 14 17.5 20.5 12.5 L22.5 4.5 L26 9.5 Z" fill="currentColor" stroke="none"/></svg></span><div class="brand"><b id="farmName">Табун</b><span id="farmSub">учёт табуна</span></div><button class="ib" id="openSet" aria-label="Настройки"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2.2"/><circle cx="10" cy="17" r="2.2"/></svg></button></header>
+<main id="app"></main>
+<div id="selbar" hidden></div>
+<nav class="tabs four" aria-label="Разделы">
+  <button data-tab="home"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5 12 5l8 6.5V20H4z"/><path d="M10 20v-5h4v5"/></svg>Главная</button>
+  <button data-tab="list"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></svg>Лошади</button>
+  <button data-tab="groups"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="9" r="3"/><circle cx="16" cy="9" r="3"/><path d="M3 19c.6-3 2.6-4.6 5-4.6s4.4 1.6 5 4.6M11 19c.6-3 2.6-4.6 5-4.6s4.4 1.6 5 4.6"/></svg>Косяки</button>
+  <button data-tab="stats"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V11M12 20V5M19 20v-6"/></svg>Итоги</button>
+</nav>
+<div id="sheet" hidden><div class="panel" role="dialog" aria-modal="true" aria-label="Подробности"></div></div>
+<div id="toast" role="status" hidden></div>
+<script>
+'use strict';
+/* ---------- мелочи ---------- */
+const $ = (s, r) => (r || document).querySelector(s);
+const $$ = (s, r) => Array.prototype.slice.call((r || document).querySelectorAll(s));
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+const pad = n => (n < 10 ? '0' : '') + n;
+const ds = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+const pd = s => { const a = String(s).split('-').map(Number); return new Date(a[0], (a[1] || 1) - 1, a[2] || 1); };
+const TODAY = () => ds(new Date());
+const addD = (s, n) => { const d = pd(s); d.setDate(d.getDate() + n); return ds(d); };
+const dBetween = (a, b) => Math.round((pd(b) - pd(a)) / 864e5);
+const uid = p => (p || '') + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const clone = o => o == null ? o : JSON.parse(JSON.stringify(o));
+const isDate = s => /^\d{4}-\d{2}-\d{2}$/.test(String(s));
+const int = (v, lo, hi, def) => { const n = Math.round(Number(String(v).replace(/[\s ]/g, '').replace(',', '.'))); return isFinite(n) && n >= lo && n <= hi ? n : def; };
+const num = v => { const n = Number(String(v == null ? '' : v).replace(/[\s ]/g, '').replace(',', '.')); return isFinite(n) ? n : NaN; };
+const str = (v, n) => String(v == null ? '' : v).slice(0, n);
+function pl(n, a, b, c) { n = Math.abs(n) % 100; const k = n % 10; return n > 10 && n < 20 ? c : k === 1 ? a : k >= 2 && k <= 4 ? b : c; }
+const MG = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+const MS = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+const fDs = s => { if (!isDate(s)) return ''; const d = pd(s); return d.getDate() + ' ' + MG[d.getMonth()]; };
+const fDy = s => { if (!isDate(s)) return ''; const d = pd(s); return d.getDate() + ' ' + MG[d.getMonth()] + (d.getFullYear() !== new Date().getFullYear() ? ' ' + d.getFullYear() : ''); };
+const fDf = s => { if (!isDate(s)) return ''; const d = pd(s); return d.getDate() + ' ' + MG[d.getMonth()] + ' ' + d.getFullYear(); };
+const money = n => Math.round(n || 0).toLocaleString('ru-RU') + ' ₸';
+const kg = n => (Math.round(n * 10) / 10).toLocaleString('ru-RU') + ' кг';
+const lsGet = (k, def) => { try { const v = localStorage.getItem(k); return v == null ? def : JSON.parse(v); } catch (e) { return def; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } };
+const norm = s => String(s || '').toLowerCase().replace(/ё/g, 'е');
+
+/* ---------- лошади: возраст и группы ---------- */
+function ageMonths(born, on) { if (!isDate(born)) return null; const a = pd(born), b = pd(on || TODAY()); let m = (b.getFullYear() - a.getFullYear()) * 12 + b.getMonth() - a.getMonth(); if (b.getDate() < a.getDate()) m--; return Math.max(0, m); }
+function ageTxt(born) {
+  const m = ageMonths(born); if (m == null) return 'возраст неизвестен';
+  if (m < 12) return m + ' ' + pl(m, 'месяц', 'месяца', 'месяцев');
+  const y = Math.floor(m / 12), r = m % 12;
+  return y + ' ' + pl(y, 'год', 'года', 'лет') + (y < 3 && r ? ' ' + r + ' мес' : '');
+}
+/* казахские названия по возрасту — проверить с фермером */
+const CATS = {
+  kulyn: {kz: 'Құлын', ru: 'жеребёнок до 6 мес', ord: 8},
+  zhabagy: {kz: 'Жабағы', ru: 'жеребёнок 6–12 мес', ord: 7},
+  tai: {kz: 'Тай', ru: '1–2 года', ord: 6},
+  kunan: {kz: 'Құнан', ru: 'жеребчик 2–3 года', ord: 4},
+  kunazhyn: {kz: 'Құнажын', ru: 'кобылка 2–3 года', ord: 5},
+  donen: {kz: 'Дөнен', ru: 'жеребчик 3–4 года', ord: 2},
+  donezhin: {kz: 'Дөнежін', ru: 'кобылка 3–4 года', ord: 3},
+  bie: {kz: 'Бие', ru: 'кобыла', ord: 1},
+  aigyr: {kz: 'Айғыр', ru: 'жеребец', ord: 0},
+  akta: {kz: 'Ақта', ru: 'мерин', ord: 2.5},
+  unk: {kz: 'Без возраста', ru: 'дата рождения не указана', ord: 9}
+};
+const CAT_ORDER = ['aigyr', 'bie', 'akta', 'donen', 'donezhin', 'kunan', 'kunazhyn', 'tai', 'zhabagy', 'kulyn', 'unk'];
+function catOf(h, on) {
+  const m = ageMonths(h.born, on);
+  if (m == null) return h.sex === 'f' ? 'bie' : h.cast ? 'akta' : 'unk';
+  if (m < 6) return 'kulyn';
+  if (m < 12) return 'zhabagy';
+  if (m < 24) return 'tai';
+  if (m < 36) return h.sex === 'f' ? 'kunazhyn' : 'kunan';
+  if (m < 48) return h.sex === 'f' ? 'donezhin' : 'donen';
+  return h.sex === 'f' ? 'bie' : h.cast ? 'akta' : 'aigyr';
+}
+const catName = c => CATS[c].kz + ' · ' + CATS[c].ru;
+const COLORS = ['гнедая', 'рыжая', 'вороная', 'серая', 'буланая', 'саврасая', 'чалая', 'пегая', 'бурая', 'игреневая', 'соловая', 'мухортая'];
+const COLOR_HEX = {'гнедая': '#7b4a2a', 'рыжая': '#b5652b', 'вороная': '#2b2622', 'серая': '#9a9a96', 'буланая': '#c9a464', 'саврасая': '#a98a5a', 'чалая': '#8e7d78', 'пегая': '#6c5440', 'бурая': '#5e4330', 'игреневая': '#8a5634', 'соловая': '#d8b878', 'мухортая': '#6b4a32'};
+const VAC0 = ['Сибирская язва', 'Грипп лошадей', 'Ринопневмония', 'Мыт', 'Сап (исследование)', 'Дегельминтизация', 'Обработка от клещей'];
+const ST = {in: 'В табуне', sold: 'Продана', meat: 'Забита на мясо', dead: 'Пала', lost: 'Пропала'};
+const EVK = {w: 'Взвешивание', vac: 'Прививка, обработка', move: 'Перевод', foal: 'Приплод', note: 'Заметка', sold: 'Продажа', meat: 'Забой', dead: 'Падёж', lost: 'Пропажа', back: 'Возврат в табун', born: 'Родилась'};
+
+function cleanEv(e) {
+  e = e && typeof e === 'object' ? e : {};
+  const o = {id: str(e.id, 40) || uid('e'), d: isDate(e.d) ? e.d : TODAY(), k: EVK[e.k] ? e.k : 'note'};
+  if (e.t) o.t = str(e.t, 160);
+  if (isFinite(Number(e.v)) && e.v !== '' && e.v != null) o.v = Number(e.v);
+  if (isDate(e.nx)) o.nx = e.nx;
+  if (e.c) o.c = str(e.c, 40);
+  if (e.g) o.g = str(e.g, 40);
+  if (e.x) o.x = 1;
+  return o;
+}
+function cleanH(id, x) {
+  x = x && typeof x === 'object' ? x : {};
+  const ev = (Array.isArray(x.ev) ? x.ev : []).map(cleanEv).sort((a, b) => a.d.localeCompare(b.d));
+  return {id, tag: str(x.tag, 30).trim(), name: str(x.name, 40).trim(), sex: x.sex === 'f' ? 'f' : 'm', cast: !!x.cast, color: str(x.color, 30), born: isDate(x.born) ? x.born : '', approx: !!x.approx,
+    grp: str(x.grp, 40), mother: str(x.mother, 40), father: str(x.father, 40), st: ST[x.st] ? x.st : 'in', stD: isDate(x.stD) ? x.stD : '', note: str(x.note, 300), ev, ts: Number(x.ts) || 0};
+}
+function packH(h) {
+  const o = {tag: h.tag, name: h.name, sex: h.sex, color: h.color, born: h.born, grp: h.grp, st: h.st, ev: h.ev.map(cleanEv), ts: h.ts || Date.now()};
+  if (h.cast) o.cast = true; if (h.approx) o.approx = true; if (h.mother) o.mother = h.mother; if (h.father) o.father = h.father;
+  if (h.stD) o.stD = h.stD; if (h.note) o.note = h.note;
+  return o;
+}
+function cleanG(id, x) { x = x || {}; return {id, name: str(x.name, 40).trim() || 'Без названия', stallion: str(x.stallion, 40), place: str(x.place, 60), kind: x.kind === 'other' ? 'other' : 'uyir', ord: Number(x.ord) || 0}; }
+function cleanSet(s) { s = s || {}; return {farm: str(s.farm, 60), vacs: Array.isArray(s.vacs) && s.vacs.length ? s.vacs.map(v => str(v, 60)).filter(Boolean).slice(0, 30) : VAC0.slice()}; }
+
+/* ---------- состояние ---------- */
+let MODE = 'loading';
+let HS = [], GS = [], SET = cleanSet({});
+const HM = {};
+const hz = id => HM[id] || null;
+const grp = id => GS.find(g => g.id === id) || null;
+const alive = h => h.st === 'in';
+const hName = h => h ? (h.name ? h.name + (h.tag ? ' · ' + h.tag : '') : (h.tag ? '№ ' + h.tag : 'Без бирки')) : '—';
+const lastEv = (h, k) => { for (let i = h.ev.length - 1; i >= 0; i--) if (h.ev[i].k === k) return h.ev[i]; return null; };
+const weights = h => h.ev.filter(e => e.k === 'w' && e.v > 0);
+/* последняя прививка каждого вида и следующая дата */
+function vacState(h) {
+  const m = {};
+  h.ev.forEach(e => { if (e.k === 'vac' && e.t) m[e.t] = e; });
+  return m;
+}
+function derive() {
+  HS.forEach(h => { HM[h.id] = h; });
+}
+/* что скоро нужно сделать: прививки по дате, сгруппированные */
+function dueList(days) {
+  const T = TODAY(), lim = addD(T, days == null ? 14 : days), map = {};
+  HS.filter(alive).forEach(h => {
+    const v = vacState(h);
+    Object.keys(v).forEach(name => { const e = v[name]; if (e.nx && e.nx <= lim) { const k = name + (e.nx < T ? '|over' : ''); const o = map[k] = map[k] || {name, nx: e.nx, last: e.nx, ids: []}; o.ids.push(h.id); if (e.nx < o.nx) o.nx = e.nx; if (e.nx > o.last) o.last = e.nx; } });
+  });
+  return Object.keys(map).map(k => map[k]).sort((a, b) => a.nx.localeCompare(b.nx) || a.name.localeCompare(b.name));
+}
+function yearStats(y) {
+  const s = {born: 0, bornF: 0, bornM: 0, foalLost: 0, sold: 0, soldSum: 0, meat: 0, meatKg: 0, dead: 0, lost: 0, deadList: [], soldList: [], meatList: []};
+  HS.forEach(h => {
+    if (h.born && h.born.slice(0, 4) === String(y) && h.mother) { s.born++; if (h.sex === 'f') s.bornF++; else s.bornM++; }
+    h.ev.forEach(e => {
+      if (e.d.slice(0, 4) !== String(y)) return;
+      if (e.k === 'foal' && e.x) s.foalLost++;
+      if (e.k === 'sold') { s.sold++; s.soldSum += e.v || 0; s.soldList.push({h, e}); }
+      if (e.k === 'meat') { s.meat++; s.meatKg += e.v || 0; s.meatList.push({h, e}); }
+      if (e.k === 'dead') { s.dead++; s.deadList.push({h, e}); }
+      if (e.k === 'lost') s.lost++;
+    });
+  });
+  return s;
+}
+function nextTag() {
+  let mx = 0; HS.forEach(h => { const n = parseInt(String(h.tag).replace(/\D/g, ''), 10); if (isFinite(n) && n > mx && n < 1e9) mx = n; });
+  const w = Math.max(4, String(mx + 1).length); return String(mx + 1).padStart(w, '0');
+}
+
+/* ---------- пример: выдуманный табун на 500 голов ---------- */
+function demoData() {
+  let seed = 20261031;
+  const rnd = () => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; };
+  const pick = a => a[Math.floor(rnd() * a.length)];
+  const T = TODAY(), Y = Number(T.slice(0, 4));
+  const dIn = (y, m1, m2) => ds(new Date(y, m1 - 1 + Math.floor(rnd() * (m2 - m1 + 1)), 1 + Math.floor(rnd() * 27)));
+  const NM = ['Ақбоз', 'Қаракер', 'Тарлан', 'Құлагер', 'Тұлпар', 'Жирен', 'Сарыала', 'Бозтөбел', 'Кербез', 'Арғымақ'];
+  const NF = ['Ақмаңдай', 'Қарагөз', 'Сұлубие', 'Ақсары', 'Шұбар', 'Күреңбие', 'Ақжал', 'Қызылбие', 'Сарыбие', 'Көкбие', 'Ала', 'Жиренбие'];
+  const out = {horses: {}, groups: {}}; let tag = 1, n = 0;
+  const vacEv = (born) => {
+    const ev = [];
+    if (ageMonths(born, T) >= 6) {
+      ev.push({id: uid('e'), d: dIn(Y, 4, 4), k: 'vac', t: 'Сибирская язва', nx: addD(dIn(Y, 4, 4), 365)});
+      const g = dIn(Y, 5, 5); ev.push({id: uid('e'), d: g, k: 'vac', t: 'Грипп лошадей', nx: addD(T, 3 + Math.floor(rnd() * 20))});
+      ev.push({id: uid('e'), d: dIn(Y, 9, 9), k: 'vac', t: 'Дегельминтизация', nx: addD(dIn(Y, 9, 9), 180)});
+      ev.push({id: uid('e'), d: dIn(Y, 6, 6), k: 'vac', t: 'Сап (исследование)', nx: addD(T, 25 + Math.floor(rnd() * 20))});
+    }
+    return ev;
+  };
+  const add = (o) => { const id = 'h' + (++n); out.horses[id] = Object.assign({tag: String(tag++).padStart(4, '0'), color: pick(COLORS.slice(0, 9)), st: 'in', ev: [], ts: Date.now() - 864e5 * 400}, o); return id; };
+  NM.forEach((nm, gi) => {
+    const gid = 'g' + (gi + 1);
+    const st = add({name: nm, sex: 'm', born: dIn(Y - 6 - Math.floor(rnd() * 8), 4, 6), grp: gid});
+    out.horses[st].ev = vacEv(out.horses[st].born).concat([{id: uid('e'), d: dIn(Y, 8, 8), k: 'w', v: 440 + Math.floor(rnd() * 60)}]);
+    out.groups[gid] = {name: 'Косяк ' + nm, stallion: st, place: pick(['Жайлау у реки', 'Северное пастбище', 'Қыстау', 'Южная балка']), kind: 'uyir', ord: gi};
+    const mares = 22 + Math.floor(rnd() * 6);
+    for (let i = 0; i < mares; i++) {
+      const born = dIn(Y - 4 - Math.floor(rnd() * 13), 4, 6);
+      const m = add({name: rnd() < .35 ? pick(NF) : '', sex: 'f', born, grp: gid});
+      out.horses[m].ev = vacEv(born).concat(rnd() < .7 ? [{id: uid('e'), d: dIn(Y, 8, 9), k: 'w', v: 360 + Math.floor(rnd() * 80)}] : []);
+      if (rnd() < .62) {
+        const fb = dIn(Y, 4, 6), dead = rnd() < .05;
+        if (dead) out.horses[m].ev.push({id: uid('e'), d: fb, k: 'foal', x: 1, t: 'жеребёнок погиб при рождении'});
+        else {
+          const sex = rnd() < .5 ? 'f' : 'm', f = add({sex, born: fb, grp: gid, mother: m, father: st, color: out.horses[m].color});
+          out.horses[f].ev = [{id: uid('e'), d: fb, k: 'born'}].concat(rnd() < .5 ? [{id: uid('e'), d: dIn(Y, 9, 10), k: 'w', v: 120 + Math.floor(rnd() * 50)}] : []);
+          out.horses[m].ev.push({id: uid('e'), d: fb, k: 'foal', c: f});
+        }
+      }
+      if (rnd() < .25) { const tb = dIn(Y - 1, 4, 6); const t = add({sex: rnd() < .5 ? 'f' : 'm', born: tb, grp: gid, mother: m, father: st}); out.horses[t].ev = vacEv(tb).concat([{id: uid('e'), d: dIn(Y, 9, 9), k: 'w', v: 210 + Math.floor(rnd() * 60)}]); }
+    }
+    for (let i = 0; i < 2; i++) { const kb = dIn(Y - 2, 4, 6); const k = add({sex: 'f', born: kb, grp: gid}); out.horses[k].ev = vacEv(kb); }
+  });
+  out.groups.g11 = {name: 'Молодняк на откорм', stallion: '', place: 'Загон у фермы', kind: 'other', ord: 10};
+  out.groups.g12 = {name: 'Рабочие лошади', stallion: '', place: 'Ферма', kind: 'other', ord: 11};
+  for (let i = 0; i < 46; i++) { const b = dIn(Y - 2 - Math.floor(rnd() * 2), 4, 6); const h = add({sex: 'm', born: b, grp: 'g11', cast: rnd() < .4}); out.horses[h].ev = vacEv(b).concat([{id: uid('e'), d: dIn(Y, 9, 10), k: 'w', v: 300 + Math.floor(rnd() * 90)}]); }
+  for (let i = 0; i < 8; i++) { const b = dIn(Y - 6 - Math.floor(rnd() * 8), 4, 6); const h = add({name: pick(['Көкшолақ', 'Сәйгүлік', 'Ақтабан', 'Шабдар', 'Желдірме']) , sex: 'm', cast: true, born: b, grp: 'g12'}); out.horses[h].ev = vacEv(b); }
+  // продажи, забой, падёж в этом году
+  const ids = Object.keys(out.horses).filter(id => out.horses[id].grp === 'g11');
+  ids.slice(0, 14).forEach((id, i) => { const h = out.horses[id], d = dIn(Y, 2, 9); h.st = 'sold'; h.stD = d; h.ev.push({id: uid('e'), d, k: 'sold', v: 450000 + Math.floor(rnd() * 40) * 10000, t: pick(['перекупщик из Актобе', 'сосед', 'на базаре', 'Ерлан из Шалкара'])}); });
+  ids.slice(14, 22).forEach(id => { const h = out.horses[id], d = dIn(Y, 1, 2); h.st = 'meat'; h.stD = d; h.ev.push({id: uid('e'), d, k: 'meat', v: 180 + Math.floor(rnd() * 60), t: 'соғым'}); });
+  const foals = Object.keys(out.horses).filter(id => out.horses[id].mother && out.horses[id].born >= Y + '-04-01');
+  foals.slice(0, 3).forEach(id => { const h = out.horses[id], d = addD(h.born, 20 + Math.floor(rnd() * 60)); h.st = 'dead'; h.stD = d; h.ev.push({id: uid('e'), d, k: 'dead', t: pick(['волки', 'болезнь', 'непогода'])}); });
+  return out;
+}
+
+/* ---------- значки ---------- */
+const sv = p => '<svg class="i" viewBox="0 0 24 24" aria-hidden="true">' + p + '</svg>';
+const I = {
+  close: sv('<path d="M6 6l12 12M18 6 6 18"/>'),
+  back: sv('<path d="M15 5l-7 7 7 7"/>'),
+  left: sv('<path d="M14.5 6l-6 6 6 6"/>'),
+  right: sv('<path d="M9.5 6l6 6-6 6"/>'),
+  plus: sv('<path d="M12 5v14M5 12h14"/>'),
+  set: sv('<path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2.2"/><circle cx="10" cy="17" r="2.2"/>'),
+  day: sv('<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>'),
+  chart: sv('<path d="M5 20V11M12 20V5M19 20v-6"/>'),
+  users: sv('<circle cx="9" cy="8.5" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><path d="M16 5.6a3 3 0 0 1 0 5.8M17.5 14.3c1.6.6 2.7 2.2 3 4.7"/>'),
+  cam: sv('<path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2l1.5-2h6l1.5 2h2A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z"/><circle cx="12" cy="13" r="3.3"/>'),
+  check: sv('<path d="M5 12.5l4.5 4.5L19 7.5"/>'),
+  trash: sv('<path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12"/>'),
+  edit: sv('<path d="M4 20h4L19 9l-4-4L4 16z"/>'),
+  save: sv('<path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19h14"/>'),
+  chat: sv('<path d="M4.5 19.5 6 15.6A7.8 7.8 0 1 1 9 18.8z"/><path d="M9 10.5h6M9 13.5h4"/>'),
+  out: sv('<path d="M14 5h4v14h-4M10 8l-4 4 4 4M6 12h10"/>'),
+  door: sv('<path d="M6 20V4h9l3 2v14"/><path d="M3 20h18M12.5 12h.01"/>'),
+  food: sv('<path d="M7 3v8M5 3v5a2 2 0 0 0 4 0V3M7 11v10M16 3c-2 1-3 3.5-3 7h3v11"/>'),
+  key: sv('<circle cx="8" cy="12" r="3.5"/><path d="M11.5 12H20M17 12v3M20 12v2"/>'),
+  phone: sv('<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/>'),
+  copy: sv('<rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>'),
+  del: sv('<path d="M20 6H9l-5 6 5 6h11z"/><path d="M12.5 9.5l5 5M17.5 9.5l-5 5"/>'),
+  home: sv('<path d="M4 11.5 12 5l8 6.5V20H4z"/><path d="M10 20v-5h4v5"/>'),
+  list: sv('<path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/>'),
+  flag: sv('<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>'),
+  search: sv('<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/>'),
+  syr: sv('<path d="M14 4l6 6M17 7l-8.5 8.5M12 4.5l7.5 7.5M8.5 15.5 6 18M10.5 9.5l2 2M8 12l2 2"/>'),
+  scale: sv('<path d="M5 20h14l-1.5-11h-11z"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0"/><path d="M12 13v3"/>'),
+  baby: sv('<circle cx="12" cy="9" r="4"/><path d="M5 20c1-3.5 3.8-5.5 7-5.5s6 2 7 5.5"/>'),
+  move: sv('<path d="M4 12h15M14 7l5 5-5 5"/>'),
+  cash: sv('<rect x="2.5" y="6.5" width="19" height="11" rx="2"/><circle cx="12" cy="12" r="2.6"/>'),
+  meat: sv('<path d="M15.5 4.5c3 1 4.5 4.5 3 7.5l-5 6.5c-2 2.5-6 2.5-7.5 0s-1-5 1.5-6.5l4-2.5"/><circle cx="16" cy="8" r="1.5"/>'),
+  cross: sv('<path d="M12 4v16M7 9h10"/>'),
+  sel: sv('<rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/>'),
+  filter: sv('<path d="M4 6h16M7 12h10M10 18h4"/>')
+};
+/* силуэт головы лошади, окрашенный по масти */
+function horseIco(color, cls) {
+  const c = COLOR_HEX[color] || '#8a6a4a';
+  return `<span class="hi ${cls || ''}" style="--hc:${c}" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M29 4 L32.5 11 C37.5 13 41 18.5 41 25.5 L41 44 L25 44 C25 39 23.5 36.5 21 35 C17.5 35.5 13.5 37.5 10 37.5 C6.5 37.5 4.5 34.5 5.5 31.5 C8 25 14 17.5 20.5 12.5 L22.5 4.5 L26 9.5 Z" fill="var(--hc)"/><circle cx="23" cy="18" r="1.8" fill="#fff"/></svg></span>`;
+}
+const LOGO = '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M29 4 L32.5 11 C37.5 13 41 18.5 41 25.5 L41 44 L25 44 C25 39 23.5 36.5 21 35 C17.5 35.5 13.5 37.5 10 37.5 C6.5 37.5 4.5 34.5 5.5 31.5 C8 25 14 17.5 20.5 12.5 L22.5 4.5 L26 9.5 Z" fill="currentColor"/></svg>';
+
+/* ---------- всплывашки и листы ---------- */
+let TT = 0;
+function toast(t, bad) { const el = $('#toast'); el.textContent = t; el.className = bad ? 'bad' : ''; el.hidden = false; clearTimeout(TT); TT = setTimeout(() => { el.hidden = true; }, bad ? 4200 : 2400); }
+async function copy(text, ok) {
+  try { await navigator.clipboard.writeText(text); toast(ok || 'Скопировано'); }
+  catch (e) { const t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); toast(ok || 'Скопировано'); } catch (x) { toast('Не удалось скопировать', true); } t.remove(); }
+}
+let SHEET = null;
+function openSheet(html, st) {
+  const sh = $('#sheet'), p = $('.panel', sh), keep = SHEET && st && SHEET.kind === st.kind;
+  const y = keep ? p.scrollTop : 0;
+  SHEET = st || {kind: 'x'};
+  p.innerHTML = '<div class="grab" aria-hidden="true"></div>' + html;
+  sh.hidden = false; document.body.classList.add('lock');
+  p.scrollTop = y;
+  $$('[data-close]', p).forEach(b => b.onclick = closeSheet);
+}
+function closeSheet() {
+  const st = SHEET; SHEET = null;
+  $('#sheet').hidden = true; document.body.classList.remove('lock');
+  if (st && st.onClose) st.onClose();
+}
+$('#sheet').addEventListener('click', e => { if (e.target.id === 'sheet') closeSheet(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && SHEET) closeSheet(); });
+const closeBtn = '<button class="ib" data-close aria-label="Закрыть">' + I.close + '</button>';
+const head = (k, t, extra) => `<div class="sh-head"><div class="t"><p class="kicker">${esc(k)}</p><h2>${esc(t)}</h2>${extra || ''}</div>${closeBtn}</div>`;
+const chip = (tone, t) => `<span class="chip ${tone}">${esc(t)}</span>`;
+const av = (n, tone) => `<span class="av ${tone || ''}" aria-hidden="true">${esc(initials(n))}</span>`;
+/* кнопка, которую нужно нажать дважды */
+function armed(btn, label, fn) {
+  btn.onclick = () => {
+    if (btn.dataset.armed) { fn(); return; }
+    const old = btn.innerHTML; btn.dataset.armed = '1'; btn.classList.add('armed'); btn.textContent = label;
+    setTimeout(() => { if (btn.isConnected) { delete btn.dataset.armed; btn.classList.remove('armed'); btn.innerHTML = old; } }, 3500);
+  };
+}
+async function act(f, ok) { try { await f(); if (ok) toast(ok); return true; } catch (e) { toast(errText(e), true); return false; } }
+function errText(e) {
+  const c = String((e && e.code) || '').replace(/^firestore\//, '');
+  if (c === 'tag') return 'Лошадь с такой биркой уже есть.';
+  if (c === 'permission-denied') return 'Нет доступа. Выйдите и войдите заново.';
+  if (c === 'unauthenticated') return 'Вход истёк. Войдите заново.';
+  if (c === 'resource-exhausted') return 'Достигнут дневной лимит облака. Попробуйте завтра.';
+  if (c === 'pin') return 'Такой код уже у другого работника.';
+  return 'Не удалось сохранить. Проверьте интернет и попробуйте ещё раз.';
+}
+
+/* ---------- сохранение файла на телефон ---------- */
+async function saveFile(filename, data) {
+  const type = /\.csv$/.test(filename) ? 'text/csv' : 'application/json';
+  const blob = new Blob([type === 'text/csv' ? '﻿' + data : data], {type});
+  try {
+    if (window.File && navigator.canShare) {
+      const f = new File([blob], filename, {type});
+      if (navigator.canShare({files: [f]})) { await navigator.share({files: [f], title: filename}); return true; }
+    }
+  } catch (e) { if (e && e.name === 'AbortError') return false; }
+  const url = URL.createObjectURL(blob), a = document.createElement('a');
+  a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 30000);
+  return true;
+}
+const csvCell = v => { const s = String(v == null ? '' : v); return /[;"\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+const csvOf = rows => rows.map(r => r.map(csvCell).join(';')).join('\r\n');
+
+/* ---------- вход ---------- */
+function loginScreen(msg) {
+  let el = $('#login');
+  if (!el) { el = document.createElement('div'); el.id = 'login'; document.body.appendChild(el); }
+  el.hidden = false;
+  el.innerHTML = `<div class="lgbox card"><span class="logo big">${LOGO}</span><h2>Табун</h2>
+    <p class="small mut">Учёт табуна. Войдите почтой и паролем, вход на этом телефоне запомнится.</p>
+    <div class="form mt"><label class="f" for="lgE">Почта<input id="lgE" type="email" autocomplete="username" inputmode="email" autocapitalize="off" spellcheck="false"></label>
+    <label class="f" for="lgP">Пароль<input id="lgP" type="password" autocomplete="current-password"></label>
+    <p class="err" id="lgErr">${esc(msg || '')}</p><button class="btn" id="lgGo">Войти</button></div></div>`;
+  const go = async () => {
+    const e = $('#lgE').value.trim(), p = $('#lgP').value, b = $('#lgGo');
+    if (!e || !p) { $('#lgErr').textContent = 'Впишите почту и пароль.'; return; }
+    b.disabled = true; b.textContent = 'Вхожу…'; $('#lgErr').textContent = '';
+    try { await firebase.auth().signInWithEmailAndPassword(e, p); }
+    catch (x) {
+      const c = String((x && x.code) || '');
+      $('#lgErr').textContent = /wrong-password|user-not-found|invalid-credential|invalid-email|invalid-login/.test(c) ? 'Неверная почта или пароль.' : /too-many-requests/.test(c) ? 'Слишком много попыток. Подождите несколько минут.' : /network/.test(c) ? 'Нет интернета. Проверьте связь.' : 'Не получилось войти. Попробуйте ещё раз.';
+      b.disabled = false; b.textContent = 'Войти';
+    }
+  };
+  $('#lgGo').onclick = go;
+  $('#lgP').onkeydown = ev => { if (ev.key === 'Enter') go(); };
+}
+function hideLogin() { const el = $('#login'); if (el) { el.hidden = true; el.innerHTML = ''; } }
+
+/* ---------- фото: сжатие ---------- */
+function loadImg(url) { return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; }); }
+function toJpeg(src, w, h, max, q) {
+  const k = Math.min(1, max / Math.max(w, h)), c = document.createElement('canvas');
+  c.width = Math.max(1, Math.round(w * k)); c.height = Math.max(1, Math.round(h * k));
+  c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
+  return c.toDataURL('image/jpeg', q || .62);
+}
+async function fileToJpeg(file) {
+  const url = URL.createObjectURL(file);
+  try { const img = await loadImg(url); return toJpeg(img, img.naturalWidth, img.naturalHeight, 360, .62); }
+  finally { URL.revokeObjectURL(url); }
+}
+
+/* ---------- экраны ---------- */
+const V = {tab: 'home', q: '', cat: '', g: '', st: 'in', lim: 80, sel: null, y: Number(TODAY().slice(0, 4))};
+const tile = (l, v, tone, sub) => `<div class="tile ${tone || ''}"><span class="v">${v}</span><span class="l">${esc(l)}</span>${sub ? `<span class="s">${esc(sub)}</span>` : ''}</div>`;
+function render() {
+  const app = $('#app');
+  $('#farmName').textContent = SET.farm || 'Табун';
+  $('#farmSub').textContent = MODE === 'demo' ? 'пример · учёт табуна' : 'учёт табуна';
+  $$('.tabs button').forEach(b => b.setAttribute('aria-current', b.dataset.tab === V.tab ? 'page' : 'false'));
+  if (MODE === 'loading') { app.innerHTML = '<div class="busy card mt"><span class="spin" aria-hidden="true"></span><span>Загружаю табун…</span></div>'; return; }
+  app.innerHTML = (MODE === 'demo' ? demoBanner() : '') + (V.tab === 'home' ? homeView() : V.tab === 'list' ? listView() : V.tab === 'groups' ? groupsView() : statsView());
+  bindViews(app);
+  selBar();
+}
+function demoBanner() { return `<div class="banner"><p><b>Это пример</b> с выдуманным табуном на 500 голов. Пробуйте всё что угодно: изменения хранятся только на этом телефоне.</p><button class="linkbtn" data-reset>Начать пример заново</button></div>`; }
+function bindViews(app) {
+  $$('[data-h]', app).forEach(b => b.onclick = () => { if (V.sel) { toggleSel(b.dataset.h); return; } horseSheet(b.dataset.h); });
+  $$('[data-gopen]', app).forEach(b => b.onclick = () => groupSheet(b.dataset.gopen));
+  $$('[data-due]', app).forEach(b => b.onclick = () => dueSheet(Number(b.dataset.due)));
+  $$('[data-go]', app).forEach(b => b.onclick = () => { V.tab = b.dataset.go; if (b.dataset.cat != null) { V.cat = b.dataset.cat; V.g = ''; V.st = 'in'; V.q = ''; } window.scrollTo(0, 0); render(); });
+  $$('[data-addh]', app).forEach(b => b.onclick = () => editHorse(null, b.dataset.addh ? {grp: b.dataset.addh} : {}));
+  $$('[data-pickmare]', app).forEach(b => b.onclick = pickMare);
+  $$('[data-gvac]', app).forEach(b => b.onclick = () => pickGroupForVac());
+  $$('[data-newg]', app).forEach(b => b.onclick = () => editGroup(null));
+  const rs = $('[data-reset]', app); if (rs) armed(rs, 'Нажмите ещё раз: пример начнётся заново', () => { resetDemo(); });
+  const q = $('#lq', app); if (q) q.oninput = () => { V.q = q.value; V.lim = 80; drawList(); };
+  $$('[data-fcat]', app).forEach(b => b.onclick = () => { V.cat = b.dataset.fcat; V.lim = 80; render(); });
+  const fg = $('#lg', app); if (fg) fg.onchange = () => { V.g = fg.value; V.lim = 80; render(); };
+  const fs = $('#lst', app); if (fs) fs.onchange = () => { V.st = fs.value; V.lim = 80; render(); };
+  const sm = $('#lSel', app); if (sm) sm.onclick = () => { V.sel = V.sel ? null : {}; render(); };
+  const more = $('#lMore', app); if (more) more.onclick = () => { V.lim += 120; drawList(); };
+  $$('[data-y]', app).forEach(b => b.onclick = () => { V.y += Number(b.dataset.y); render(); });
+  $$('[data-csv]', app).forEach(b => b.onclick = () => exportCsv(b.dataset.csv));
+}
+
+/* --- главная --- */
+function homeView() {
+  const live = HS.filter(alive), T = TODAY(), Y = T.slice(0, 4);
+  const byCat = {}; live.forEach(h => { const c = catOf(h); byCat[c] = (byCat[c] || 0) + 1; });
+  const mx = Math.max.apply(null, CAT_ORDER.map(c => byCat[c] || 0).concat([1]));
+  let h = `<section class="hero mt8"><span class="big">${live.length}</span><span class="l">${pl(live.length, 'голова', 'головы', 'голов')} в табуне</span></section>`;
+  h += '<section class="card mt"><h3>Состав табуна</h3><div class="bars mt8">' + CAT_ORDER.filter(c => byCat[c]).map(c => `<button class="bar" data-go="list" data-cat="${c}"><span class="bl"><b>${esc(CATS[c].kz)}</b><span>${esc(CATS[c].ru)}</span></span><span class="bt"><i style="width:${Math.max(3, Math.round((byCat[c] || 0) / mx * 100))}%"></i></span><span class="bv">${byCat[c]}</span></button>`).join('') + '</div></section>';
+  const due = dueList(14), over = due.filter(x => x.nx < T);
+  h += `<div class="sec-h"><h3>Скоро нужно сделать</h3>${over.length ? chip('bad', 'просрочено: ' + over.length) : ''}</div>`;
+  h += due.length ? '<div class="list">' + due.slice(0, 8).map((x, i) => `<button class="row" data-due="${i}"><span class="ic ${x.nx < T ? 'bad' : 'acc'}">${I.syr}</span><span class="t"><b>${esc(x.name)}</b><span class="st ${x.nx < T ? 'bad' : 'mut'}">${x.nx < T ? 'просрочено с ' + fDs(x.nx) : x.last !== x.nx ? 'с ' + fDs(x.nx) + ' по ' + fDs(x.last) : x.nx === T ? 'сегодня' : fDs(x.nx) + ', через ' + dBetween(T, x.nx) + ' дн.'}</span></span><span class="cnt">${x.ids.length} ${pl(x.ids.length, 'голова', 'головы', 'голов')}</span></button>`).join('') + '</div>' : '<p class="small mut">На ближайшие две недели прививок и обработок не запланировано.</p>';
+  const st = yearStats(Y), mares = live.filter(x => catOf(x) === 'bie').length, foaled = new Set();
+  HS.forEach(x => { if (x.sex === 'f') x.ev.forEach(e => { if (e.k === 'foal' && e.d.slice(0, 4) === Y) foaled.add(x.id); }); });
+  h += `<div class="sec-h"><h3>Приплод ${Y}</h3></div><div class="tiles">${tile('Жеребят', st.born, 'good', st.bornF + ' кобылок · ' + st.bornM + ' жеребчиков')}${tile('Ожеребилось', foaled.size + ' из ' + mares, '', mares ? 'выход ' + Math.round(foaled.size / mares * 100) + '%' : '')}${tile('Потери', st.foalLost + HS.filter(x => x.mother && x.born.slice(0, 4) === Y && x.st === 'dead').length, st.foalLost ? 'warn' : '', 'жеребят')}</div>`;
+  h += `<div class="sec-h"><h3>${Y} год</h3><button class="linkbtn" data-go="stats">Подробнее</button></div><div class="tiles">${tile('Продано', st.sold, '', money(st.soldSum))}${tile('Забито', st.meat, '', st.meatKg ? kg(st.meatKg) + ' мяса' : '')}${tile('Пало', st.dead, st.dead ? 'bad' : '', st.lost ? 'пропало ' + st.lost : '')}</div>`;
+  h += `<div class="acts mt">${[['data-addh=""', I.plus, 'Лошадь'], ['data-pickmare', I.baby, 'Приплод'], ['data-gvac', I.syr, 'Прививка группе']].map(a => `<button ${a[0]}>${a[1]}<span>${a[2]}</span></button>`).join('')}</div>`;
+  return h;
+}
+
+/* --- список лошадей --- */
+function filtered() {
+  const q = norm(V.q).trim();
+  return HS.filter(h => (V.st === 'all' || (V.st === 'in' ? alive(h) : !alive(h))) && (!V.cat || catOf(h) === V.cat) && (!V.g || h.grp === V.g) && (!q || norm(h.tag).indexOf(q) >= 0 || norm(h.name).indexOf(q) >= 0))
+    .sort((a, b) => (grp(a.grp) ? grp(a.grp).ord : 99) - (grp(b.grp) ? grp(b.grp).ord : 99) || CATS[catOf(a)].ord - CATS[catOf(b)].ord || a.tag.localeCompare(b.tag));
+}
+function listView() {
+  let h = `<div class="lhead mt8"><label class="srch" for="lq">${I.search}<input id="lq" type="search" placeholder="Бирка или кличка" value="${esc(V.q)}" autocomplete="off"></label><button class="ib" id="lSel" aria-pressed="${!!V.sel}" aria-label="Выбрать несколько">${I.sel}</button></div>`;
+  h += `<div class="chips scroll mt8">${[['', 'Все']].concat(CAT_ORDER.filter(c => c !== 'unk').map(c => [c, CATS[c].kz])).map(x => `<button class="fchip" data-fcat="${x[0]}" aria-pressed="${V.cat === x[0]}">${esc(x[1])}</button>`).join('')}</div>`;
+  h += `<div class="row2 mt8"><select id="lg" aria-label="Косяк"><option value="">Все косяки и группы</option>${GS.map(g => `<option value="${esc(g.id)}" ${V.g === g.id ? 'selected' : ''}>${esc(g.name)}</option>`).join('')}</select><select id="lst" aria-label="Статус"><option value="in" ${V.st === 'in' ? 'selected' : ''}>В табуне</option><option value="out" ${V.st === 'out' ? 'selected' : ''}>Выбывшие</option><option value="all" ${V.st === 'all' ? 'selected' : ''}>Все</option></select></div>`;
+  h += '<div id="lbox"></div>';
+  setTimeout(drawList, 0);
+  return h;
+}
+function hRow(h) {
+  const c = catOf(h), g = grp(h.grp), w = weights(h).pop(), v = vacState(h), T = TODAY(), over = Object.keys(v).some(k => v[k].nx && v[k].nx < T);
+  const on = V.sel && V.sel[h.id];
+  return `<button class="row hrow ${on ? 'on' : ''}" data-h="${esc(h.id)}">${V.sel ? `<span class="ck" aria-hidden="true">${on ? I.check : ''}</span>` : ''}${horseIco(h.color)}<span class="t"><b>${esc(h.name || (h.tag ? '№ ' + h.tag : 'Без бирки'))}${h.name && h.tag ? ` <span class="tag">${esc(h.tag)}</span>` : ''}</b><span class="st mut">${esc(CATS[c].kz + ' · ' + ageTxt(h.born) + (g ? ' · ' + g.name : ''))}</span>${!alive(h) ? `<span class="chips">${chip('mut', ST[h.st] + (h.stD ? ' ' + fDs(h.stD) : ''))}</span>` : over ? `<span class="chips">${chip('bad', 'просрочена прививка')}</span>` : ''}</span>${w ? `<span class="cnt">${Math.round(w.v)} кг</span>` : ''}</button>`;
+}
+function drawList() {
+  const box = $('#lbox'); if (!box) return;
+  const L = filtered();
+  box.innerHTML = `<p class="small mut mt8">${L.length} ${pl(L.length, 'лошадь', 'лошади', 'лошадей')}${V.sel ? ` · <button class="linkbtn" id="lAll">${L.every(h => V.sel[h.id]) && L.length ? 'Снять выбор' : 'Выбрать всех ' + L.length}</button>` : ''}</p><div class="list mt8">` + L.slice(0, V.lim).map(hRow).join('') + '</div>' + (L.length > V.lim ? `<button class="btn ghost full mt" id="lMore">Показать ещё (${L.length - V.lim})</button>` : '') + (!L.length ? '<p class="mut center mt">Никого не нашлось.</p>' : '');
+  $$('[data-h]', box).forEach(b => b.onclick = () => { if (V.sel) { toggleSel(b.dataset.h); return; } horseSheet(b.dataset.h); });
+  const more = $('#lMore', box); if (more) more.onclick = () => { V.lim += 120; drawList(); };
+  const all = $('#lAll', box); if (all) all.onclick = () => { const on = !(L.every(h => V.sel[h.id]) && L.length); L.forEach(h => { if (on) V.sel[h.id] = 1; else delete V.sel[h.id]; }); drawList(); selBar(); };
+}
+function toggleSel(id) { if (!V.sel) return; if (V.sel[id]) delete V.sel[id]; else V.sel[id] = 1; drawList(); selBar(); }
+function selBar() {
+  const bar = $('#selbar'), n = V.sel ? Object.keys(V.sel).length : 0;
+  if (!V.sel || V.tab !== 'list') { bar.hidden = true; return; }
+  bar.hidden = false;
+  bar.innerHTML = `<span>Выбрано: <b>${n}</b></span><button class="btn small" id="sbVac" ${n ? '' : 'disabled'}>${I.syr}Прививка</button><button class="btn small ghost" id="sbMove" ${n ? '' : 'disabled'}>${I.move}Перевести</button><button class="ib sm" id="sbX" aria-label="Отменить выбор">${I.close}</button>`;
+  $('#sbVac').onclick = () => evSheet(Object.keys(V.sel), 'vac');
+  $('#sbMove').onclick = () => evSheet(Object.keys(V.sel), 'move');
+  $('#sbX').onclick = () => { V.sel = null; render(); };
+}
+
+/* --- косяки --- */
+function groupsView() {
+  let h = `<div class="sec-h" style="margin-top:8px"><h2>Косяки и группы</h2><button class="btn small" data-newg>${I.plus}Новый</button></div><div class="list">`;
+  h += GS.map(g => {
+    const m = HS.filter(x => alive(x) && x.grp === g.id), st = hz(g.stallion), by = {};
+    m.forEach(x => { const c = catOf(x); by[c] = (by[c] || 0) + 1; });
+    const parts = CAT_ORDER.filter(c => by[c]).map(c => CATS[c].kz + ' ' + by[c]);
+    return `<button class="row grow" data-gopen="${esc(g.id)}">${st ? horseIco(st.color) : `<span class="ic acc">${I.list}</span>`}<span class="t"><b>${esc(g.name)}</b><span class="st mut">${esc(parts.join(' · ') || 'пока пусто')}</span>${g.place ? `<span class="small mut">${esc(g.place)}</span>` : ''}</span><span class="cnt">${m.length}</span></button>`;
+  }).join('') + '</div>';
+  const none = HS.filter(x => alive(x) && !grp(x.grp)).length;
+  if (none) h += `<p class="small mut mt">Без косяка: ${none} ${pl(none, 'лошадь', 'лошади', 'лошадей')}. <button class="linkbtn" data-go="list">Найти в списке</button></p>`;
+  return h;
+}
+
+/* --- итоги года --- */
+function statsView() {
+  const y = V.y, s = yearStats(y), cur = Number(TODAY().slice(0, 4));
+  let h = `<div class="dnav"><button class="ib" data-y="-1" aria-label="Предыдущий год">${I.left}</button><div class="dlab"><b>${y} год</b><span>${y === cur ? 'по сегодняшний день' : 'итоги года'}</span></div><button class="ib" data-y="1" ${y >= cur ? 'disabled' : ''} aria-label="Следующий год">${I.right}</button></div>`;
+  h += `<div class="tiles two">${tile('Родилось жеребят', s.born, 'good', s.bornF + ' кобылок · ' + s.bornM + ' жеребчиков')}${tile('Продано', s.sold, '', money(s.soldSum))}${tile('Забито', s.meat, '', s.meatKg ? kg(s.meatKg) + ' мяса' : '')}${tile('Пало и пропало', s.dead + s.lost, s.dead ? 'bad' : '', s.foalLost ? 'и ещё ' + s.foalLost + ' жеребят при рождении' : '')}</div>`;
+  if (s.soldList.length) h += '<div class="sec-h"><h3>Продажи</h3></div><div class="list">' + s.soldList.sort((a, b) => b.e.d.localeCompare(a.e.d)).map(x => `<button class="row" data-h="${esc(x.h.id)}">${horseIco(x.h.color)}<span class="t"><b>${esc(hName(x.h))}</b><span class="st mut">${esc(fDs(x.e.d) + (x.e.t ? ' · ' + x.e.t : ''))}</span></span><span class="cnt">${money(x.e.v)}</span></button>`).join('') + '</div>';
+  if (s.meatList.length) h += '<div class="sec-h"><h3>Забой</h3></div><div class="list">' + s.meatList.map(x => `<button class="row" data-h="${esc(x.h.id)}">${horseIco(x.h.color)}<span class="t"><b>${esc(hName(x.h))}</b><span class="st mut">${esc(fDs(x.e.d) + (x.e.t ? ' · ' + x.e.t : ''))}</span></span><span class="cnt">${x.e.v ? kg(x.e.v) : ''}</span></button>`).join('') + '</div>';
+  if (s.deadList.length) h += '<div class="sec-h"><h3>Падёж</h3></div><div class="list">' + s.deadList.map(x => `<button class="row" data-h="${esc(x.h.id)}">${horseIco(x.h.color)}<span class="t"><b>${esc(hName(x.h))}</b><span class="st mut">${esc(fDs(x.e.d) + (x.e.t ? ' · ' + x.e.t : ''))}</span></span></button>`).join('') + '</div>';
+  h += `<div class="sec-h"><h3>Для Excel</h3></div><div class="stack"><button class="btn ghost" data-csv="horses">${I.save}Список лошадей</button><button class="btn ghost" data-csv="events">${I.save}Все события за ${y} год</button></div>`;
+  return h;
+}
+function exportCsv(kind) {
+  if (kind === 'horses') {
+    const rows = [['Бирка', 'Кличка', 'Группа', 'Пол', 'Мерин', 'Масть', 'Дата рождения', 'Возраст', 'Косяк', 'Мать', 'Отец', 'Последний вес, кг', 'Статус', 'Дата выбытия']];
+    HS.slice().sort((a, b) => a.tag.localeCompare(b.tag)).forEach(h => { const w = weights(h).pop(), g = grp(h.grp); rows.push([h.tag, h.name, CATS[catOf(h)].kz, h.sex === 'f' ? 'кобыла' : 'жеребец', h.cast ? 'да' : '', h.color, h.born, ageTxt(h.born), g ? g.name : '', hz(h.mother) ? hz(h.mother).tag : '', hz(h.father) ? hz(h.father).tag : '', w ? w.v : '', ST[h.st], h.stD]); });
+    saveFile('tabun-loshadi-' + TODAY() + '.csv', csvOf(rows));
+  } else {
+    const body = [];
+    HS.forEach(h => h.ev.forEach(e => { if (e.d.slice(0, 4) === String(V.y)) body.push([e.d, h.tag, h.name, EVK[e.k], e.t || '', e.v != null ? String(e.v).replace('.', ',') : '', e.nx || '']); }));
+    body.sort((a, b) => String(a[0]).localeCompare(String(b[0])));
+    saveFile('tabun-sobytiya-' + V.y + '.csv', csvOf([['Дата', 'Бирка', 'Кличка', 'Событие', 'Что', 'Число', 'Следующая дата']].concat(body)));
+  }
+}
+
+/* ---------- карточка лошади ---------- */
+function spark(ws) {
+  if (ws.length < 2) return '';
+  const W = 280, H = 56, xs = ws.map(e => pd(e.d).getTime()), ys = ws.map(e => e.v);
+  const x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs), y0 = Math.min.apply(null, ys), y1 = Math.max.apply(null, ys);
+  const X = t => 6 + (x1 === x0 ? (W - 12) / 2 : (t - x0) / (x1 - x0) * (W - 12)), Y = v => H - 8 - (y1 === y0 ? (H - 16) / 2 : (v - y0) / (y1 - y0) * (H - 16));
+  const pts = ws.map(e => X(pd(e.d).getTime()).toFixed(1) + ',' + Y(e.v).toFixed(1)).join(' ');
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" role="img" aria-label="Вес: от ${Math.round(ys[0])} до ${Math.round(ys[ys.length - 1])} кг"><polyline points="${pts}" fill="none" stroke="var(--acc)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>${ws.map(e => `<circle cx="${X(pd(e.d).getTime()).toFixed(1)}" cy="${Y(e.v).toFixed(1)}" r="3.5" fill="var(--surface)" stroke="var(--acc)" stroke-width="2"/>`).join('')}</svg>`;
+}
+function horseSheet(id) {
+  const h0 = hz(id); if (!h0) return;
+  const st = {kind: 'h' + id};
+  const draw = () => {
+    const h = hz(id); if (!h) { closeSheet(); return; }
+    const c = catOf(h), g = grp(h.grp), mo = hz(h.mother), fa = hz(h.father), T = TODAY(), ws = weights(h), v = vacState(h);
+    const kids = HS.filter(x => x.mother === h.id || x.father === h.id).sort((a, b) => b.born.localeCompare(a.born));
+    let x = `<div class="sh-head"><div class="hh">${horseIco(h.color, 'lg')}<div class="t"><p class="kicker">${esc(CATS[c].kz + ' · ' + CATS[c].ru)}</p><h2>${esc(h.name || (h.tag ? '№ ' + h.tag : 'Без бирки'))}</h2><p class="small mut">${esc([h.tag && h.name ? 'бирка ' + h.tag : '', h.color, ageTxt(h.born) + (h.approx ? ' (примерно)' : '')].filter(Boolean).join(' · '))}</p></div></div>${closeBtn}</div>`;
+    if (!alive(h)) x += `<div class="banner bad"><p><b>${esc(ST[h.st])}</b>${h.stD ? ' ' + esc(fDy(h.stD)) : ''}.</p><button class="linkbtn" id="hBack">Вернуть в табун</button></div>`;
+    x += '<section class="card"><dl class="kv">';
+    x += `<dt>Косяк</dt><dd>${g ? `<button class="linkbtn" data-g="${esc(g.id)}">${esc(g.name)}</button>` : 'не указан'}</dd>`;
+    x += `<dt>Пол</dt><dd>${h.sex === 'f' ? 'кобыла' : h.cast ? 'мерин' : 'жеребец'}</dd>`;
+    x += `<dt>Родилась</dt><dd>${h.born ? esc(fDf(h.born)) + (h.approx ? ' (примерно)' : '') : 'неизвестно'}</dd>`;
+    x += `<dt>Мать</dt><dd>${mo ? `<button class="linkbtn" data-hh="${esc(mo.id)}">${esc(hName(mo))}</button>` : '—'}</dd>`;
+    x += `<dt>Отец</dt><dd>${fa ? `<button class="linkbtn" data-hh="${esc(fa.id)}">${esc(hName(fa))}</button>` : '—'}</dd>`;
+    x += '</dl>' + (h.note ? `<p class="small mt8">${esc(h.note)}</p>` : '') + '</section>';
+    if (alive(h)) x += `<div class="acts mt">${[['w', I.scale, 'Взвесить'], ['vac', I.syr, 'Прививка'], ['move', I.move, 'Перевести']].concat(h.sex === 'f' && ageMonths(h.born) >= 30 ? [['foal', I.baby, 'Приплод']] : []).map(a => `<button data-ev="${a[0]}">${a[1]}<span>${a[2]}</span></button>`).join('')}</div>`;
+    x += `<div class="sec-h"><h3>Вес</h3>${ws.length ? `<b>${Math.round(ws[ws.length - 1].v)} кг</b>` : ''}</div>`;
+    x += ws.length ? `<section class="card">${spark(ws.slice(-8))}<p class="small mut">${ws.slice(-4).reverse().map(e => fDs(e.d) + ' — ' + Math.round(e.v) + ' кг').join(' · ')}</p>${ws.length > 1 ? `<p class="small mt8">С ${esc(fDs(ws[0].d))}: ${(ws[ws.length - 1].v - ws[0].v >= 0 ? '+' : '') + Math.round(ws[ws.length - 1].v - ws[0].v)} кг</p>` : ''}</section>` : '<p class="small mut">Не взвешивали.</p>';
+    const vk = Object.keys(v).sort();
+    x += '<div class="sec-h"><h3>Прививки и обработки</h3></div>';
+    x += vk.length ? '<div class="list">' + vk.map(k => { const e = v[k], od = e.nx && e.nx < T; return `<div class="row static"><span class="ic ${od ? 'bad' : 'acc'}">${I.syr}</span><span class="t"><b>${esc(k)}</b><span class="st ${od ? 'bad' : 'mut'}">была ${esc(fDy(e.d))}${e.nx ? (od ? ' · просрочена с ' : ' · следующая ') + esc(fDy(e.nx)) : ''}</span></span></div>`; }).join('') + '</div>' : '<p class="small mut">Записей нет.</p>';
+    if (kids.length) x += `<div class="sec-h"><h3>${h.sex === 'f' ? 'Приплод' : 'Потомство'}</h3><span class="mut">${kids.length}</span></div><div class="list">` + kids.slice(0, 12).map(k => `<button class="row" data-hh="${esc(k.id)}">${horseIco(k.color)}<span class="t"><b>${esc(hName(k))}</b><span class="st mut">${esc((k.sex === 'f' ? 'кобылка' : 'жеребчик') + ' · ' + (k.born ? fDy(k.born) : '') + (alive(k) ? '' : ' · ' + ST[k.st].toLowerCase()))}</span></span></button>`).join('') + '</div>';
+    x += '<div class="sec-h"><h3>История</h3></div>';
+    x += h.ev.length ? '<div class="hist">' + h.ev.slice().reverse().slice(0, 40).map(e => `<div class="he"><span class="d">${esc(fDy(e.d))}</span><span class="t"><b>${esc(EVK[e.k])}${e.k === 'vac' && e.t ? ': ' + esc(e.t) : ''}</b>${evLine(e)}</span><button class="ib sm" data-edel="${esc(e.id)}" aria-label="Удалить запись">${I.trash}</button></div>`).join('') + '</div>' : '<p class="small mut">Пока пусто.</p>';
+    if (alive(h)) x += `<div class="stack mt"><div class="row3">${[['sold', I.cash, 'Продажа'], ['meat', I.meat, 'Забой'], ['dead', I.cross, 'Падёж']].map(a => `<button class="btn ghost small" data-ev="${a[0]}">${a[1]}${a[2]}</button>`).join('')}</div><button class="btn ghost small" data-ev="lost">Пропала</button><button class="btn ghost small" data-ev="note">${I.edit}Заметка</button></div>`;
+    x += `<button class="btn ghost full mt" id="hEdit">${I.edit}Изменить данные</button>`;
+    openSheet(x, st);
+    $$('[data-hh]').forEach(b => b.onclick = () => horseSheet(b.dataset.hh));
+    $$('[data-g]').forEach(b => b.onclick = () => groupSheet(b.dataset.g));
+    $$('[data-ev]').forEach(b => b.onclick = () => { const k = b.dataset.ev; if (k === 'foal') foalSheet(h.id); else evSheet([h.id], k, () => horseSheet(h.id)); });
+    $('#hEdit').onclick = () => editHorse(h.id);
+    const hb = $('#hBack'); if (hb) armed(hb, 'Нажмите ещё раз', () => { const n = clone(h); n.st = 'in'; n.stD = ''; n.ev.push({id: uid('e'), d: TODAY(), k: 'back'}); act(() => API.saveH(n), 'Лошадь снова в табуне.'); });
+    $$('[data-edel]').forEach(b => armed(b, 'Удалить?', () => {
+      const n = clone(h), e = n.ev.find(z => z.id === b.dataset.edel); n.ev = n.ev.filter(z => z.id !== b.dataset.edel);
+      if (e && (e.k === 'sold' || e.k === 'meat' || e.k === 'dead' || e.k === 'lost') && n.st === e.k) { n.st = 'in'; n.stD = ''; }
+      act(() => API.saveH(n), 'Запись удалена.');
+    }));
+  };
+  st.redraw = draw;
+  draw();
+}
+function evLine(e) {
+  const p = [];
+  if (e.k === 'w' && e.v) p.push(Math.round(e.v) + ' кг');
+  if (e.k === 'sold' && e.v) p.push(money(e.v));
+  if (e.k === 'meat' && e.v) p.push(kg(e.v) + ' мяса');
+  if (e.k === 'foal') { const c = hz(e.c); p.push(e.x ? 'жеребёнок погиб' : c ? (c.sex === 'f' ? 'кобылка ' : 'жеребчик ') + hName(c) : 'жеребёнок'); }
+  if (e.k === 'move' && e.g) { const g = grp(e.g); p.push('в ' + (g ? g.name : 'другую группу')); }
+  if (e.k === 'vac' && e.nx) p.push('следующая ' + fDy(e.nx));
+  if (e.t && e.k !== 'vac') p.push(e.t);
+  return p.length ? `<span class="small mut">${esc(p.join(' · '))}</span>` : '';
+}
+
+/* ---------- новая лошадь и изменение ---------- */
+function editHorse(id, pre) {
+  const old = id ? hz(id) : null;
+  const F = old ? clone(old) : Object.assign({id: uid('h'), tag: nextTag(), name: '', sex: 'f', cast: false, color: COLORS[0], born: '', approx: false, grp: '', mother: '', father: '', st: 'in', stD: '', note: '', ev: [], ts: Date.now()}, pre || {});
+  F.mTag = hz(F.mother) ? hz(F.mother).tag : ''; F.fTag = hz(F.father) ? hz(F.father).tag : '';
+  const draw = () => {
+    let x = head(old ? hName(old) : 'Новая лошадь', old ? 'Изменить данные' : 'Добавить лошадь');
+    x += `<div class="form"><div class="row2"><label class="f" for="eTag">Бирка<input id="eTag" autocomplete="off" inputmode="numeric" value="${esc(F.tag)}"></label><label class="f" for="eName">Кличка<input id="eName" autocomplete="off" value="${esc(F.name)}" placeholder="необязательно"></label></div>
+      <div class="seg wrap">${[['f', 'Кобыла'], ['m', 'Жеребец'], ['c', 'Мерин']].map(o => `<button data-sx="${o[0]}" aria-pressed="${(o[0] === 'c' ? F.sex === 'm' && F.cast : o[0] === 'm' ? F.sex === 'm' && !F.cast : F.sex === 'f')}">${o[1]}</button>`).join('')}</div>
+      <div class="row2"><label class="f" for="eBorn">Дата рождения<input id="eBorn" type="date" value="${esc(F.born)}" max="${TODAY()}"></label><label class="f" for="eColor">Масть<select id="eColor">${COLORS.concat(F.color && COLORS.indexOf(F.color) < 0 ? [F.color] : []).map(c => `<option ${c === F.color ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select></label></div>
+      <label class="tg"><input type="checkbox" id="eApprox" ${F.approx ? 'checked' : ''}><span>Дата рождения примерная</span></label>
+      <label class="f" for="eGrp">Косяк или группа<select id="eGrp"><option value="">— не указан —</option>${GS.map(g => `<option value="${esc(g.id)}" ${g.id === F.grp ? 'selected' : ''}>${esc(g.name)}</option>`).join('')}</select></label>
+      <div class="row2"><label class="f" for="eM">Бирка матери<input id="eM" autocomplete="off" inputmode="numeric" value="${esc(F.mTag)}" placeholder="если знаете"></label><label class="f" for="eF">Бирка отца<input id="eF" autocomplete="off" inputmode="numeric" value="${esc(F.fTag)}" placeholder="если знаете"></label></div>
+      <label class="f" for="eNote">Заметка<input id="eNote" autocomplete="off" value="${esc(F.note)}" placeholder="Например: тавро на левом бедре"></label>
+      <p class="err" id="eErr"></p><button class="btn" id="eSave">${old ? 'Сохранить' : 'Добавить'}</button></div>`;
+    if (old) x += `<section class="card mt"><h3>Удалить запись</h3><p class="small mut">Только если лошадь добавлена по ошибке. Если её продали или она пала, отметьте это в карточке: так сохранится история.</p><button class="btn ghost danger full mt8" id="eDel">${I.trash}Удалить</button></section>`;
+    openSheet(x, {kind: 'eh'});
+    const sync = () => { F.tag = $('#eTag').value.trim(); F.name = $('#eName').value.trim(); F.born = $('#eBorn').value; F.color = $('#eColor').value; F.approx = $('#eApprox').checked; F.grp = $('#eGrp').value; F.mTag = $('#eM').value.trim(); F.fTag = $('#eF').value.trim(); F.note = $('#eNote').value.trim(); };
+    $$('[data-sx]').forEach(b => b.onclick = () => { sync(); const v = b.dataset.sx; F.sex = v === 'f' ? 'f' : 'm'; F.cast = v === 'c'; draw(); });
+    $('#eSave').onclick = () => {
+      sync();
+      const err = t => { $('#eErr').textContent = t; };
+      if (!F.tag && !F.name) return err('Впишите бирку или кличку.');
+      if (F.tag && HS.some(h => h.id !== F.id && h.tag === F.tag)) return err('Лошадь с биркой ' + F.tag + ' уже есть.');
+      const m = F.mTag ? HS.find(h => h.tag === F.mTag) : null, f = F.fTag ? HS.find(h => h.tag === F.fTag) : null;
+      if (F.mTag && !m) return err('Не нашла кобылу с биркой ' + F.mTag + '.');
+      if (F.fTag && !f) return err('Не нашла жеребца с биркой ' + F.fTag + '.');
+      if (m && m.sex !== 'f') return err('Мать должна быть кобылой.');
+      F.mother = m ? m.id : ''; F.father = f ? f.id : '';
+      const n = clone(F); delete n.mTag; delete n.fTag;
+      if (!old && !n.ev.length) n.ev = [{id: uid('e'), d: TODAY(), k: 'note', t: 'добавлена в учёт'}];
+      act(() => API.saveH(n), old ? 'Сохранено.' : 'Лошадь добавлена.').then(ok => { if (ok) horseSheet(n.id); });
+    };
+    const del = $('#eDel'); if (del) armed(del, 'Удалить совсем?', () => act(() => API.delH(old.id), 'Запись удалена.').then(ok => { if (ok) closeSheet(); }));
+  };
+  draw();
+}
+
+/* ---------- приплод ---------- */
+function pickMare() {
+  const st = {kind: 'pm', q: ''};
+  const draw = () => {
+    const q = norm(st.q).trim(), L = HS.filter(h => alive(h) && h.sex === 'f' && ageMonths(h.born) >= 30 && (!q || norm(h.tag).indexOf(q) >= 0 || norm(h.name).indexOf(q) >= 0)).sort((a, b) => a.tag.localeCompare(b.tag)).slice(0, 40);
+    openSheet(head('Приплод', 'Чей жеребёнок?') + `<label class="srch" for="pmq">${I.search}<input id="pmq" type="search" placeholder="Бирка или кличка кобылы" value="${esc(st.q)}" autocomplete="off"></label><div class="list mt8">${L.map(h => `<button class="row" data-pm="${esc(h.id)}">${horseIco(h.color)}<span class="t"><b>${esc(hName(h))}</b><span class="st mut">${esc((grp(h.grp) ? grp(h.grp).name : '') + ' · ' + ageTxt(h.born))}</span></span></button>`).join('')}</div>`, st);
+    const q2 = $('#pmq'); q2.oninput = () => { st.q = q2.value; const p = q2.selectionStart; draw(); const n = $('#pmq'); n.focus(); try { n.setSelectionRange(p, p); } catch (e) {} };
+    $$('[data-pm]').forEach(b => b.onclick = () => foalSheet(b.dataset.pm));
+  };
+  draw();
+}
+function foalSheet(mid) {
+  const m = hz(mid); if (!m) return;
+  const g = grp(m.grp), stal = HS.filter(h => alive(h) && h.sex === 'm' && !h.cast && ageMonths(h.born) >= 36);
+  const F = {d: TODAY(), sex: 'f', color: m.color, tag: nextTag(), name: '', father: g && g.stallion ? g.stallion : '', dead: false};
+  const draw = () => {
+    let x = head('Приплод', 'Жеребёнок от ' + hName(m));
+    x += `<div class="form"><label class="tg big"><input type="checkbox" id="fDead" ${F.dead ? 'checked' : ''}><span>Жеребёнок погиб</span></label>
+      <label class="f" for="fD">Дата рождения<input id="fD" type="date" value="${esc(F.d)}" max="${TODAY()}"></label>`;
+    if (!F.dead) x += `<div class="seg">${[['f', 'Кобылка'], ['m', 'Жеребчик']].map(o => `<button data-fs="${o[0]}" aria-pressed="${F.sex === o[0]}">${o[1]}</button>`).join('')}</div>
+      <div class="row2"><label class="f" for="fT">Бирка<input id="fT" inputmode="numeric" autocomplete="off" value="${esc(F.tag)}"></label><label class="f" for="fC">Масть<select id="fC">${COLORS.map(c => `<option ${c === F.color ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select></label></div>
+      <label class="f" for="fN">Кличка<input id="fN" autocomplete="off" value="${esc(F.name)}" placeholder="необязательно"></label>
+      <label class="f" for="fF">Отец<select id="fF"><option value="">— неизвестен —</option>${stal.map(h => `<option value="${esc(h.id)}" ${h.id === F.father ? 'selected' : ''}>${esc(hName(h))}</option>`).join('')}</select></label>`;
+    x += '<p class="err" id="fErr"></p><button class="btn" id="fGo">Сохранить</button></div>';
+    openSheet(x, {kind: 'foal'});
+    const sync = () => { F.d = $('#fD').value; F.dead = $('#fDead').checked; if ($('#fT')) { F.tag = $('#fT').value.trim(); F.color = $('#fC').value; F.name = $('#fN').value.trim(); F.father = $('#fF').value; } };
+    $('#fDead').onchange = () => { sync(); draw(); };
+    $$('[data-fs]').forEach(b => b.onclick = () => { sync(); F.sex = b.dataset.fs; draw(); });
+    $('#fGo').onclick = () => {
+      sync();
+      if (!isDate(F.d)) { $('#fErr').textContent = 'Укажите дату.'; return; }
+      const mm = clone(m);
+      if (F.dead) { mm.ev.push({id: uid('e'), d: F.d, k: 'foal', x: 1, t: 'жеребёнок погиб'}); act(() => API.saveH(mm), 'Записано.').then(ok => { if (ok) horseSheet(m.id); }); return; }
+      if (F.tag && HS.some(h => h.tag === F.tag)) { $('#fErr').textContent = 'Бирка ' + F.tag + ' уже занята.'; return; }
+      const kid = {id: uid('h'), tag: F.tag, name: F.name, sex: F.sex, cast: false, color: F.color, born: F.d, approx: false, grp: m.grp, mother: m.id, father: F.father, st: 'in', stD: '', note: '', ev: [{id: uid('e'), d: F.d, k: 'born'}], ts: Date.now()};
+      mm.ev.push({id: uid('e'), d: F.d, k: 'foal', c: kid.id});
+      act(() => API.saveMany([kid, mm]), (F.sex === 'f' ? 'Кобылка' : 'Жеребчик') + ' записан' + (F.sex === 'f' ? 'а' : '') + '.').then(ok => { if (ok) horseSheet(kid.id); });
+    };
+  };
+  draw();
+}
+
+/* ---------- события для одной или многих лошадей ---------- */
+function evSheet(ids, k, back) {
+  const many = ids.length > 1, h1 = hz(ids[0]);
+  const F = {d: TODAY(), v: '', t: '', nx: 'none', nxd: addD(TODAY(), 182), g: '', name: SET.vacs[0], reason: 'болезнь'};
+  const title = {w: 'Взвешивание', vac: 'Прививка или обработка', move: 'Перевод в другой косяк', sold: 'Продажа', meat: 'Забой', dead: 'Падёж', lost: 'Пропала', note: 'Заметка'}[k];
+  const draw = () => {
+    let x = head(many ? ids.length + ' ' + pl(ids.length, 'лошадь', 'лошади', 'лошадей') : hName(h1), title);
+    x += `<div class="form"><label class="f" for="vD">Дата<input id="vD" type="date" value="${esc(F.d)}" max="${TODAY()}"></label>`;
+    if (k === 'w') x += `<label class="f" for="vV">Вес, кг<input id="vV" inputmode="decimal" autocomplete="off" value="${esc(F.v)}"></label>`;
+    if (k === 'vac') x += `<label class="f" for="vN">Что сделали<select id="vN">${SET.vacs.map(v => `<option ${v === F.name ? 'selected' : ''}>${esc(v)}</option>`).join('')}<option value="__other" ${F.name === '__other' ? 'selected' : ''}>Другое…</option></select></label>${F.name === '__other' ? `<label class="f" for="vNo">Название<input id="vNo" autocomplete="off" value="${esc(F.t)}"></label>` : ''}
+      <p class="small mut">Когда повторить</p><div class="seg wrap">${[['none', 'Не нужно'], ['182', 'Через полгода'], ['365', 'Через год'], ['date', 'Дата']].map(o => `<button data-nx="${o[0]}" aria-pressed="${F.nx === o[0]}">${o[1]}</button>`).join('')}</div>${F.nx === 'date' ? `<label class="f" for="vNx">Следующая дата<input id="vNx" type="date" value="${esc(F.nxd)}"></label>` : ''}`;
+    if (k === 'move') x += `<label class="f" for="vG">Куда<select id="vG">${GS.map(g => `<option value="${esc(g.id)}" ${g.id === F.g ? 'selected' : ''}>${esc(g.name)}</option>`).join('')}</select></label>`;
+    if (k === 'sold') x += `<label class="f" for="vV">Цена, ₸<input id="vV" inputmode="numeric" autocomplete="off" value="${esc(F.v)}"></label><label class="f" for="vT">Кому продали<input id="vT" autocomplete="off" value="${esc(F.t)}"></label>`;
+    if (k === 'meat') x += `<label class="f" for="vV">Мяса, кг<input id="vV" inputmode="decimal" autocomplete="off" value="${esc(F.v)}"></label><label class="f" for="vT">Заметка<input id="vT" autocomplete="off" value="${esc(F.t)}" placeholder="Например: соғым"></label>`;
+    if (k === 'dead') x += `<div class="seg wrap">${['болезнь', 'волки', 'непогода', 'травма', 'другое'].map(r => `<button data-rs="${r}" aria-pressed="${F.reason === r}">${r}</button>`).join('')}</div><label class="f" for="vT">Подробности<input id="vT" autocomplete="off" value="${esc(F.t)}"></label>`;
+    if (k === 'lost' || k === 'note') x += `<label class="f" for="vT">${k === 'note' ? 'Текст' : 'Подробности'}<input id="vT" autocomplete="off" value="${esc(F.t)}"></label>`;
+    if (many && k === 'vac') x += `<p class="hint">Запись появится у каждой из ${ids.length} лошадей.</p>`;
+    x += `<p class="err" id="vErr"></p><button class="btn" id="vGo">Сохранить</button>${back ? '<button class="btn ghost mt8" id="vBack">Назад</button>' : ''}</div>`;
+    openSheet(x, {kind: 'ev'});
+    const sync = () => { F.d = $('#vD').value; const v = $('#vV'); if (v) F.v = v.value; const t = $('#vT'); if (t) F.t = t.value; const n = $('#vN'); if (n) F.name = n.value; const no = $('#vNo'); if (no) F.t = no.value; const nx = $('#vNx'); if (nx) F.nxd = nx.value; const g = $('#vG'); if (g) F.g = g.value; };
+    const vn = $('#vN'); if (vn) vn.onchange = () => { sync(); draw(); };
+    $$('[data-nx]').forEach(b => b.onclick = () => { sync(); F.nx = b.dataset.nx; draw(); });
+    $$('[data-rs]').forEach(b => b.onclick = () => { sync(); F.reason = b.dataset.rs; draw(); });
+    const bk = $('#vBack'); if (bk) bk.onclick = back;
+    $('#vGo').onclick = () => {
+      sync();
+      const err = t => { $('#vErr').textContent = t; };
+      if (!isDate(F.d)) return err('Укажите дату.');
+      const e = {id: '', d: F.d, k};
+      if (k === 'w') { const v = num(F.v); if (!(v > 10 && v < 1500)) return err('Впишите вес в килограммах.'); e.v = v; }
+      if (k === 'vac') {
+        const name = F.name === '__other' ? F.t.trim() : F.name; if (!name) return err('Впишите, что сделали.'); e.t = name;
+        if (F.nx === 'date') { if (!isDate(F.nxd) || F.nxd <= F.d) return err('Следующая дата должна быть позже.'); e.nx = F.nxd; } else if (F.nx !== 'none') e.nx = addD(F.d, Number(F.nx));
+      }
+      if (k === 'move') { if (!F.g) return err('Выберите косяк.'); e.g = F.g; }
+      if (k === 'sold') { const v = num(F.v); if (F.v && !(v >= 0)) return err('Цена цифрами.'); if (v > 0) e.v = v; if (F.t.trim()) e.t = F.t.trim(); }
+      if (k === 'meat') { const v = num(F.v); if (F.v && !(v > 0)) return err('Вес мяса цифрами.'); if (v > 0) e.v = v; if (F.t.trim()) e.t = F.t.trim(); }
+      if (k === 'dead') e.t = F.reason + (F.t.trim() ? ': ' + F.t.trim() : '');
+      if ((k === 'lost' || k === 'note') && F.t.trim()) e.t = F.t.trim();
+      if (k === 'note' && !e.t) return err('Впишите текст.');
+      const list = ids.map(id => { const h = clone(hz(id)); if (!h) return null; h.ev.push(Object.assign({}, e, {id: uid('e')})); if (k === 'move') h.grp = F.g; if (k === 'sold' || k === 'meat' || k === 'dead' || k === 'lost') { h.st = k; h.stD = F.d; } return h; }).filter(Boolean);
+      const okMsg = many ? 'Записано для ' + list.length + ' ' + pl(list.length, 'лошади', 'лошадей', 'лошадей') + '.' : 'Записано.';
+      act(() => API.saveMany(list), okMsg).then(ok => { if (!ok) return; if (V.sel) { V.sel = null; render(); } if (back && !many) back(); else closeSheet(); });
+    };
+  };
+  draw();
+}
+/* что скоро: отметить сделанным сразу для всех */
+function dueSheet(i) {
+  const x = dueList(14)[i]; if (!x) return;
+  const T = TODAY(), L = x.ids.map(hz).filter(Boolean);
+  let h = head(x.nx < T ? 'Просрочено с ' + fDs(x.nx) : x.last !== x.nx ? 'С ' + fDs(x.nx) + ' по ' + fDs(x.last) : fDs(x.nx), x.name) + `<p class="small">${L.length} ${pl(L.length, 'лошадь', 'лошади', 'лошадей')}. Когда сделаете, отметьте одной кнопкой.</p><button class="btn full mt8" id="dDone">${I.check}Сделано сегодня всем</button><div class="list mt">` + L.slice(0, 60).map(hRow).join('') + '</div>';
+  if (L.length > 60) h += `<p class="small mut mt8">И ещё ${L.length - 60}.</p>`;
+  openSheet(h, {kind: 'due'});
+  $$('#sheet [data-h]').forEach(b => b.onclick = () => horseSheet(b.dataset.h));
+  $('#dDone').onclick = () => {
+    const ids = x.ids.slice();
+    const prev = hz(ids[0]) ? vacState(hz(ids[0]))[x.name] : null, gap = prev && prev.nx ? dBetween(prev.d, prev.nx) : 0;
+    evSheet(ids, 'vac');
+    const sel = $('#vN'); if (sel) { sel.value = x.name; sel.dispatchEvent(new Event('change')); }
+    if (gap >= 150 && gap <= 200) { const b = $('[data-nx="182"]'); if (b) b.click(); } else if (gap >= 330 && gap <= 400) { const b = $('[data-nx="365"]'); if (b) b.click(); }
+  };
+}
+function pickGroupForVac() {
+  openSheet(head('Прививка группе', 'Кому делаем?') + '<div class="list">' + GS.map(g => { const n = HS.filter(h => alive(h) && h.grp === g.id).length; return `<button class="row" data-gv="${esc(g.id)}"><span class="ic acc">${I.syr}</span><span class="t"><b>${esc(g.name)}</b></span><span class="cnt">${n}</span></button>`; }).join('') + `<button class="row" data-gv="__all"><span class="ic acc">${I.syr}</span><span class="t"><b>Весь табун</b></span><span class="cnt">${HS.filter(alive).length}</span></button></div><p class="hint mt8">Можно выбрать и отдельных лошадей: в разделе «Лошади» нажмите кнопку выбора рядом с поиском.</p>`, {kind: 'pgv'});
+  $$('[data-gv]').forEach(b => b.onclick = () => { const g = b.dataset.gv; evSheet(HS.filter(h => alive(h) && (g === '__all' || h.grp === g)).map(h => h.id), 'vac'); });
+}
+
+/* ---------- косяки ---------- */
+function groupSheet(id) {
+  const g = grp(id); if (!g) return;
+  const m = HS.filter(x => alive(x) && x.grp === g.id).sort((a, b) => CATS[catOf(a)].ord - CATS[catOf(b)].ord || a.tag.localeCompare(b.tag)), st = hz(g.stallion);
+  let x = head(g.place || (g.kind === 'uyir' ? 'Косяк' : 'Группа'), g.name);
+  x += `<p class="small mut">${m.length} ${pl(m.length, 'голова', 'головы', 'голов')}${st ? ' · жеребец ' + esc(hName(st)) : ''}</p>`;
+  x += `<div class="acts mt8">${[['gv', I.syr, 'Прививка всем'], ['ga', I.plus, 'Добавить лошадь'], ['ge', I.edit, 'Изменить']].map(a => `<button data-${a[0]}>${a[1]}<span>${a[2]}</span></button>`).join('')}</div>`;
+  x += '<div class="list mt">' + m.map(hRow).join('') + '</div>';
+  if (!m.length) x += `<p class="mut mt">В группе пока никого. <button class="linkbtn" id="gDel">Удалить группу</button></p>`;
+  openSheet(x, {kind: 'g' + id});
+  $$('#sheet [data-h]').forEach(b => b.onclick = () => horseSheet(b.dataset.h));
+  $('[data-gv]').onclick = () => evSheet(m.map(h => h.id), 'vac');
+  $('[data-ga]').onclick = () => editHorse(null, {grp: g.id});
+  $('[data-ge]').onclick = () => editGroup(g.id);
+  const gd = $('#gDel'); if (gd) armed(gd, 'Удалить?', () => act(() => API.delG(g.id), 'Группа удалена.').then(ok => { if (ok) closeSheet(); }));
+}
+function editGroup(id) {
+  const old = id ? grp(id) : null, F = old ? clone(old) : {id: uid('g'), name: '', stallion: '', place: '', kind: 'uyir', ord: GS.length};
+  const stal = HS.filter(h => alive(h) && h.sex === 'm' && !h.cast && ageMonths(h.born) >= 36);
+  const draw = () => {
+    openSheet(head(old ? old.name : 'Новая группа', old ? 'Изменить' : 'Новый косяк или группа') + `<div class="form">
+      <div class="seg">${[['uyir', 'Косяк с жеребцом'], ['other', 'Другая группа']].map(o => `<button data-gk="${o[0]}" aria-pressed="${F.kind === o[0]}">${o[1]}</button>`).join('')}</div>
+      <label class="f" for="gN">Название<input id="gN" autocomplete="off" value="${esc(F.name)}" placeholder="${F.kind === 'uyir' ? 'Например: Косяк Ақбоз' : 'Например: Молодняк на откорм'}"></label>
+      ${F.kind === 'uyir' ? `<label class="f" for="gS">Жеребец<select id="gS"><option value="">— выберите —</option>${stal.map(h => `<option value="${esc(h.id)}" ${h.id === F.stallion ? 'selected' : ''}>${esc(hName(h))}</option>`).join('')}</select></label>` : ''}
+      <label class="f" for="gP">Где пасётся<input id="gP" autocomplete="off" value="${esc(F.place)}" placeholder="Например: жайлау у реки"></label>
+      <p class="err" id="gErr"></p><button class="btn" id="gGo">Сохранить</button></div>`, {kind: 'eg'});
+    const sync = () => { F.name = $('#gN').value.trim(); const s = $('#gS'); F.stallion = s ? s.value : ''; F.place = $('#gP').value.trim(); };
+    $$('[data-gk]').forEach(b => b.onclick = () => { sync(); F.kind = b.dataset.gk; draw(); });
+    $('#gGo').onclick = () => {
+      sync();
+      if (!F.name) { const s = hz(F.stallion); if (s && F.kind === 'uyir') F.name = 'Косяк ' + (s.name || s.tag); else { $('#gErr').textContent = 'Впишите название.'; return; } }
+      const list = [];
+      const s = hz(F.stallion); if (s && s.grp !== F.id) { const n = clone(s); n.grp = F.id; n.ev.push({id: uid('e'), d: TODAY(), k: 'move', g: F.id}); list.push(n); }
+      act(() => Promise.all([API.saveG(F), list.length ? API.saveMany(list) : null]), old ? 'Сохранено.' : 'Группа создана.').then(ok => { if (ok) { V.tab = 'groups'; render(); groupSheet(F.id); } });
+    };
+  };
+  draw();
+}
+
+/* ---------- настройки ---------- */
+function settingsSheet() {
+  const F = clone(SET);
+  const draw = () => {
+    openSheet(head('Табун', 'Настройки') + `<div class="form"><label class="f" for="sF">Название хозяйства<input id="sF" autocomplete="off" value="${esc(F.farm)}" placeholder="Например: КХ «Ақбоз»"></label>
+      <p class="small mut">Прививки и обработки в списке</p><div class="vlist">${F.vacs.map((v, i) => `<div class="vi"><span>${esc(v)}</span><button class="ib sm" data-vdel="${i}" aria-label="Убрать">${I.close}</button></div>`).join('')}</div>
+      <div class="row2"><input id="sV" autocomplete="off" placeholder="Добавить в список"><button class="btn ghost" id="sVAdd">${I.plus}Добавить</button></div>
+      <p class="err" id="sErr"></p><button class="btn" id="sSave">Сохранить</button></div>
+      <section class="card mt"><h3>Резервная копия</h3><p class="small">Сохраните весь табун одним файлом на телефон.</p><button class="btn ghost full mt8" id="sBk">${I.save}Сохранить копию</button></section>
+      ${MODE === 'demo' ? `<section class="card mt"><h3>Пример</h3><p class="small">Сейчас открыт пример с выдуманными лошадьми. Чтобы вести настоящий учёт, программу подключают к облаку: тогда данные хранятся надёжно и видны на нескольких телефонах.</p><button class="btn ghost full mt8" id="sReset">Начать пример заново</button></section>` : ''}`, {kind: 'set'});
+    const sync = () => { F.farm = $('#sF').value.trim(); };
+    $$('[data-vdel]').forEach(b => b.onclick = () => { sync(); F.vacs.splice(Number(b.dataset.vdel), 1); draw(); });
+    $('#sVAdd').onclick = () => { sync(); const v = $('#sV').value.trim(); if (v && F.vacs.indexOf(v) < 0) F.vacs.push(v.slice(0, 60)); draw(); };
+    $('#sSave').onclick = () => { sync(); if (!F.vacs.length) { $('#sErr').textContent = 'Оставьте хотя бы одну прививку в списке.'; return; } act(() => API.saveSet(F), 'Сохранено.').then(ok => { if (ok) closeSheet(); }); };
+    $('#sBk').onclick = () => saveFile('tabun-kopiya-' + TODAY() + '.json', JSON.stringify(API.backup()));
+    const r = $('#sReset'); if (r) armed(r, 'Нажмите ещё раз', () => { closeSheet(); resetDemo(); });
+  };
+  draw();
+}
+
+/* ---------- хранение: пример в памяти телефона (облако подключим для настоящего учёта) ---------- */
+const DKEY = 'tabun-demo-v1';
+let DATA = null;
+function applyData() {
+  Object.keys(HM).forEach(k => delete HM[k]);
+  HS = Object.keys(DATA.horses).map(id => cleanH(id, DATA.horses[id]));
+  GS = Object.keys(DATA.groups).map(id => cleanG(id, DATA.groups[id])).sort((a, b) => a.ord - b.ord || a.name.localeCompare(b.name, 'ru'));
+  SET = cleanSet(DATA.settings);
+  derive();
+}
+function persist() { if (!lsSet(DKEY, DATA)) toast('Память телефона заполнена: изменения могут не сохраниться.', true); }
+function changed() { applyData(); render(); if (SHEET && SHEET.redraw) SHEET.redraw(); }
+const API = {
+  async saveH(h) { DATA.horses[h.id] = packH(h); persist(); changed(); },
+  async saveMany(list) { list.forEach(h => { DATA.horses[h.id] = packH(h); }); persist(); changed(); },
+  async delH(id) { delete DATA.horses[id]; persist(); changed(); },
+  async saveG(g) { DATA.groups[g.id] = {name: g.name, stallion: g.stallion, place: g.place, kind: g.kind, ord: g.ord}; persist(); changed(); },
+  async delG(id) { delete DATA.groups[id]; persist(); changed(); },
+  async saveSet(s) { DATA.settings = {farm: s.farm, vacs: s.vacs}; persist(); changed(); },
+  backup() { return {app: 'tabun', v: 1, at: new Date().toISOString(), horses: DATA.horses, groups: DATA.groups, settings: DATA.settings}; }
+};
+function resetDemo() {
+  DATA = demoData(); DATA.settings = {farm: 'Пример: КХ «Ақбоз»'};
+  persist(); V.tab = 'home'; V.sel = null; V.q = ''; V.cat = ''; V.g = ''; changed(); window.scrollTo(0, 0);
+  toast('Пример начат заново.');
+}
+/* ---------- запуск ---------- */
+$$('.tabs button').forEach(b => b.onclick = () => { V.tab = b.dataset.tab; if (V.tab !== 'list') V.sel = null; window.scrollTo(0, 0); render(); });
+$('#openSet').onclick = settingsSheet;
+(function start() {
+  DATA = lsGet(DKEY, null);
+  if (!DATA || !DATA.horses || !DATA.groups) { DATA = demoData(); DATA.settings = {farm: 'Пример: КХ «Ақбоз»'}; persist(); }
+  MODE = 'demo';
+  applyData(); render();
+})();
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body></html>
