@@ -106,6 +106,22 @@ input[type="time"],input[type="date"]{-webkit-appearance:none;appearance:none}
 .seg{display:flex;gap:6px}.seg.wrap{flex-wrap:wrap}
 .seg button{min-height:40px;padding:0 12px;border-radius:99px;border:1px solid var(--line);background:var(--surface);font-weight:650;font-size:14px;color:var(--ink)}
 .seg button[aria-pressed="true"]{background:var(--acc);border-color:var(--acc);color:var(--acc-ink)}
+.seg.two{display:grid;grid-template-columns:1fr 1fr;background:var(--soft);border-radius:14px;padding:4px;gap:4px}
+.seg.two button{border:0;border-radius:11px;background:transparent;min-height:40px;color:var(--mut)}
+.seg.two button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.mb{margin-bottom:12px}
+.tiles.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.tiles.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.tiles.three .v{font-size:17px}
+.tile.acc{background:var(--acc-soft);border-color:transparent}.tile.acc .v{color:var(--acc)}
+.sum{font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap;font-size:16px}
+.pays{display:grid;gap:6px}
+.pi{display:flex;align-items:center;gap:10px;border-top:1px solid var(--line);padding-top:6px}
+.pi .t{flex:1;min-width:0;display:grid}
+.kmon{margin-top:12px;font-size:15px;color:var(--mut);font-weight:600}
+.kcard.mine .tiles{margin-top:14px;grid-template-columns:repeat(2,minmax(0,1fr))}
+.sum.neg{color:var(--bad)}
+.kcard.mine .list{text-align:left}
 .sched{display:grid;gap:6px}
 .sd{display:grid;grid-template-columns:62px minmax(0,1fr) auto minmax(0,1fr);gap:6px;align-items:center;min-height:48px}
 .sd .tg{min-height:40px;font-size:15px}
@@ -241,6 +257,7 @@ const fDs = s => { const d = pd(s); return d.getDate() + ' ' + MG[d.getMonth()];
 const relDay = s => s === TODAY() ? 'Сегодня' : s === addD(TODAY(), -1) ? 'Вчера' : s === addD(TODAY(), 1) ? 'Завтра' : '';
 function durTxt(m) { m = Math.max(0, Math.round(m)); const h = Math.floor(m / 60), x = m % 60; return h ? h + ' ч' + (x ? ' ' + x + ' мин' : '') : x + ' мин'; }
 const hours = ms => Math.round(ms / 360000) / 10;
+const hrs = ms => String(hours(ms)).replace('.', ',');
 const ym = s => String(s).slice(0, 7);
 const ymAdd = (m, n) => { const a = m.split('-').map(Number), d = new Date(a[0], a[1] - 1 + n, 1); return d.getFullYear() + '-' + pad(d.getMonth() + 1); };
 const ymLabel = m => MN[Number(m.slice(5)) - 1] + ' ' + m.slice(0, 4);
@@ -290,8 +307,9 @@ let SET = cleanSet({});
 let WK = [];              // работники
 let OVR = {};             // дата -> {id работника: {k, f, t}}
 let MK = {};              // месяц -> отметки
+let PAY = {rates: {}, m: {}};   // оплата: ставки и авансы/премии по месяцам (видит только владелец)
 const GOT = {};
-const ready = () => ROLE === 'kiosk' ? (GOT.workers && GOT.meta && GOT.today) : (GOT.workers && GOT.meta && GOT.days && GOT['m' + ym(TODAY())]);
+const ready = () => ROLE === 'kiosk' ? (GOT.workers && GOT.meta && GOT.today && GOT.days) : (GOT.workers && GOT.meta && GOT.days && GOT['m' + ym(TODAY())]);
 const wk = id => WK.find(w => w.id === id);
 const activeOn = (w, d) => (!w.from || d >= w.from) && (!w.fired || d < w.fired);
 
@@ -367,7 +385,7 @@ function flagsOf(r) {
 }
 /* итоги месяца по работнику */
 function monthSum(w, m) {
-  const T = TODAY(), s = {w, plan: 0, came: 0, late: 0, lateMin: 0, early: 0, earlyMin: 0, absent: 0, noOut: 0, longL: 0, excused: 0, work: 0, days: []};
+  const T = TODAY(), s = {w, plan: 0, came: 0, cameWork: 0, late: 0, lateMin: 0, early: 0, earlyMin: 0, absent: 0, noOut: 0, longL: 0, excused: 0, work: 0, days: []};
   monthDays(m).forEach(d => {
     if (d > T) return;
     const r = dayInfo(w, d); s.days.push(r);
@@ -375,6 +393,7 @@ function monthSum(w, m) {
     if (!r.sc.off) s.plan++;
     if (r.excused) s.excused++;
     if (r.came) s.came++;
+    if (r.came && !r.sc.off) s.cameWork++;
     if (r.late) { s.late++; s.lateMin += r.late; }
     if (r.early) { s.early++; s.earlyMin += r.early; }
     if (r.absent) s.absent++;
@@ -384,6 +403,26 @@ function monthSum(w, m) {
   });
   s.bad = s.absent * 3 + s.late + s.early + s.noOut + s.longL;
   return s;
+}
+/* ---------- зарплата ---------- */
+const PAYT = {month: 'Оклад в месяц', day: 'За смену', hour: 'За час'};
+const money = n => Math.round(n || 0).toLocaleString('ru-RU') + ' ₸';
+const rateOf = w => { const r = PAY.rates[w.id]; return r && PAYT[r.t] && r.v > 0 ? r : null; };
+/* рабочих дней по графику за весь месяц (и будущие дни текущего месяца) */
+function planFull(w, m) { return monthDays(m).filter(d => activeOn(w, d) && !schedFor(w, d).off).length; }
+function payItems(w, m) { return ((PAY.m[m] || {}).items || []).filter(x => x.w === w.id).sort((a, b) => (a.d || '').localeCompare(b.d || '')); }
+function payOf(w, m, s) {
+  s = s || monthSum(w, m);
+  const r = rateOf(w), items = payItems(w, m), o = {r, items, base: 0, adv: 0, bonus: 0, total: 0, hours: s.work / 3600000, days: s.came, paid: s.cameWork, full: planFull(w, m), how: ''};
+  items.forEach(x => { if (x.k === 'adv') o.adv += x.v; else if (x.k === 'bonus') o.bonus += x.v; });
+  if (r) {
+    if (r.t === 'month') { o.base = o.full ? r.v * Math.min(1, o.paid / o.full) : 0; o.how = money(r.v) + ' × ' + o.paid + ' из ' + o.full + ' ' + pl(o.full, 'рабочего дня', 'рабочих дней', 'рабочих дней'); }
+    else if (r.t === 'day') { o.base = r.v * s.came; o.how = money(r.v) + ' × ' + s.came + ' ' + pl(s.came, 'смена', 'смены', 'смен'); }
+    else { o.base = r.v * Math.round(o.hours * 10) / 10; o.how = money(r.v) + ' × ' + String(Math.round(o.hours * 10) / 10).replace('.', ',') + ' ч'; }
+    o.base = Math.round(o.base);
+  }
+  o.total = o.base + o.bonus - o.adv;
+  return o;
 }
 function newPin() {
   const used = new Set(WK.map(w => w.pin));
@@ -574,9 +613,17 @@ function renderKiosk() {
     const stat = r.state === 'in' && li ? ['good', 'Приход отмечен в ' + fT(li.at)] : r.state === 'lunch' && ll ? ['warn', 'Вы на обеде с ' + fT(ll.at)] : r.state === 'out' && lo ? ['mut', 'Уход отмечен в ' + fT(lo.at)] : null;
     h += `<section class="kcard who">${av(w.name, 'xl')}<h2>${esc(w.name)}</h2>
       <p class="mut">${r.sc.off ? esc(r.excused ? OVRK[r.sc.k] : 'Сегодня у вас выходной') : 'Сегодня по графику ' + r.sc.f + '–' + r.sc.t}</p>
+      ${(() => { const s = monthSum(w, ym(T)); return s.plan || s.came ? `<p class="kmon">В этом месяце: ${s.came} ${pl(s.came, 'день', 'дня', 'дней')} · ${hrs(s.work)} ч${s.late ? ' · опозданий\u00a0' + s.late : ''}</p>` : ''; })()}
       ${stat ? `<p class="kstat ${stat[0]}">${stat[0] === 'good' ? I.check : ''}<span>${esc(stat[1])}</span></p>` : ''}
       <div class="kacts">${acts.map(a => `<button class="btn ${a[3]} xl" data-act="${a[0]}">${a[2]}${esc(a[1])}</button>`).join('')}</div>
-      <button class="linkbtn mt" data-cancel>Это не я</button></section>`;
+      <div class="row2 mt"><button class="btn ghost" id="kMine">${I.chart}Мой месяц</button><button class="btn ghost" data-cancel>Это не я</button></div></section>`;
+  } else if (K.step === 'mine') {
+    const w = K.w, m = ym(T), s = monthSum(w, m), bad = s.days.filter(r => flagsOf(r).length).reverse().slice(0, 8);
+    h += `<section class="kcard mine">${av(w.name, 'xl')}<h2>${esc(w.name)}</h2><p class="mut">${esc(ymLabel(m))}, по сегодняшний день</p>
+      <div class="tiles">${tile('Дней на работе', s.came + ' из ' + s.plan, '')}${tile('Часов', hrs(s.work), '')}${tile('Опозданий', s.late, s.late ? 'warn' : 'good')}${tile('Прогулов', s.absent, s.absent ? 'bad' : 'good')}</div>
+      ${s.lateMin ? `<p class="small mut mt8">Всего опозданий на ${esc(durTxt(s.lateMin))}${s.early ? ' · ранних уходов: ' + s.early : ''}.</p>` : s.early ? `<p class="small mut mt8">Ранних уходов: ${s.early}.</p>` : ''}
+      ${bad.length ? '<div class="list mt">' + bad.map(r => `<div class="row"><span class="t"><b>${esc(fDay(r.d))}</b><span class="chips">${flagsOf(r).map(f => chip(f[0], f[1])).join('')}</span></span></div>`).join('') + '</div>' : `<p class="kstat good">${I.check}<span>Нарушений нет</span></p>`}
+      <button class="btn xl full mt" id="kMineBack">${I.back}Назад</button></section>`;
   } else if (K.step === 'conf') {
     const c = K.conf;
     h += `<section class="kcard conf"><span class="big-ok q">?</span><h2>${esc(c.title)}</h2><p>${esc(c.text)}</p>
@@ -597,6 +644,8 @@ function bindKiosk() {
   $$('[data-k]').forEach(b => b.onclick = () => kKey(b.dataset.k));
   $$('[data-act]').forEach(b => b.onclick = () => kAct(b.dataset.act));
   $$('[data-cancel]').forEach(b => b.onclick = kReset);
+  const km = $('#kMine'); if (km) km.onclick = () => { K.step = 'mine'; kIdle(30000); renderKiosk(); };
+  const kmb = $('#kMineBack'); if (kmb) kmb.onclick = () => { K.step = 'who'; kIdle(25000); renderKiosk(); };
   const ky = $('#kYes'); if (ky) ky.onclick = () => { K.ok = K.conf.k; kAct(K.conf.k); };
   const kn = $('#kNo'); if (kn) kn.onclick = () => { K.step = 'who'; K.conf = null; kIdle(25000); renderKiosk(); };
   const kb = $('#kBack'); if (kb) kb.onclick = () => { camStop(); setView('admin'); };
@@ -705,7 +754,7 @@ async function keepAwake() { try { if (VIEW === 'kiosk' && navigator.wakeLock &&
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') keepAwake(); });
 
 /* ---------- управление: владелец ---------- */
-const A = {tab: 'day', d: TODAY(), m: ym(TODAY())};
+const A = {tab: 'day', d: TODAY(), m: ym(TODAY()), it: 'disc'};
 const wr = p => Promise.race([p, sleep(4000)]);
 const PHC = {};
 async function loadPhoto(id) {
@@ -729,6 +778,8 @@ function renderAdmin() {
 }
 function bindAdmin(app) {
   $$('[data-wd]', app).forEach(b => b.onclick = () => dayWorkerSheet(b.dataset.wd, A.d));
+  $$('[data-it]', app).forEach(b => b.onclick = () => { A.it = b.dataset.it; render(); });
+  $$('[data-tab2]', app).forEach(b => b.onclick = () => { A.tab = b.dataset.tab2; window.scrollTo(0, 0); render(); });
   $$('[data-dd]', app).forEach(b => b.onclick = () => { A.d = addD(A.d, Number(b.dataset.dd)); if (A.d > TODAY()) A.d = TODAY(); render(); });
   const dp = $('#dPick', app); if (dp) dp.onchange = () => { if (isDate(dp.value)) { A.d = dp.value > TODAY() ? TODAY() : dp.value; render(); } };
   const dt = $('#dToday', app); if (dt) dt.onclick = () => { A.d = TODAY(); render(); };
@@ -844,6 +895,8 @@ function itogiView() {
   if (!WK.length) return h + onboarding();
   if (!MK[m]) return h + '<div class="busy card mt"><span class="spin" aria-hidden="true"></span><span>Загружаю отметки…</span></div>';
   if (m > cur) return h + '<p class="mut center mt">Этот месяц ещё не начался.</p>';
+  h += `<div class="seg two mb">${[['disc', 'Дисциплина'], ['pay', 'Зарплата']].map(x => `<button data-it="${x[0]}" aria-pressed="${A.it === x[0]}">${x[1]}</button>`).join('')}</div>`;
+  if (A.it === 'pay') return h + payView(m);
   const S = WK.filter(w => monthDays(m).some(d => d <= TODAY() && activeOn(w, d))).map(w => monthSum(w, m)).sort((a, b) => b.bad - a.bad || byName(a.w, b.w));
   const t = S.reduce((a, s) => { a.late += s.late; a.lateMin += s.lateMin; a.absent += s.absent; a.early += s.early; a.noOut += s.noOut; a.work += s.work; return a; }, {late: 0, lateMin: 0, absent: 0, early: 0, noOut: 0, work: 0});
   h += '<div class="tiles">' + tile('Опозданий', t.late, t.late ? 'warn' : '') + tile('Прогулов', t.absent, t.absent ? 'bad' : '') + tile('Ушли раньше', t.early, t.early ? 'warn' : '') + tile('Часов всего', Math.round(t.work / 3600000), '') + '</div>';
@@ -857,7 +910,7 @@ function itogiView() {
     if (s.longL) ch.push(chip('warn', 'долгий обед: ' + s.longL));
     if (s.excused) ch.push(chip('info', 'больничный, отпуск: ' + s.excused));
     if (!ch.length && s.came) ch.push(chip('good', 'без нарушений'));
-    return `<button class="row" data-wm="${esc(s.w.id)}">${av(s.w.name, s.absent ? 'bad' : s.bad ? 'warn' : 'good')}<span class="t"><b>${esc(s.w.name)}</b><span class="st mut">${s.came} из ${s.plan} ${pl(s.plan, 'рабочего дня', 'рабочих дней', 'рабочих дней')} · ${hours(s.work)} ч</span><span class="chips">${ch.join('')}</span></span>${I.right}</button>`;
+    return `<button class="row" data-wm="${esc(s.w.id)}">${av(s.w.name, s.absent ? 'bad' : s.bad ? 'warn' : 'good')}<span class="t"><b>${esc(s.w.name)}</b><span class="st mut">${s.came} из ${s.plan} ${pl(s.plan, 'рабочего дня', 'рабочих дней', 'рабочих дней')} · ${hrs(s.work)} ч</span><span class="chips">${ch.join('')}</span></span>${I.right}</button>`;
   }).join('') + '</div>';
   h += `<button class="btn ghost full mt" id="csvM">${I.save}Скачать для Excel</button>`;
   h += `<p class="hint mt8">Опоздание считается, если работник пришёл позже начала графика больше чем на ${SET.grace} мин. Это значение меняется в настройках.</p>`;
@@ -865,22 +918,27 @@ function itogiView() {
 }
 function workerMonthSheet(wid, m, back) {
   const w = wk(wid); if (!w) return;
+  const st = {kind: 'wm' + wid + m, add: null};
   subMonth(m);
   const draw = () => {
+    st.redraw = draw;
     if (!MK[m]) { openSheet(head(ymLabel(m), w.name) + '<div class="busy"><span class="spin"></span><span>Загружаю…</span></div>', {kind: 'wm' + wid}); setTimeout(draw, 300); return; }
     const s = monthSum(w, m), first = pd(m + '-01'), lead = (first.getDay() + 6) % 7;
     let h = head(ymLabel(m), w.name, `<p class="small mut">${esc(schedTxt(w.sched))}</p>`);
-    h += '<div class="tiles">' + tile('Дней на работе', s.came + ' из ' + s.plan, '') + tile('Часов', hours(s.work), '') + tile('Опозданий', s.late, s.late ? 'warn' : '') + tile('Прогулов', s.absent, s.absent ? 'bad' : '') + '</div>';
+    h += '<div class="tiles two">' + tile('Дней на работе', s.came + ' из ' + s.plan, '') + tile('Часов', hrs(s.work), '') + tile('Опозданий', s.late, s.late ? 'warn' : '') + tile('Прогулов', s.absent, s.absent ? 'bad' : '') + '</div>';
+    if (A.it === 'pay') h += paySection(w, m, s, st);
     h += '<div class="cal mt"><div class="cw">' + WORDER.map(i => `<span>${WD[i]}</span>`).join('') + '</div><div class="cg">' + '<span></span>'.repeat(lead) + monthDays(m).map(d => {
       const r = s.days.find(x => x.d === d), st = r ? statusOf(r) : null, tone = !r ? 'fut' : !r.active ? 'mut' : r.absent ? 'bad' : (r.late || r.early || r.noOut || r.longL) ? 'warn' : r.came ? 'good' : r.excused ? 'info' : 'mut';
       return `<button class="cd ${tone}" ${r ? `data-cd="${d}"` : 'disabled'} aria-label="${esc(fDs(d) + (st ? ': ' + st.t : ''))}"><b>${pd(d).getDate()}</b><i></i></button>`;
     }).join('') + '</div></div>';
     h += `<p class="legend small mut">${[['good', 'вовремя'], ['warn', 'нарушение'], ['bad', 'прогул'], ['info', 'больничный, отпуск, отгул'], ['mut', 'выходной']].map(x => `<span><i class="${x[0]}"></i>${x[1]}</span>`).join('')}</p>`;
     const bad = s.days.filter(r => flagsOf(r).length).reverse();
+    if (A.it !== 'pay') h += paySection(w, m, s, st);
     if (bad.length) h += '<div class="sec-h"><h3>Нарушения</h3></div><div class="list">' + bad.map(r => `<button class="row" data-cd="${r.d}"><span class="t"><b>${esc(fDay(r.d))}</b><span class="chips">${flagsOf(r).map(f => chip(f[0], f[1])).join('')}</span></span>${I.right}</button>`).join('') + '</div>';
-    h += `<button class="btn ghost full mt" id="wmEdit">${I.edit}График и код работника</button>`;
+    h += `<button class="btn ghost full mt" id="wmEdit">${I.edit}График, код и оплата</button>`;
     if (back) h += `<button class="btn ghost full mt8" id="wmBack">${I.back}Назад</button>`;
-    openSheet(h, {kind: 'wm' + wid + m, redraw: draw});
+    openSheet(h, st);
+    bindPay(w, m, st, draw);
     $$('[data-cd]').forEach(b => b.onclick = () => dayWorkerSheet(w.id, b.dataset.cd));
     $('#wmEdit').onclick = () => workerSheet(w.id);
     const bk = $('#wmBack'); if (bk) bk.onclick = back;
@@ -890,9 +948,11 @@ function workerMonthSheet(wid, m, back) {
 function exportMonth(m) {
   const rows = [['Работник', 'Должность', 'Рабочих дней по графику', 'Был на работе, дней', 'Часов', 'Опозданий', 'Минут опозданий', 'Ранних уходов', 'Минут раньше', 'Прогулов', 'Уход не отмечен', 'Больничный, отпуск, отгул']];
   const S = WK.filter(w => monthDays(m).some(d => d <= TODAY() && activeOn(w, d))).map(w => monthSum(w, m)).sort((a, b) => byName(a.w, b.w));
-  S.forEach(s => rows.push([s.w.name, s.w.pos, s.plan, s.came, String(hours(s.work)).replace('.', ','), s.late, s.lateMin, s.early, s.earlyMin, s.absent, s.noOut, s.excused]));
+  const withPay = GOT.pay === 1 && S.some(s => rateOf(s.w) || payItems(s.w, m).length);
+  if (withPay) rows[0].push('Оплата', 'Ставка', 'Начислено', 'Премия', 'Аванс', 'К выплате');
+  S.forEach(s => { const row = [s.w.name, s.w.pos, s.plan, s.came, hrs(s.work), s.late, s.lateMin, s.early, s.earlyMin, s.absent, s.noOut, s.excused]; if (withPay) { const o = payOf(s.w, m, s); row.push(o.r ? PAYT[o.r.t] : '', o.r ? o.r.v : '', o.base, o.bonus, o.adv, o.total); } rows.push(row); });
   rows.push([]); rows.push(['Дата', 'Работник', 'График', 'Приход', 'Уход', 'Отработано, ч', 'Нарушения']);
-  S.forEach(s => s.days.forEach(r => { if (!r.active || (r.sc.off && !r.came)) return; const fm = r.marks.find(x => x.k === 'in'), lo = r.marks.filter(x => x.k === 'out').pop(); rows.push([r.d, s.w.name, r.sc.off ? (OVRK[r.sc.k] || 'выходной') : r.sc.f + '–' + r.sc.t, fm ? fT(fm.at) : '', lo ? fT(lo.at) : '', String(hours(r.work)).replace('.', ','), flagsOf(r).map(f => f[1]).join(', ')]); }));
+  S.forEach(s => s.days.forEach(r => { if (!r.active || (r.sc.off && !r.came)) return; const fm = r.marks.find(x => x.k === 'in'), lo = r.marks.filter(x => x.k === 'out').pop(); rows.push([r.d, s.w.name, r.sc.off ? (OVRK[r.sc.k] || 'выходной') : r.sc.f + '–' + r.sc.t, fm ? fT(fm.at) : '', lo ? fT(lo.at) : '', hrs(r.work), flagsOf(r).map(f => f[1]).join(', ')]); }));
   saveFile('otmetka-' + m + '.csv', csvOf(rows));
 }
 
@@ -909,6 +969,8 @@ function workersView() {
 function workerSheet(id) {
   const old = id ? wk(id) : null;
   const F = old ? clone(old) : {id: uid('w'), name: '', pos: '', phone: '', pin: newPin(), sched: clone(DEF_SCHED), from: TODAY(), fired: ''};
+  const r0 = PAY.rates[F.id];
+  F.pt = r0 ? r0.t : ''; F.pv = r0 ? String(r0.v) : '';
   const st = {kind: 'we' + F.id};
   const draw = () => {
     let h = head(old ? 'Работник' : 'Новый работник', old ? old.name : 'Добавить работника');
@@ -920,12 +982,16 @@ function workerSheet(id) {
       <section class="card mt"><div class="sec-h" style="margin:0 0 8px"><h3>График</h3></div>
       <div class="seg wrap">${[['ms', 'Пн–Сб'], ['mf', 'Пн–Пт'], ['all', 'Без выходных'], ['cp', 'Как в пн на все дни']].map(x => `<button data-tpl="${x[0]}">${x[1]}</button>`).join('')}</div>
       <div class="sched mt8">${WORDER.map(i => { const v = F.sched[i]; return `<div class="sd"><label class="tg"><input type="checkbox" data-on="${i}" ${v ? 'checked' : ''}><span>${WD[i][0].toUpperCase() + WD[i].slice(1)}</span></label>${v ? `<input type="time" data-f="${i}" value="${v.f}" aria-label="${WDF[i]}: с"><span class="mut">–</span><input type="time" data-t="${i}" value="${v.t}" aria-label="${WDF[i]}: до">` : '<span class="mut small">выходной</span>'}</div>`; }).join('')}</div></section>
+      <section class="card mt"><h3>Оплата</h3><div class="seg wrap mt8">${[['', 'Не считать'], ['month', 'Оклад в месяц'], ['day', 'За смену'], ['hour', 'За час']].map(x => `<button data-pt="${x[0]}" aria-pressed="${F.pt === x[0]}">${x[1]}</button>`).join('')}</div>
+      ${F.pt ? `<label class="f mt8" for="wePv">${F.pt === 'month' ? 'Оклад в месяц, ₸' : F.pt === 'day' ? 'За одну смену, ₸' : 'За один час, ₸'}<input id="wePv" inputmode="numeric" autocomplete="off" value="${esc(F.pv)}"></label>
+      <p class="hint mt8">${F.pt === 'month' ? 'Оклад делится на рабочие дни месяца по графику и умножается на дни, когда работник пришёл.' : F.pt === 'day' ? 'Считаются все дни, когда работник отметил приход.' : 'Считаются отработанные часы без обеда.'} Зарплату видят только владельцы, на телефоне у входа её нет.</p>` : ''}</section>
       <p class="err" id="weErr"></p><button class="btn full mt" id="weSave">${old ? 'Сохранить' : 'Добавить работника'}</button>`;
     if (old) h += `<section class="card mt"><h3>${old.fired ? 'Уволен с ' + esc(fDs(old.fired)) : 'Увольнение'}</h3><p class="small mut">${old.fired ? 'Его история сохранена. Можно вернуть на работу.' : 'Код перестанет работать, а история отметок останется.'}</p>
       <div class="row2 mt8"><button class="btn ghost" id="weFire">${old.fired ? 'Вернуть на работу' : 'Уволить с сегодня'}</button><button class="btn ghost danger" id="weDel">${I.trash}Удалить</button></div></section>`;
     openSheet(h, st);
-    const sync = () => { F.name = $('#weN').value; F.pos = $('#weP').value; F.phone = $('#wePh').value; WORDER.forEach(i => { const f = $(`[data-f="${i}"]`), t = $(`[data-t="${i}"]`); if (f && t && F.sched[i]) F.sched[i] = {f: f.value, t: t.value}; }); };
+    const sync = () => { const pv = $('#wePv'); if (pv) F.pv = pv.value; F.name = $('#weN').value; F.pos = $('#weP').value; F.phone = $('#wePh').value; WORDER.forEach(i => { const f = $(`[data-f="${i}"]`), t = $(`[data-t="${i}"]`); if (f && t && F.sched[i]) F.sched[i] = {f: f.value, t: t.value}; }); };
     $('#wePin').onclick = () => { sync(); F.pin = newPin(); draw(); };
+    $$('[data-pt]').forEach(b => b.onclick = () => { sync(); F.pt = b.dataset.pt; draw(); const pv = $('#wePv'); if (pv && !pv.value) pv.focus(); });
     $$('[data-on]').forEach(c => c.onchange = () => { sync(); const i = c.dataset.on; const base = WORDER.map(j => F.sched[j]).filter(Boolean)[0]; F.sched[i] = c.checked ? clone(base || {f: '09:00', t: '18:00'}) : null; draw(); });
     $$('[data-tpl]').forEach(b => b.onclick = () => {
       sync(); const k = b.dataset.tpl, base = F.sched[1] || {f: '09:00', t: '18:00'};
@@ -943,8 +1009,12 @@ function workerSheet(id) {
       if (!name) { $('#weErr').textContent = 'Впишите имя.'; return; }
       for (const i of WORDER) { const v = F.sched[i]; if (v && (!isHM(v.f) || !isHM(v.t) || tm(v.t) <= tm(v.f))) { $('#weErr').textContent = WDF[i][0].toUpperCase() + WDF[i].slice(1) + ': конец должен быть позже начала.'; return; } }
       if (WK.some(w => w.id !== F.id && w.pin === F.pin && (!w.fired || w.fired > TODAY()))) { $('#weErr').textContent = 'Этот код уже у другого работника. Нажмите «Другой код».'; return; }
+      const pv = Math.round(Number(String(F.pv).replace(/[\s\u00a0]/g, '').replace(',', '.')));
+      if (F.pt && !(pv > 0 && pv < 1e8)) { $('#weErr').textContent = 'Впишите сумму оплаты цифрами.'; return; }
       F.name = name;
-      if (await act(() => wr(FS.collection('workers').doc(F.id).set(packW(F))), old ? 'Сохранено.' : 'Работник добавлен. Его код: ' + F.pin)) { if (old) closeSheet(); else { closeSheet(); A.tab = 'workers'; render(); } }
+      const r1 = PAY.rates[F.id], changedPay = F.pt ? !(r1 && r1.t === F.pt && r1.v === pv) : !!r1;
+      const savePay = () => { if (!changedPay) return null; const rr = Object.assign({}, PAY.rates); if (F.pt) rr[F.id] = {t: F.pt, v: pv}; else delete rr[F.id]; return FS.collection('pay').doc('rates').set({r: rr}); };
+      if (await act(() => wr(Promise.all([FS.collection('workers').doc(F.id).set(packW(F)), savePay()])), old ? 'Сохранено.' : 'Работник добавлен. Его код: ' + F.pin)) { if (old) closeSheet(); else { closeSheet(); A.tab = 'workers'; render(); } }
     };
     const fb = $('#weFire'); if (fb) armed(fb, old.fired ? 'Нажмите ещё раз' : 'Точно уволить?', async () => { sync(); F.fired = old.fired ? '' : TODAY(); if (await act(() => wr(FS.collection('workers').doc(F.id).set(packW(F))), old.fired ? 'Работник снова в списке.' : 'Работник уволен.')) closeSheet(); });
     const db = $('#weDel'); if (db) armed(db, 'Удалить совсем?', async () => { if (await act(() => wr(FS.collection('workers').doc(F.id).delete()), 'Работник удалён. Его прошлые отметки остались в журнале.')) closeSheet(); });
@@ -987,6 +1057,54 @@ function helpSheet() {
     <p class="small mut">Чтобы выйти на телефоне у входа, нажмите и подержите часы 2 секунды.</p>`, {kind: 'help'});
 }
 
+/* --- зарплата --- */
+function payView(m) {
+  if (GOT.pay === -1) return '<section class="card mt"><h3>Нет доступа к зарплатам</h3><p class="small">Обновите правило защиты в Firebase: в нём должна быть строка для <b>pay</b>. Напишите Claude, он пришлёт новое правило.</p></section>';
+  if (!GOT.pay) return '<div class="busy card mt"><span class="spin" aria-hidden="true"></span><span>Загружаю…</span></div>';
+  const S = WK.filter(w => monthDays(m).some(d => d <= TODAY() && activeOn(w, d))).map(w => monthSum(w, m)).sort((a, b) => byName(a.w, b.w));
+  const P = S.map(s => ({s, o: payOf(s.w, m, s)})), withR = P.filter(x => x.o.r || x.o.items.length), none = P.filter(x => !x.o.r && !x.o.items.length);
+  const t = withR.reduce((a, x) => { a.total += x.o.total; a.base += x.o.base + x.o.bonus; a.adv += x.o.adv; return a; }, {total: 0, base: 0, adv: 0});
+  let h = '';
+  if (!withR.length) return h + `<section class="card mt"><h3>Оплата не указана</h3><p class="small">Откройте «Работники», выберите работника и в разделе «Оплата» укажите оклад, ставку за смену или за час. Программа сама посчитает зарплату по отметкам.</p><button class="btn ghost full mt8" data-tab2="workers">${I.users}К работникам</button></section>`;
+  h += `<div class="tiles three">${tile('К выплате', money(t.total), 'acc')}${tile('Начислено', money(t.base), '')}${tile('Выдано авансом', money(t.adv), '')}</div>`;
+  h += '<div class="list mt">' + withR.map(x => `<button class="row" data-wm="${esc(x.s.w.id)}">${av(x.s.w.name)}<span class="t"><b>${esc(x.s.w.name)}</b><span class="st mut">${esc(x.o.r ? x.o.how : 'оплата не указана')}</span>${x.o.adv || x.o.bonus ? `<span class="chips">${x.o.bonus ? chip('good', 'премия +' + money(x.o.bonus)) : ''}${x.o.adv ? chip('info', 'аванс −' + money(x.o.adv)) : ''}</span>` : ''}</span><span class="sum${x.o.total < 0 ? ' neg' : ''}">${money(x.o.total)}</span></button>`).join('') + '</div>';
+  if (none.length) h += `<p class="small mut mt">Оплата не указана: ${esc(none.map(x => x.s.w.name).join(', '))}.</p>`;
+  h += `<button class="btn ghost full mt" id="csvM">${I.save}Скачать для Excel</button>`;
+  h += `<p class="hint mt8">${m === ym(TODAY()) ? 'Месяц ещё идёт: сумма растёт с каждым рабочим днём. ' : ''}Больничный, отпуск и отгул сами не оплачиваются. Если нужно, добавьте их премией в карточке работника.</p>`;
+  return h;
+}
+function paySection(w, m, s, st) {
+  if (ROLE !== 'admin' || GOT.pay !== 1) return '';
+  const o = payOf(w, m, s);
+  let h = `<section class="card mt"><div class="sec-h" style="margin:0 0 4px"><h3>Зарплата</h3><b class="sum${o.total < 0 ? ' neg' : ''}">${money(o.total)}</b></div>`;
+  h += o.r ? `<p class="small mut">${esc(PAYT[o.r.t])}: ${esc(o.how)} = <b>${money(o.base)}</b></p>` : '<p class="small mut">Оплата не указана. Её можно задать в карточке работника.</p>';
+  if (o.total < 0) h += '<p class="small mt8" style="color:var(--bad)">Аванс пока больше, чем начислено. Разница уйдёт в минус к выплате.</p>';
+  if (o.items.length) h += '<div class="pays mt8">' + o.items.map(x => `<div class="pi"><span class="t"><b>${x.k === 'adv' ? 'Аванс −' : 'Премия +'}${money(x.v)}</b><span class="small mut">${esc((x.d ? fDs(x.d) : '') + (x.nt ? ' · ' + x.nt : ''))}</span></span><button class="ib sm" data-pdel="${esc(x.id)}" aria-label="Удалить">${I.trash}</button></div>`).join('') + '</div>';
+  if (st.add) h += `<div class="form mt8"><label class="f" for="pyV">${st.add.k === 'adv' ? 'Аванс, ₸' : 'Премия, ₸'}<input id="pyV" inputmode="numeric" autocomplete="off" value="${esc(st.add.v)}"></label>
+    <div class="row2"><label class="f" for="pyD">Дата<input id="pyD" type="date" value="${esc(st.add.d)}"></label><label class="f" for="pyN">Комментарий<input id="pyN" autocomplete="off" value="${esc(st.add.n)}"></label></div>
+    <p class="err" id="pyErr"></p><div class="row2"><button class="btn" id="pyGo">Сохранить</button><button class="btn ghost" id="pyX">Отмена</button></div></div>`;
+  else h += `<div class="row2 mt8"><button class="btn ghost small" data-padd="adv">${I.plus}Аванс</button><button class="btn ghost small" data-padd="bonus">${I.plus}Премия</button></div>`;
+  return h + '</section>';
+}
+function bindPay(w, m, st, draw) {
+  $$('[data-padd]').forEach(b => b.onclick = () => { const T = TODAY(); st.add = {k: b.dataset.padd, v: '', d: ym(T) === m ? T : m + '-' + pad(monthDays(m).length), n: ''}; draw(); const v = $('#pyV'); if (v) v.focus(); });
+  const sv = () => { st.add.v = $('#pyV').value; st.add.d = $('#pyD').value; st.add.n = $('#pyN').value; };
+  const pv = $('#pyV'); if (pv) { ['#pyV', '#pyD', '#pyN'].forEach(id => { $(id).oninput = sv; }); }
+  const px = $('#pyX'); if (px) px.onclick = () => { st.add = null; draw(); };
+  const pg = $('#pyGo'); if (pg) pg.onclick = async () => {
+    sv();
+    const v = Math.round(Number(String(st.add.v).replace(/[\s ]/g, '').replace(',', '.')));
+    if (!(v > 0 && v < 1e8)) { $('#pyErr').textContent = 'Впишите сумму цифрами.'; return; }
+    if (!isDate(st.add.d) || ym(st.add.d) !== m) { $('#pyErr').textContent = 'Дата должна быть в этом месяце.'; return; }
+    const items = ((PAY.m[m] || {}).items || []).concat([{id: uid('p'), w: w.id, k: st.add.k, v, d: st.add.d, nt: st.add.n.trim().slice(0, 120)}]);
+    if (await act(() => wr(FS.collection('pay').doc(m).set({items})), st.add.k === 'adv' ? 'Аванс записан.' : 'Премия записана.')) { st.add = null; setTimeout(draw, 150); }
+  };
+  $$('[data-pdel]').forEach(b => armed(b, 'Удалить?', async () => {
+    const items = ((PAY.m[m] || {}).items || []).filter(x => x.id !== b.dataset.pdel);
+    if (await act(() => wr(FS.collection('pay').doc(m).set({items})), 'Удалено.')) setTimeout(draw, 150);
+  }));
+}
+
 /* ---------- запуск: облако, вход, подписки ---------- */
 const CFG = window.FB_CFG || null, APP = window.APP_CFG || {admins: [], kiosk: ''};
 let FS = null, USER = null, UNSUB = [], MSUB = {}, TODAYSUB = '';
@@ -1007,12 +1125,17 @@ function setView(v) {
   if (v === 'kiosk') { subToday(); keepAwake(); }
   render();
 }
-function stopAll() { UNSUB.forEach(f => { try { f(); } catch (e) {} }); Object.keys(MSUB).forEach(k => { try { MSUB[k](); } catch (e) {} }); UNSUB = []; MSUB = {}; TODAYSUB = ''; MK = {}; Object.keys(GOT).forEach(k => delete GOT[k]); WK = []; OVR = {}; SET = cleanSet({}); }
+function stopAll() { UNSUB.forEach(f => { try { f(); } catch (e) {} }); Object.keys(MSUB).forEach(k => { try { MSUB[k](); } catch (e) {} }); UNSUB = []; MSUB = {}; TODAYSUB = ''; MK = {}; Object.keys(GOT).forEach(k => delete GOT[k]); WK = []; OVR = {}; PAY = {rates: {}, m: {}}; SET = cleanSet({}); }
 const onErr = e => { const c = String((e && e.code) || ''); toast(/permission/.test(c) ? 'Нет доступа к данным. Проверьте, что почта добавлена владельцем.' : 'Связь с облаком прервалась. Закройте и откройте приложение.', true); };
 function subBase() {
   UNSUB.push(FS.collection('workers').onSnapshot(s => { WK = s.docs.map(x => cleanW(x.id, x.data())).sort(byName); GOT.workers = 1; changed(); }, onErr));
   UNSUB.push(FS.collection('meta').doc('settings').onSnapshot(s => { SET = cleanSet(s.exists ? s.data() : {}); GOT.meta = 1; changed(); }, onErr));
-  if (ROLE === 'admin') UNSUB.push(FS.collection('days').onSnapshot(s => { const o = {}; s.docs.forEach(x => { const v = x.data(); if (isDate(x.id) && v && v.o) o[x.id] = v.o; }); OVR = o; GOT.days = 1; changed(); }, onErr));
+  UNSUB.push(FS.collection('days').onSnapshot(s => { const o = {}; s.docs.forEach(x => { const v = x.data(); if (isDate(x.id) && v && v.o) o[x.id] = v.o; }); OVR = o; GOT.days = 1; changed(); }, onErr));
+  if (ROLE === 'admin') UNSUB.push(FS.collection('pay').onSnapshot(s => {
+    const p = {rates: {}, m: {}};
+    s.docs.forEach(x => { const v = x.data() || {}; if (x.id === 'rates') { Object.keys(v.r || {}).forEach(k => { const r = v.r[k]; if (r && PAYT[r.t] && Number(r.v) > 0) p.rates[k] = {t: r.t, v: Number(r.v)}; }); } else if (/^\d{4}-\d{2}$/.test(x.id)) p.m[x.id] = {items: (Array.isArray(v.items) ? v.items : []).filter(i => i && i.id && i.w && (i.k === 'adv' || i.k === 'bonus') && Number(i.v) > 0).map(i => ({id: i.id, w: i.w, k: i.k, v: Number(i.v), d: isDate(i.d) ? i.d : '', nt: str(i.nt, 120)}))}; });
+    PAY = p; GOT.pay = 1; changed();
+  }, e => { GOT.pay = -1; changed(); }));
 }
 function snapMarks(s) { return s.docs.map(x => cleanM(x.id, x.data({serverTimestamps: 'estimate'}), x.metadata && x.metadata.hasPendingWrites)); }
 /* отметки за месяц (владелец) */
@@ -1026,13 +1149,13 @@ function subMonth(m) {
 function subToday() {
   const T = TODAY();
   if (ROLE === 'admin') { subMonth(ym(T)); GOT.today = 1; return; }
-  if (TODAYSUB === T) return;
+  /* у входа держим отметки за весь месяц: из них же считается «Мой месяц» */
+  const m = ym(T);
+  if (TODAYSUB === m) return;
   if (MSUB.today) MSUB.today();
-  TODAYSUB = T; GOT.today = 0;
-  if (MSUB.todayDay) MSUB.todayDay();
-  if (ROLE === 'kiosk') MSUB.todayDay = (FS.collection('days').doc(T).onSnapshot(s => { const v = s.exists ? s.data() : null; OVR = {}; if (v && v.o) OVR[T] = v.o; changed(); }, () => {}));
-  MSUB.today = FS.collection('marks').where('d', '==', T).onSnapshot(s => {
-    const list = snapMarks(s); MK = {}; MK[ym(T)] = list; GOT.today = 1;
+  TODAYSUB = m; GOT.today = 0;
+  MSUB.today = FS.collection('marks').where('d', '>=', m + '-01').where('d', '<=', m + '-31').onSnapshot(s => {
+    const list = snapMarks(s); MK = {}; MK[m] = list; GOT.today = 1;
     // поправка часов телефона по времени сервера
     s.docs.forEach(x => { const v = x.data(); if (v.dev === DEVID && !(x.metadata && x.metadata.hasPendingWrites) && typeof v.ct === 'number') { const ts = tsMs(v.ts); if (ts != null && Math.abs(ts - v.ct) < 600000) lsSet('otm-off', ts - v.ct); } });
     changed();
@@ -1073,7 +1196,7 @@ $('#openSet').onclick = settingsSheet;
 /* смена дня и живое обновление */
 setInterval(() => {
   if (!USER) return;
-  if (TODAYSUB && TODAYSUB !== TODAY() && ROLE === 'kiosk') { subToday(); }
+  if (TODAYSUB && TODAYSUB !== ym(TODAY()) && ROLE === 'kiosk') { subToday(); }
   if (VIEW === 'admin' && A.tab === 'day' && !SHEET) render();
   else if (VIEW === 'admin' && SHEET && SHEET.redraw && SHEET.kind && SHEET.kind.indexOf('wd') === 0) SHEET.redraw();
 }, 60000);
