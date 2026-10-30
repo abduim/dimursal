@@ -1,5 +1,5 @@
 /* Табун: работа без интернета. Своё — сначала из сети, библиотеки — из запаса. */
-var C = 'tabun-v1';
+var C = 'tabun-v2';
 self.addEventListener('install', function () { self.skipWaiting(); });
 self.addEventListener('activate', function (e) { e.waitUntil(self.clients.claim()); });
 self.addEventListener('fetch', function (e) {
