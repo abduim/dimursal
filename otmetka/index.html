@@ -1,0 +1,1034 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Отметка"><meta name="theme-color" content="#F2F4F6">
+<link rel="apple-touch-icon" href="icon.png"><link rel="icon" href="icon.png"><link rel="manifest" href="manifest.json">
+</head><body>
+<title>Отметка</title>
+<style>
+/* Учёт прихода и ухода: спокойная синяя гамма, крупные кнопки для телефона у входа */
+:root{
+  --bg:#F2F4F6; --surface:#FFFFFF; --soft:#E8ECF0; --ink:#15202B; --mut:#5A6672; --line:#D9DFE5;
+  --acc:#1D5FA8; --acc-ink:#FFFFFF; --acc-soft:#E2ECF7;
+  --good:#1D7A47; --good-soft:#DFF2E6; --warn:#8F5300; --warn-soft:#FBEED6; --bad:#B3261E; --bad-soft:#FBE3E1; --info:#5644B0; --info-soft:#ECE8FA;
+  --wa:#1F7A4D; --scrim:rgba(15,25,35,.45); --shadow:0 10px 30px -16px rgba(15,25,35,.45);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0F151B; --surface:#18212A; --soft:#222D38; --ink:#E6ECF1; --mut:#9AA7B3; --line:#2B3744;
+  --acc:#6EA8F0; --acc-ink:#071A30; --acc-soft:#17304D;
+  --good:#5CC98C; --good-soft:#15352A; --warn:#F0B55A; --warn-soft:#3A2C12; --bad:#FF8A80; --bad-soft:#3D1C1A; --info:#B3A6FF; --info-soft:#29234A;
+  --wa:#1F7A4D; --scrim:rgba(0,0,0,.6); --shadow:0 10px 30px -16px rgba(0,0,0,.85); color-scheme:dark}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui,sans-serif;-webkit-font-smoothing:antialiased;
+  padding:0 max(16px,env(safe-area-inset-right,0px)) calc(96px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+body.kiosk{padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
+body.lock{overflow:hidden}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+[hidden]{display:none!important}
+svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}
+h1,h2,h3,p{margin:0}
+h2{font-size:22px;line-height:1.2;font-weight:750;letter-spacing:-.01em}
+h3{font-size:17px;font-weight:700}
+.small{font-size:14px}.hint{font-size:13px;color:var(--mut)}.mut{color:var(--mut)}.center{text-align:center}
+.mt{margin-top:16px}.mt8{margin-top:8px}
+.kicker{font-size:13px;color:var(--mut);font-weight:650;text-transform:none}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px}
+.stack{display:grid;gap:8px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 16px;border-radius:14px;border:1px solid var(--acc);background:var(--acc);color:var(--acc-ink);font-weight:700;font-size:16px;text-decoration:none;text-align:center;line-height:1.15}
+.btn.ghost{background:var(--surface);color:var(--ink);border-color:var(--line)}
+.btn.small{min-height:40px;padding:0 12px;font-size:14px;border-radius:12px}
+.btn.full{width:100%}
+.btn.wa{background:var(--wa);border-color:var(--wa);color:#fff}
+.btn.danger{color:var(--bad)}
+.btn.armed,.ib.armed{background:var(--bad);border-color:var(--bad);color:#fff}
+.btn:disabled{opacity:.5}
+.ib{display:inline-grid;place-items:center;width:44px;height:44px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);flex:none;padding:0}
+.ib.sm{width:40px;height:40px;border-radius:12px}
+.ib:disabled{opacity:.35}
+.ib.armed{width:auto;padding:0 10px;font-size:13px;font-weight:700}
+.linkbtn{background:none;border:0;color:var(--acc);font-weight:650;padding:6px 0;min-height:40px;display:inline-flex;align-items:center;gap:6px}
+.form{display:grid;gap:12px}
+label.f{display:grid;gap:6px;font-size:14px;color:var(--mut);font-weight:600}
+input,select{width:100%;min-height:48px;border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:10px 12px;font-size:16px;color:var(--ink)}
+input[type="time"],input[type="date"]{-webkit-appearance:none;appearance:none}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.err{color:var(--bad);font-size:14px;font-weight:600;min-height:1.2em}.err:empty{min-height:0}
+.tg{display:flex;align-items:center;gap:10px;font-weight:600;min-height:44px}
+.tg input{width:22px;height:22px;min-height:0;margin:0;accent-color:var(--acc);flex:none}
+.tg.big{font-size:16px;color:var(--ink)}
+/* шапка и вкладки */
+.top{display:flex;align-items:center;gap:10px;padding-top:max(12px,env(safe-area-inset-top,0px));padding-bottom:8px}
+.logo{width:40px;height:40px;border-radius:12px;background:var(--acc);color:var(--acc-ink);display:grid;place-items:center;flex:none}
+.logo svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+.logo.big{width:56px;height:56px;border-radius:16px;margin-bottom:12px}.logo.big svg{width:32px;height:32px}
+.brand{min-width:0;flex:1;display:grid;line-height:1.2}
+.brand b{font-size:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.brand span{font-size:13px;color:var(--mut);font-weight:600}
+.tabs{position:fixed;z-index:20;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(3,1fr);background:var(--surface);border-top:1px solid var(--line);padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
+.tabs button{border:0;background:none;display:grid;justify-items:center;gap:2px;font-size:12px;font-weight:700;color:var(--mut);min-height:52px;padding:4px 0;border-radius:12px}
+.tabs button svg{width:22px;height:22px}
+.tabs button[aria-current="page"]{color:var(--acc);background:var(--acc-soft)}
+/* день и списки */
+.dnav{display:flex;align-items:center;gap:8px;margin:8px 0 12px}
+.dlab{flex:1;min-width:0;display:grid;text-align:center;line-height:1.2;position:relative}
+.dlab b{font-size:18px}.dlab span{font-size:13px;color:var(--mut);font-weight:600}
+.dlab input{position:absolute;inset:0;top:0;left:0;width:100%;height:100%;opacity:0;min-height:0}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 8px;display:grid;gap:2px;text-align:center;min-width:0}
+.tile .v{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1}
+.tile .l{font-size:12px;color:var(--mut);font-weight:650;line-height:1.2;overflow-wrap:anywhere}
+.tile.good .v{color:var(--good)}.tile.warn{background:var(--warn-soft);border-color:transparent}.tile.warn .v{color:var(--warn)}.tile.bad{background:var(--bad-soft);border-color:transparent}.tile.bad .v{color:var(--bad)}
+.list{display:grid;gap:8px}
+.row{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px;color:var(--ink);min-height:64px}
+.row .t{flex:1;min-width:0;display:grid;gap:2px}
+.row .t b{font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row>svg{color:var(--mut)}
+.st{font-size:14px;font-weight:600;line-height:1.3}
+.st.good{color:var(--good)}.st.warn{color:var(--warn)}.st.bad{color:var(--bad)}.st.mut{color:var(--mut)}.st.info{color:var(--info)}
+.chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:2px}
+.chip{display:inline-block;font-size:12px;font-weight:700;border-radius:99px;padding:2px 8px;line-height:1.5;background:var(--soft);color:var(--mut)}
+.chip.good{background:var(--good-soft);color:var(--good)}.chip.warn{background:var(--warn-soft);color:var(--warn)}.chip.bad{background:var(--bad-soft);color:var(--bad)}.chip.info{background:var(--info-soft);color:var(--info)}
+.av{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:15px;background:var(--acc-soft);color:var(--acc);flex:none}
+.av.good{background:var(--good-soft);color:var(--good)}.av.warn{background:var(--warn-soft);color:var(--warn)}.av.bad{background:var(--bad-soft);color:var(--bad)}.av.mut{background:var(--soft);color:var(--mut)}.av.info{background:var(--info-soft);color:var(--info)}
+.av.xl{width:84px;height:84px;font-size:30px;margin:0 auto 10px}
+.pin{font-variant-numeric:tabular-nums;font-weight:800;letter-spacing:.12em;color:var(--mut);font-size:15px}
+.pin.big{font-size:30px;color:var(--ink)}
+.pinrow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:8px}
+.sec-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:20px 0 10px}
+.onb ol,.steps{margin:10px 0 0;padding-left:20px;display:grid;gap:8px}
+.busy{display:flex;align-items:center;gap:10px;color:var(--mut)}
+.spin{width:18px;height:18px;border-radius:50%;border:2.5px solid var(--line);border-top-color:var(--acc);animation:sp .8s linear infinite;flex:none}
+@keyframes sp{to{transform:rotate(360deg)}}
+.seg{display:flex;gap:6px}.seg.wrap{flex-wrap:wrap}
+.seg button{min-height:40px;padding:0 12px;border-radius:99px;border:1px solid var(--line);background:var(--surface);font-weight:650;font-size:14px;color:var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--acc);border-color:var(--acc);color:var(--acc-ink)}
+.sched{display:grid;gap:6px}
+.sd{display:grid;grid-template-columns:62px minmax(0,1fr) auto minmax(0,1fr);gap:6px;align-items:center;min-height:48px}
+.sd .tg{min-height:40px;font-size:15px}
+.sd input[type="time"]{min-height:42px;padding:6px 6px;font-size:15px;text-align:center}
+.sd .small{grid-column:2/5}
+/* отметки с фото */
+.marks{display:grid;gap:8px}
+.mk{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px}
+.mk .t{flex:1;min-width:0;display:grid;gap:2px}
+.ph{width:64px;height:64px;border-radius:12px;background:var(--soft);display:grid;place-items:center;overflow:hidden;flex:none;color:var(--mut)}
+.ph img{width:100%;height:100%;object-fit:cover;cursor:zoom-in}
+.ph.none img{display:none}
+.pv{position:fixed;z-index:200;top:0;right:0;bottom:0;left:0;background:rgba(0,0,0,.88);display:grid;place-items:center;padding:24px}
+.pv img{max-width:100%;max-height:85vh;border-radius:12px}
+.pv .ib{position:absolute;top:max(16px,env(safe-area-inset-top,0px));right:16px}
+/* календарь месяца */
+.cal{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px}
+.cw,.cg{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.cw span{text-align:center;font-size:12px;color:var(--mut);font-weight:700}
+.cd{border:0;background:none;border-radius:10px;min-height:44px;display:grid;justify-items:center;align-content:center;gap:3px;padding:2px;color:var(--ink)}
+.cd b{font-size:14px;font-variant-numeric:tabular-nums}
+.cd i{width:18px;height:5px;border-radius:3px;background:var(--line)}
+.cd.good i{background:var(--good)}.cd.warn i{background:var(--warn)}.cd.bad i{background:var(--bad)}.cd.info i{background:var(--info)}.cd.mut i{background:var(--line)}
+.cd.bad{background:var(--bad-soft)}.cd.warn{background:var(--warn-soft)}
+.cd.fut{color:var(--mut);opacity:.5}.cd.fut i{background:transparent}
+.legend{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:8px}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:14px;height:5px;border-radius:3px;display:inline-block}
+.legend i.good{background:var(--good)}.legend i.warn{background:var(--warn)}.legend i.bad{background:var(--bad)}.legend i.info{background:var(--info)}.legend i.mut{background:var(--line)}
+/* лист снизу */
+#sheet{position:fixed;z-index:50;top:0;right:0;bottom:0;left:0;background:var(--scrim);display:flex;align-items:flex-end;justify-content:center}
+#sheet .panel{background:var(--bg);width:100%;max-width:640px;max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch;border-radius:22px 22px 0 0;padding:8px max(16px,env(safe-area-inset-right,0px)) calc(28px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));box-shadow:var(--shadow)}
+.grab{width:40px;height:5px;border-radius:3px;background:var(--line);margin:4px auto 10px}
+.sh-head{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}
+.sh-head .t{flex:1;min-width:0}
+#toast{position:fixed;z-index:300;left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));bottom:calc(84px + env(safe-area-inset-bottom,0px));max-width:560px;margin:0 auto;background:var(--ink);color:var(--bg);padding:12px 16px;border-radius:14px;font-weight:650;text-align:center;box-shadow:var(--shadow)}
+#toast.bad{background:var(--bad);color:#fff}
+body.kiosk #toast{bottom:calc(20px + env(safe-area-inset-bottom,0px))}
+/* вход */
+#login{position:fixed;z-index:100;top:0;right:0;bottom:0;left:0;background:var(--bg);overflow-y:auto;padding:max(48px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 40px max(16px,env(safe-area-inset-left,0px))}
+.lgbox{max-width:420px;margin:0 auto}.lgbox h2{margin-bottom:6px}
+/* экран у входа */
+.kwrap{max-width:520px;margin:0 auto;padding-top:max(14px,env(safe-area-inset-top,0px))}
+.kh{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:14px}
+.kt{display:grid;min-width:0;line-height:1.25}.kt b{font-size:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.kt span{font-size:14px;color:var(--mut);font-weight:600}
+.kclock{font-size:44px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.kcard{background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:20px 16px;text-align:center;box-shadow:var(--shadow)}
+.kq{font-size:20px;font-weight:750}
+.dots{display:flex;justify-content:center;gap:14px;margin:16px 0 6px}
+.dots i{width:16px;height:16px;border-radius:50%;border:2px solid var(--acc);display:block}
+.dots i.on{background:var(--acc)}
+.dots.shake{animation:sh .35s}
+@keyframes sh{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.kerr{color:var(--bad);font-weight:650;min-height:1.5em;font-size:15px}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px}
+.pad button{min-height:68px;border-radius:18px;border:1px solid var(--line);background:var(--bg);font-size:28px;font-weight:700;color:var(--ink);display:grid;place-items:center;font-variant-numeric:tabular-nums}
+.pad button:active{background:var(--acc-soft)}
+.pad button svg{width:28px;height:28px}
+.kcard.who h2{font-size:26px;margin-bottom:4px}
+.kacts{display:grid;gap:10px;margin-top:18px}
+.btn.xl{min-height:64px;font-size:20px;border-radius:18px}
+.btn.xl svg{width:24px;height:24px}
+.vbox{position:relative;width:min(100%,320px);aspect-ratio:3/4;min-height:240px;margin:14px auto 0;border-radius:20px;overflow:hidden;background:#000}
+.vbox video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.cnt{position:absolute;top:0;right:0;bottom:0;left:0;display:grid;place-items:center;font-size:84px;font-weight:800;color:#fff;text-shadow:0 2px 14px rgba(0,0,0,.6)}
+.kcard.done{padding-top:28px}
+.big-ok{width:76px;height:76px;border-radius:50%;display:grid;place-items:center;margin:0 auto 12px;background:var(--good-soft);color:var(--good)}
+.big-ok svg{width:42px;height:42px;stroke-width:2.6}
+.kcard.done.warn .big-ok{background:var(--warn-soft);color:var(--warn)}
+.kcard.done h2{font-size:26px}.kcard.done p{font-size:18px;margin-top:6px}
+.knote{background:var(--warn-soft);color:var(--warn);font-weight:700;border-radius:14px;padding:12px;margin-top:14px!important;font-size:16px!important}
+@media (max-width:360px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.kclock{font-size:36px}.pad button{min-height:60px}}
+@media (min-width:700px){#app{max-width:680px;margin:0 auto}.top{max-width:680px;margin:0 auto}}
+</style>
+<header class="top" id="top" hidden><span class="logo"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.2 2"/><path d="M4.5 4.5 2.8 6.2M19.5 4.5l1.7 1.7"/></svg></span><div class="brand"><b id="brandName">Отметка</b><span>учёт прихода и ухода</span></div><button class="ib" id="openSet" aria-label="Настройки"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2.2"/><circle cx="10" cy="17" r="2.2"/></svg></button></header>
+<main id="app"></main>
+<nav class="tabs" id="tabs" aria-label="Разделы" hidden>
+  <button data-tab="day"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>День</button>
+  <button data-tab="itogi"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V11M12 20V5M19 20v-6"/></svg>Итоги</button>
+  <button data-tab="workers"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8.5" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><path d="M16 5.6a3 3 0 0 1 0 5.8M17.5 14.3c1.6.6 2.7 2.2 3 4.7"/></svg>Работники</button>
+</nav>
+<div id="sheet" hidden><div class="panel" role="dialog" aria-modal="true" aria-label="Подробности"></div></div>
+<div id="toast" role="status" hidden></div>
+<input id="camf" type="file" accept="image/*" capture="user" hidden>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script>window.FB_CFG = null; window.APP_CFG = {"admins":[],"kiosk":""};</script>
+<script>
+'use strict';
+/* ---------- мелочи ---------- */
+const $ = (s, r) => (r || document).querySelector(s);
+const $$ = (s, r) => Array.prototype.slice.call((r || document).querySelectorAll(s));
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+const pad = n => (n < 10 ? '0' : '') + n;
+const ds = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+const pd = s => { const a = String(s).split('-').map(Number); return new Date(a[0], (a[1] || 1) - 1, a[2] || 1); };
+const TODAY = () => ds(new Date());
+const addD = (s, n) => { const d = pd(s); d.setDate(d.getDate() + n); return ds(d); };
+const tm = s => { const a = String(s || '').split(':'); return Number(a[0]) * 60 + Number(a[1] || 0); };
+const hm = m => { m = Math.round(m); return pad(Math.floor(m / 60) % 24) + ':' + pad(m % 60); };
+const minOf = ms => { const d = new Date(ms); return d.getHours() * 60 + d.getMinutes(); };
+const fT = ms => hm(minOf(ms));
+const msAt = (d, m) => { const x = pd(d); x.setMinutes(m); return x.getTime(); };
+const uid = p => (p || '') + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const clone = o => o == null ? o : JSON.parse(JSON.stringify(o));
+const isDate = s => /^\d{4}-\d{2}-\d{2}$/.test(String(s));
+const isHM = s => /^([01]\d|2[0-3]):[0-5]\d$/.test(String(s));
+const int = (v, lo, hi, def) => { const n = Math.round(Number(v)); return isFinite(n) && n >= lo && n <= hi ? n : def; };
+const str = (v, n) => String(v == null ? '' : v).slice(0, n);
+function pl(n, a, b, c) { n = Math.abs(n) % 100; const k = n % 10; return n > 10 && n < 20 ? c : k === 1 ? a : k >= 2 && k <= 4 ? b : c; }
+const MN = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+const MG = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+const WD = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
+const WDF = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
+const WORDER = [1, 2, 3, 4, 5, 6, 0];
+const fDay = s => { const d = pd(s); return WDF[d.getDay()] + ', ' + d.getDate() + ' ' + MG[d.getMonth()]; };
+const fDs = s => { const d = pd(s); return d.getDate() + ' ' + MG[d.getMonth()]; };
+const relDay = s => s === TODAY() ? 'Сегодня' : s === addD(TODAY(), -1) ? 'Вчера' : s === addD(TODAY(), 1) ? 'Завтра' : '';
+function durTxt(m) { m = Math.max(0, Math.round(m)); const h = Math.floor(m / 60), x = m % 60; return h ? h + ' ч' + (x ? ' ' + x + ' мин' : '') : x + ' мин'; }
+const hours = ms => Math.round(ms / 360000) / 10;
+const ym = s => String(s).slice(0, 7);
+const ymAdd = (m, n) => { const a = m.split('-').map(Number), d = new Date(a[0], a[1] - 1 + n, 1); return d.getFullYear() + '-' + pad(d.getMonth() + 1); };
+const ymLabel = m => MN[Number(m.slice(5)) - 1] + ' ' + m.slice(0, 4);
+function monthDays(m) { const out = []; let d = m + '-01'; while (ym(d) === m) { out.push(d); d = addD(d, 1); } return out; }
+const initials = n => String(n || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0] || '').join('').toUpperCase() || '?';
+const byName = (a, b) => a.name.localeCompare(b.name, 'ru');
+const phD = s => { let d = String(s || '').replace(/\D/g, ''); if (d.length === 11 && d[0] === '8') d = '7' + d.slice(1); if (d.length === 10) d = '7' + d; return d; };
+const lsGet = (k, def) => { try { const v = localStorage.getItem(k); return v == null ? def : JSON.parse(v); } catch (e) { return def; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+
+/* ---------- данные ---------- */
+const KINDS = {in: 'Приход', out: 'Уход', lin: 'Обед', lout: 'С обеда'};
+const OVRK = {off: 'Выходной', sick: 'Больничный', vac: 'Отпуск', ok: 'Отгул', sh: 'Другое время'};
+const DEF_SCHED = {0: null, 1: {f: '09:00', t: '18:00'}, 2: {f: '09:00', t: '18:00'}, 3: {f: '09:00', t: '18:00'}, 4: {f: '09:00', t: '18:00'}, 5: {f: '09:00', t: '18:00'}, 6: {f: '09:00', t: '18:00'}};
+function cleanSet(s) {
+  s = s && typeof s === 'object' ? s : {};
+  return {shop: str(s.shop, 60).trim(), grace: int(s.grace, 0, 60, 5), lunch: !!s.lunch, lunchMax: int(s.lunchMax, 10, 240, 60), photo: s.photo !== false, keep: int(s.keep, 7, 365, 60)};
+}
+function cleanSched(x) {
+  const o = {};
+  for (let i = 0; i < 7; i++) { const v = x && x[i]; o[i] = v && isHM(v.f) && isHM(v.t) && tm(v.t) > tm(v.f) ? {f: v.f, t: v.t} : null; }
+  return o;
+}
+function cleanW(id, x) {
+  x = x && typeof x === 'object' ? x : {};
+  return {id, name: str(x.name, 60).trim() || 'Без имени', pos: str(x.pos, 60).trim(), phone: str(x.phone, 30).trim(), pin: /^\d{4}$/.test(x.pin) ? x.pin : '', sched: cleanSched(x.sched || DEF_SCHED), from: isDate(x.from) ? x.from : '', fired: isDate(x.fired) ? x.fired : ''};
+}
+function packW(w) {
+  const o = {name: w.name, pin: w.pin, sched: cleanSched(w.sched), from: w.from || TODAY()};
+  if (w.pos) o.pos = w.pos; if (w.phone) o.phone = w.phone; if (w.fired) o.fired = w.fired;
+  return o;
+}
+const tsMs = v => v == null ? null : typeof v === 'number' ? v : typeof v.toMillis === 'function' ? v.toMillis() : typeof v._ms === 'number' ? v._ms : null;
+function cleanM(id, x, pending) {
+  x = x || {};
+  const ts = tsMs(x.ts), ct = typeof x.ct === 'number' ? x.ct : null, co = typeof x.co === 'number' ? x.co : 0;
+  let at = ts != null ? ts : ct != null ? ct + co : Date.now(), late = false;
+  // отметка ушла без интернета: сервер получил её позже — берём время телефона с поправкой
+  if (!x.man && ts != null && ct != null && ts - (ct + co) > 180000) { at = ct + co; late = true; }
+  return {id, w: str(x.w, 40), nm: str(x.nm, 60), k: KINDS[x.k] ? x.k : 'in', d: isDate(x.d) ? x.d : ds(new Date(at)), at, man: !!x.man, by: str(x.by, 60), ph: !!x.ph, np: !!x.np, nt: str(x.nt, 120), off: late, pend: !!pending, dev: str(x.dev, 40), ct, ts};
+}
+
+/* ---------- состояние ---------- */
+let ROLE = '';            // admin | kiosk
+let VIEW = '';            // admin | kiosk (админ может открыть экран отметки)
+let SET = cleanSet({});
+let WK = [];              // работники
+let OVR = {};             // дата -> {id работника: {k, f, t}}
+let MK = {};              // месяц -> отметки
+const GOT = {};
+const ready = () => ROLE === 'kiosk' ? (GOT.workers && GOT.meta && GOT.today) : (GOT.workers && GOT.meta && GOT.days && GOT['m' + ym(TODAY())]);
+const wk = id => WK.find(w => w.id === id);
+const activeOn = (w, d) => (!w.from || d >= w.from) && (!w.fired || d < w.fired);
+
+/* ---------- расчёт дня ---------- */
+function schedFor(w, d) {
+  const o = OVR[d] && OVR[d][w.id];
+  if (o && o.k === 'sh' && isHM(o.f) && isHM(o.t)) return {f: o.f, t: o.t, o};
+  if (o && OVRK[o.k]) return {off: true, k: o.k, o};
+  const s = w.sched[pd(d).getDay()];
+  return s ? {f: s.f, t: s.t} : {off: true, k: 'off'};
+}
+function marksOf(wid, d) {
+  return (MK[ym(d)] || []).filter(m => m.w === wid && m.d === d).sort((a, b) => a.at - b.at);
+}
+function dayInfo(w, d, list, now) {
+  now = now || Date.now();
+  const sc = schedFor(w, d), marks = list || marksOf(w.id, d);
+  const T = ds(new Date(now)), isToday = d === T, past = d < T, nowM = minOf(now), g = SET.grace;
+  let work = 0, lunch = 0, longL = 0, state = 'none', since = 0, lunchAt = 0;
+  marks.forEach(m => {
+    if (m.k === 'in') { if (state === 'none' || state === 'out') { state = 'in'; since = m.at; } }
+    else if (m.k === 'out') { if (state === 'in') work += m.at - since; else if (state === 'lunch') lunch += m.at - lunchAt; if (state !== 'none') state = 'out'; }
+    else if (m.k === 'lin') { if (state === 'in') { work += m.at - since; state = 'lunch'; lunchAt = m.at; } }
+    else if (m.k === 'lout') { if (state === 'lunch') { const l = m.at - lunchAt; lunch += l; if (l > SET.lunchMax * 60000) longL += l - SET.lunchMax * 60000; state = 'in'; since = m.at; } }
+  });
+  const r = {w, d, sc, marks, state, work: 0, lunch: 0, longL: 0, late: 0, early: 0, lateNow: 0, absent: false, pending: false, noOut: false, extra: false, came: marks.some(m => m.k === 'in'), excused: !!(sc.off && sc.k !== 'off'), active: activeOn(w, d)};
+  const endM = sc.off ? null : tm(sc.t);
+  if (state === 'in' || state === 'lunch') {
+    if (past || (isToday && endM != null && nowM > endM + 120) || (isToday && endM == null && nowM > 23 * 60)) {
+      r.noOut = true;
+      if (state === 'in' && endM != null) { const e = msAt(d, endM); if (e > since) work += e - since; }
+    } else if (isToday) {
+      if (state === 'in') work += Math.max(0, now - since);
+      else { const l = now - lunchAt; lunch += l; if (l > SET.lunchMax * 60000) longL += l - SET.lunchMax * 60000; }
+    }
+  }
+  r.work = work; r.lunch = lunch; r.longL = SET.lunch ? longL : 0;
+  if (!r.active) return r;
+  if (!sc.off) {
+    const st = tm(sc.f), first = marks.find(m => m.k === 'in');
+    if (first) { const a = minOf(first.at); if (a > st + g) r.late = a - st; }
+    else if (past || (isToday && nowM > endM)) r.absent = !!(past || isToday);
+    else if (isToday && nowM > st + g) r.lateNow = nowM - st;
+    else r.pending = true;
+    if (state === 'out') { const outs = marks.filter(m => m.k === 'out'), o = minOf(outs[outs.length - 1].at); if (o < endM - g) r.early = endM - o; }
+    if (d > T) { r.absent = false; r.pending = true; }
+  } else if (r.came) r.extra = true;
+  return r;
+}
+/* короткая строка состояния и тон: bad | warn | good | mut | info */
+function statusOf(r) {
+  const fm = r.marks.find(m => m.k === 'in'), outs = r.marks.filter(m => m.k === 'out'), lo = outs[outs.length - 1];
+  if (!r.active) return {t: r.w.fired && r.d >= r.w.fired ? 'Не работает' : 'Ещё не в штате', tone: 'mut', ord: 9};
+  if (r.sc.off && !r.came) return {t: OVRK[r.sc.k] || 'Выходной', tone: r.excused ? 'info' : 'mut', ord: 8};
+  if (r.absent) return {t: 'Не было на работе', tone: 'bad', ord: 0};
+  if (r.lateNow) return {t: 'Ещё нет, опоздание ' + durTxt(r.lateNow), tone: 'bad', ord: 0};
+  if (r.pending && !r.came) return {t: 'Ещё не время · с ' + r.sc.f, tone: 'mut', ord: 7};
+  if (r.state === 'lunch' && !r.noOut) { const l = r.marks.filter(m => m.k === 'lin').pop(); return {t: 'На обеде с ' + fT(l.at), tone: r.longL ? 'warn' : 'good', ord: 3}; }
+  if (r.state === 'in' && !r.noOut) return {t: 'На работе с ' + fT(fm.at), tone: r.late ? 'warn' : 'good', ord: r.late ? 2 : 4};
+  if (r.noOut) return {t: 'Приход ' + fT(fm.at) + ', уход не отмечен', tone: 'warn', ord: 1};
+  if (lo) return {t: fT(fm.at) + '–' + fT(lo.at) + ' · ' + durTxt(r.work / 60000), tone: r.late || r.early ? 'warn' : 'good', ord: r.late || r.early ? 2 : 5};
+  return {t: 'Нет отметок', tone: 'mut', ord: 6};
+}
+function flagsOf(r) {
+  const f = [];
+  if (r.late) f.push(['warn', 'опоздание ' + durTxt(r.late)]);
+  if (r.early) f.push(['warn', 'уход раньше на ' + durTxt(r.early)]);
+  if (r.longL) f.push(['warn', 'обед дольше на ' + durTxt(r.longL / 60000)]);
+  if (r.absent) f.push(['bad', 'прогул']);
+  if (r.noOut) f.push(['warn', 'уход не отмечен']);
+  if (r.extra) f.push(['info', 'работа в выходной']);
+  return f;
+}
+/* итоги месяца по работнику */
+function monthSum(w, m) {
+  const T = TODAY(), s = {w, plan: 0, came: 0, late: 0, lateMin: 0, early: 0, earlyMin: 0, absent: 0, noOut: 0, longL: 0, excused: 0, work: 0, days: []};
+  monthDays(m).forEach(d => {
+    if (d > T) return;
+    const r = dayInfo(w, d); s.days.push(r);
+    if (!r.active) return;
+    if (!r.sc.off) s.plan++;
+    if (r.excused) s.excused++;
+    if (r.came) s.came++;
+    if (r.late) { s.late++; s.lateMin += r.late; }
+    if (r.early) { s.early++; s.earlyMin += r.early; }
+    if (r.absent) s.absent++;
+    if (r.noOut) s.noOut++;
+    if (r.longL) s.longL++;
+    s.work += r.work;
+  });
+  s.bad = s.absent * 3 + s.late + s.early + s.noOut + s.longL;
+  return s;
+}
+function newPin() {
+  const used = new Set(WK.map(w => w.pin));
+  for (let i = 0; i < 500; i++) {
+    const p = String(1000 + Math.floor(Math.random() * 9000));
+    if (used.has(p) || /^(\d)\1{3}$/.test(p) || '0123456789'.indexOf(p) >= 0 || '9876543210'.indexOf(p) >= 0) continue;
+    return p;
+  }
+  return String(1000 + Math.floor(Math.random() * 9000));
+}
+function schedTxt(sc) {
+  const groups = [];
+  WORDER.forEach(i => { const v = sc[i], key = v ? v.f + '–' + v.t : ''; const g = groups[groups.length - 1]; if (g && g.key === key) g.days.push(i); else groups.push({key, days: [i]}); });
+  const parts = groups.filter(g => g.key).map(g => (g.days.length > 2 ? WD[g.days[0]] + '–' + WD[g.days[g.days.length - 1]] : g.days.map(i => WD[i]).join(', ')) + ' ' + g.key);
+  return parts.length ? parts.join('; ') : 'График не задан';
+}
+
+/* ---------- значки ---------- */
+const sv = p => '<svg class="i" viewBox="0 0 24 24" aria-hidden="true">' + p + '</svg>';
+const I = {
+  close: sv('<path d="M6 6l12 12M18 6 6 18"/>'),
+  back: sv('<path d="M15 5l-7 7 7 7"/>'),
+  left: sv('<path d="M14.5 6l-6 6 6 6"/>'),
+  right: sv('<path d="M9.5 6l6 6-6 6"/>'),
+  plus: sv('<path d="M12 5v14M5 12h14"/>'),
+  set: sv('<path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2.2"/><circle cx="10" cy="17" r="2.2"/>'),
+  day: sv('<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>'),
+  chart: sv('<path d="M5 20V11M12 20V5M19 20v-6"/>'),
+  users: sv('<circle cx="9" cy="8.5" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><path d="M16 5.6a3 3 0 0 1 0 5.8M17.5 14.3c1.6.6 2.7 2.2 3 4.7"/>'),
+  cam: sv('<path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2l1.5-2h6l1.5 2h2A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z"/><circle cx="12" cy="13" r="3.3"/>'),
+  check: sv('<path d="M5 12.5l4.5 4.5L19 7.5"/>'),
+  trash: sv('<path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12"/>'),
+  edit: sv('<path d="M4 20h4L19 9l-4-4L4 16z"/>'),
+  save: sv('<path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19h14"/>'),
+  chat: sv('<path d="M4.5 19.5 6 15.6A7.8 7.8 0 1 1 9 18.8z"/><path d="M9 10.5h6M9 13.5h4"/>'),
+  out: sv('<path d="M14 5h4v14h-4M10 8l-4 4 4 4M6 12h10"/>'),
+  door: sv('<path d="M6 20V4h9l3 2v14"/><path d="M3 20h18M12.5 12h.01"/>'),
+  food: sv('<path d="M7 3v8M5 3v5a2 2 0 0 0 4 0V3M7 11v10M16 3c-2 1-3 3.5-3 7h3v11"/>'),
+  key: sv('<circle cx="8" cy="12" r="3.5"/><path d="M11.5 12H20M17 12v3M20 12v2"/>'),
+  phone: sv('<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/>'),
+  copy: sv('<rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>'),
+  del: sv('<path d="M20 6H9l-5 6 5 6h11z"/><path d="M12.5 9.5l5 5M17.5 9.5l-5 5"/>')
+};
+const LOGO = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.2 2"/><path d="M4.5 4.5 2.8 6.2M19.5 4.5l1.7 1.7"/></svg>';
+
+/* ---------- всплывашки и листы ---------- */
+let TT = 0;
+function toast(t, bad) { const el = $('#toast'); el.textContent = t; el.className = bad ? 'bad' : ''; el.hidden = false; clearTimeout(TT); TT = setTimeout(() => { el.hidden = true; }, bad ? 4200 : 2400); }
+async function copy(text, ok) {
+  try { await navigator.clipboard.writeText(text); toast(ok || 'Скопировано'); }
+  catch (e) { const t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); toast(ok || 'Скопировано'); } catch (x) { toast('Не удалось скопировать', true); } t.remove(); }
+}
+let SHEET = null;
+function openSheet(html, st) {
+  const sh = $('#sheet'), p = $('.panel', sh), keep = SHEET && st && SHEET.kind === st.kind;
+  const y = keep ? p.scrollTop : 0;
+  SHEET = st || {kind: 'x'};
+  p.innerHTML = '<div class="grab" aria-hidden="true"></div>' + html;
+  sh.hidden = false; document.body.classList.add('lock');
+  p.scrollTop = y;
+  $$('[data-close]', p).forEach(b => b.onclick = closeSheet);
+}
+function closeSheet() {
+  const st = SHEET; SHEET = null;
+  $('#sheet').hidden = true; document.body.classList.remove('lock');
+  if (st && st.onClose) st.onClose();
+}
+$('#sheet').addEventListener('click', e => { if (e.target.id === 'sheet') closeSheet(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && SHEET) closeSheet(); });
+const closeBtn = '<button class="ib" data-close aria-label="Закрыть">' + I.close + '</button>';
+const head = (k, t, extra) => `<div class="sh-head"><div class="t"><p class="kicker">${esc(k)}</p><h2>${esc(t)}</h2>${extra || ''}</div>${closeBtn}</div>`;
+const chip = (tone, t) => `<span class="chip ${tone}">${esc(t)}</span>`;
+const av = (n, tone) => `<span class="av ${tone || ''}" aria-hidden="true">${esc(initials(n))}</span>`;
+/* кнопка, которую нужно нажать дважды */
+function armed(btn, label, fn) {
+  btn.onclick = () => {
+    if (btn.dataset.armed) { fn(); return; }
+    const old = btn.innerHTML; btn.dataset.armed = '1'; btn.classList.add('armed'); btn.textContent = label;
+    setTimeout(() => { if (btn.isConnected) { delete btn.dataset.armed; btn.classList.remove('armed'); btn.innerHTML = old; } }, 3500);
+  };
+}
+async function act(f, ok) { try { await f(); if (ok) toast(ok); return true; } catch (e) { toast(errText(e), true); return false; } }
+function errText(e) {
+  const c = String((e && e.code) || '').replace(/^firestore\//, '');
+  if (c === 'permission-denied') return 'Нет доступа. Выйдите и войдите заново.';
+  if (c === 'unauthenticated') return 'Вход истёк. Войдите заново.';
+  if (c === 'resource-exhausted') return 'Достигнут дневной лимит облака. Попробуйте завтра.';
+  if (c === 'pin') return 'Такой код уже у другого работника.';
+  return 'Не удалось сохранить. Проверьте интернет и попробуйте ещё раз.';
+}
+
+/* ---------- сохранение файла на телефон ---------- */
+async function saveFile(filename, data) {
+  const type = /\.csv$/.test(filename) ? 'text/csv' : 'application/json';
+  const blob = new Blob([type === 'text/csv' ? '﻿' + data : data], {type});
+  try {
+    if (window.File && navigator.canShare) {
+      const f = new File([blob], filename, {type});
+      if (navigator.canShare({files: [f]})) { await navigator.share({files: [f], title: filename}); return true; }
+    }
+  } catch (e) { if (e && e.name === 'AbortError') return false; }
+  const url = URL.createObjectURL(blob), a = document.createElement('a');
+  a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 30000);
+  return true;
+}
+const csvCell = v => { const s = String(v == null ? '' : v); return /[;"\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+const csvOf = rows => rows.map(r => r.map(csvCell).join(';')).join('\r\n');
+
+/* ---------- вход ---------- */
+function loginScreen(msg) {
+  let el = $('#login');
+  if (!el) { el = document.createElement('div'); el.id = 'login'; document.body.appendChild(el); }
+  el.hidden = false;
+  el.innerHTML = `<div class="lgbox card"><span class="logo big">${LOGO}</span><h2>Отметка</h2>
+    <p class="small mut">Учёт прихода и ухода работников. Войдите почтой и паролем, вход на этом телефоне запомнится.</p>
+    <div class="form mt"><label class="f" for="lgE">Почта<input id="lgE" type="email" autocomplete="username" inputmode="email" autocapitalize="off" spellcheck="false"></label>
+    <label class="f" for="lgP">Пароль<input id="lgP" type="password" autocomplete="current-password"></label>
+    <p class="err" id="lgErr">${esc(msg || '')}</p><button class="btn" id="lgGo">Войти</button></div></div>`;
+  const go = async () => {
+    const e = $('#lgE').value.trim(), p = $('#lgP').value, b = $('#lgGo');
+    if (!e || !p) { $('#lgErr').textContent = 'Впишите почту и пароль.'; return; }
+    b.disabled = true; b.textContent = 'Вхожу…'; $('#lgErr').textContent = '';
+    try { await firebase.auth().signInWithEmailAndPassword(e, p); }
+    catch (x) {
+      const c = String((x && x.code) || '');
+      $('#lgErr').textContent = /wrong-password|user-not-found|invalid-credential|invalid-email|invalid-login/.test(c) ? 'Неверная почта или пароль.' : /too-many-requests/.test(c) ? 'Слишком много попыток. Подождите несколько минут.' : /network/.test(c) ? 'Нет интернета. Проверьте связь.' : 'Не получилось войти. Попробуйте ещё раз.';
+      b.disabled = false; b.textContent = 'Войти';
+    }
+  };
+  $('#lgGo').onclick = go;
+  $('#lgP').onkeydown = ev => { if (ev.key === 'Enter') go(); };
+}
+function hideLogin() { const el = $('#login'); if (el) { el.hidden = true; el.innerHTML = ''; } }
+
+/* ---------- фото: сжатие ---------- */
+function loadImg(url) { return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; }); }
+function toJpeg(src, w, h, max, q) {
+  const k = Math.min(1, max / Math.max(w, h)), c = document.createElement('canvas');
+  c.width = Math.max(1, Math.round(w * k)); c.height = Math.max(1, Math.round(h * k));
+  c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
+  return c.toDataURL('image/jpeg', q || .62);
+}
+async function fileToJpeg(file) {
+  const url = URL.createObjectURL(file);
+  try { const img = await loadImg(url); return toJpeg(img, img.naturalWidth, img.naturalHeight, 360, .62); }
+  finally { URL.revokeObjectURL(url); }
+}
+
+/* ---------- экран отметки у входа ---------- */
+const DEVID = (() => { let v = lsGet('otm-dev', ''); if (!v) { v = uid('dv'); lsSet('otm-dev', v); } return v; })();
+const clockOff = () => { const v = lsGet('otm-off', 0); return typeof v === 'number' && Math.abs(v) < 864e5 ? v : 0; };
+const nowS = () => Date.now() + clockOff();
+const K = {code: '', step: 'pad', w: null, err: '', tries: 0, lock: 0, timer: 0, done: null, cam: null};
+function kReset() { clearTimeout(K.timer); camStop(); K.code = ''; K.step = 'pad'; K.w = null; K.done = null; K.err = ''; renderKiosk(); }
+function kIdle(ms) { clearTimeout(K.timer); K.timer = setTimeout(kReset, ms); }
+function kAuto() { return WK.filter(w => !w.fired || w.fired > TODAY()); }
+
+function renderKiosk() {
+  const app = $('#app');
+  if (!ready()) { app.innerHTML = '<div class="kwrap"><div class="busy card mt"><span class="spin" aria-hidden="true"></span><span>Подключаюсь…</span></div></div>'; return; }
+  const T = TODAY();
+  let h = `<div class="kwrap"><header class="kh"><div class="kt"><b>${esc(SET.shop || 'Отметка')}</b><span>${esc(fDay(T))}</span></div><div class="kclock" id="kClock">${fT(nowS())}</div></header>`;
+  if (K.step === 'pad') {
+    const locked = K.lock > Date.now();
+    h += `<section class="kcard"><p class="kq">${locked ? 'Слишком много попыток. Подождите полминуты.' : 'Введите свой код'}</p>
+      <div class="dots" aria-label="Введено цифр: ${K.code.length} из 4">${[0, 1, 2, 3].map(i => `<i class="${i < K.code.length ? 'on' : ''}"></i>`).join('')}</div>
+      <p class="kerr" role="alert">${esc(K.err)}</p>
+      <div class="pad">${['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'del'].map(k => k === '' ? '<span></span>' : `<button data-k="${k}" ${locked ? 'disabled' : ''} aria-label="${k === 'del' ? 'Стереть' : k}">${k === 'del' ? I.del : k}</button>`).join('')}</div></section>`;
+    if (!kAuto().length) h += '<p class="hint center mt">Работники ещё не добавлены. Их добавляет владелец в своём телефоне.</p>';
+  } else if (K.step === 'who') {
+    const w = K.w, r = dayInfo(w, T, marksOf(w.id, T), nowS()), last = r.marks[r.marks.length - 1];
+    const acts = [];
+    if (r.state === 'none' || r.state === 'out') acts.push(['in', 'Отметить приход', I.door]);
+    if (r.state === 'in') { acts.push(['out', 'Отметить уход', I.out]); if (SET.lunch) acts.push(['lin', 'Уйти на обед', I.food]); }
+    if (r.state === 'lunch') { acts.push(['lout', 'Вернуться с обеда', I.door]); acts.push(['out', 'Отметить уход', I.out]); }
+    h += `<section class="kcard who">${av(w.name, 'xl')}<h2>${esc(w.name)}</h2>
+      <p class="mut">${r.sc.off ? esc(r.excused ? OVRK[r.sc.k] : 'Сегодня у вас выходной') : 'Сегодня по графику ' + r.sc.f + '–' + r.sc.t}</p>
+      ${last ? `<p class="small mut">Последняя отметка: ${esc(KINDS[last.k].toLowerCase())} в ${fT(last.at)}</p>` : ''}
+      <div class="kacts">${acts.map((a, i) => `<button class="btn ${i ? 'ghost' : ''} xl" data-act="${a[0]}">${a[2]}${esc(a[1])}</button>`).join('')}</div>
+      <button class="linkbtn mt" data-cancel>Это не я</button></section>`;
+  } else if (K.step === 'cam') {
+    h += `<section class="kcard cam"><p class="kq">Посмотрите в камеру</p><div class="vbox"><video id="kVid" playsinline muted autoplay></video><span class="cnt" id="kCnt"></span></div>
+      <div id="kCamAlt" class="stack mt" hidden><p class="small mut">Камера не включилась. Сделайте фото кнопкой ниже.</p><button class="btn xl" id="kShot">${I.cam}Сделать фото</button><button class="linkbtn" id="kNoPh">Отметиться без фото</button></div></section>`;
+  } else if (K.step === 'done') {
+    const o = K.done;
+    h += `<section class="kcard done ${o.tone}"><span class="big-ok">${I.check}</span><h2>${esc(o.title)}</h2><p>${esc(o.text)}</p>${o.note ? `<p class="knote">${esc(o.note)}</p>` : ''}<button class="btn ghost mt" data-cancel>Готово</button></section>`;
+  }
+  if (ROLE === 'admin') h += '<p class="center mt"><button class="linkbtn" id="kBack">Вернуться в управление</button></p>';
+  h += '</div>';
+  app.innerHTML = h;
+  bindKiosk();
+}
+function bindKiosk() {
+  $$('[data-k]').forEach(b => b.onclick = () => kKey(b.dataset.k));
+  $$('[data-act]').forEach(b => b.onclick = () => kAct(b.dataset.act));
+  $$('[data-cancel]').forEach(b => b.onclick = kReset);
+  const kb = $('#kBack'); if (kb) kb.onclick = () => { camStop(); setView('admin'); };
+  const c = $('#kClock');
+  if (c && ROLE === 'kiosk') { let t = 0; const st = () => { t = setTimeout(kioskMenu, 2000); }, en = () => clearTimeout(t); c.addEventListener('touchstart', st); c.addEventListener('touchend', en); c.addEventListener('mousedown', st); c.addEventListener('mouseup', en); }
+  if (K.step === 'cam') camRun();
+}
+function kioskMenu() {
+  openSheet(head('Экран отметки', 'Служебное меню') + `<p class="small">Здесь можно выйти из учётной записи на этом телефоне. Работникам это не нужно.</p><button class="btn ghost full mt" id="kOut">${I.out}Выйти на этом телефоне</button>`, {kind: 'kmenu'});
+  armed($('#kOut'), 'Нажмите ещё раз, чтобы выйти', () => { closeSheet(); firebase.auth().signOut(); });
+}
+document.addEventListener('keydown', e => {
+  if (VIEW !== 'kiosk' || K.step !== 'pad' || SHEET) return;
+  if (/^\d$/.test(e.key)) kKey(e.key); else if (e.key === 'Backspace') kKey('del');
+});
+function kKey(k) {
+  if (K.lock > Date.now()) return;
+  K.err = '';
+  if (k === 'del') K.code = K.code.slice(0, -1);
+  else if (K.code.length < 4) K.code += k;
+  if (K.code.length === 4) {
+    const w = kAuto().find(x => x.pin === K.code);
+    K.code = '';
+    if (!w) { K.tries++; K.err = 'Неверный код. Попробуйте ещё раз.'; if (K.tries >= 5) { K.tries = 0; K.lock = Date.now() + 30000; setTimeout(renderKiosk, 30100); } renderKiosk(); const d = $('.dots'); if (d) d.classList.add('shake'); return; }
+    K.tries = 0; K.w = w; K.step = 'who'; kIdle(25000);
+  }
+  renderKiosk();
+}
+async function kAct(k) {
+  const w = K.w; if (!w) return;
+  const T = TODAY(), list = marksOf(w.id, T), last = list[list.length - 1];
+  if (last && last.k === k && nowS() - last.at < 120000) { kDone(w, k, last.at, true); return; }
+  K.kind = k;
+  if (SET.photo) { K.step = 'cam'; kIdle(60000); renderKiosk(); return; }
+  kSave(w, k, '');
+}
+/* ---------- камера ---------- */
+async function camRun() {
+  const v = $('#kVid'), alt = () => { const a = $('#kCamAlt'); if (a) { a.hidden = false; $('.vbox').hidden = true; $('.kq').textContent = 'Нужно фото'; $('#kShot').onclick = () => camFile(); $('#kNoPh').onclick = () => kSave(K.w, K.kind, ''); } };
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { alt(); return; }
+  try {
+    const s = await navigator.mediaDevices.getUserMedia({video: {facingMode: 'user', width: {ideal: 640}, height: {ideal: 480}}, audio: false});
+    if (K.step !== 'cam') { s.getTracks().forEach(t => t.stop()); return; }
+    K.cam = s; v.srcObject = s; try { await v.play(); } catch (e) {}
+    for (let n = 3; n > 0; n--) { const c = $('#kCnt'); if (!c || K.step !== 'cam') return; c.textContent = n; await sleep(800); }
+    if (K.step !== 'cam') return;
+    let shot = '';
+    for (let i = 0; i < 10 && !shot; i++) { if (v.videoWidth) shot = toJpeg(v, v.videoWidth, v.videoHeight, 360, .62); else await sleep(200); }
+    camStop();
+    if (!shot) { alt(); return; }
+    kSave(K.w, K.kind, shot);
+  } catch (e) { camStop(); alt(); }
+}
+function camStop() { if (K.cam) { K.cam.getTracks().forEach(t => t.stop()); K.cam = null; } }
+function camFile() {
+  const f = $('#camf');
+  f.onchange = async () => { const file = f.files && f.files[0]; f.value = ''; if (!file || K.step !== 'cam') return; let p = ''; try { p = await fileToJpeg(file); } catch (e) { p = ''; } kSave(K.w, K.kind, p); };
+  f.click();
+}
+/* ---------- запись отметки ---------- */
+function kSave(w, k, photo) {
+  if (!w || !k) { kReset(); return; }
+  const ref = FS.collection('marks').doc(), ct = Date.now(), co = clockOff(), at = ct + co, d = ds(new Date(at));
+  const doc = {w: w.id, nm: w.name, k, d, ts: firebase.firestore.FieldValue.serverTimestamp(), ct, co, ph: photo ? 1 : 0, dev: DEVID, by: ROLE === 'kiosk' ? 'kiosk' : (USER && USER.email) || 'admin'};
+  if (!photo && SET.photo) doc.np = 1;
+  const ps = [ref.set(doc)];
+  if (photo) ps.push(FS.collection('photos').doc(ref.id).set({d: photo, w: w.id, day: d}));
+  Promise.all(ps).catch(e => toast('Отметка не сохранилась: ' + errText(e), true));
+  kDone(w, k, at, false);
+}
+function kDone(w, k, at, again) {
+  const T = TODAY(), r = dayInfo(w, T, marksOf(w.id, T), nowS()), m = minOf(at), nm = w.name.split(/\s+/)[0];
+  let tone = 'good', note = '';
+  if (!r.sc.off) {
+    if (k === 'in' && m > tm(r.sc.f) + SET.grace && !r.marks.some(x => x.k === 'in' && x.at < at - 1000)) { tone = 'warn'; note = 'Опоздание: ' + durTxt(m - tm(r.sc.f)) + '. Начало по графику в ' + r.sc.f + '.'; }
+    if (k === 'out' && m < tm(r.sc.t) - SET.grace) { tone = 'warn'; note = 'Уход раньше графика на ' + durTxt(tm(r.sc.t) - m) + '. Конец по графику в ' + r.sc.t + '.'; }
+  }
+  if (k === 'lout' && SET.lunch) { const l = r.marks.filter(x => x.k === 'lin').pop(); if (l && at - l.at > SET.lunchMax * 60000) { tone = 'warn'; note = 'Обед длился ' + durTxt((at - l.at) / 60000) + ', это дольше ' + durTxt(SET.lunchMax) + '.'; } }
+  const verb = {in: 'вы пришли', out: 'вы ушли', lin: 'вы ушли на обед', lout: 'вы вернулись с обеда'}[k];
+  K.step = 'done'; K.done = {tone, title: again ? 'Вы уже отметились' : (k === 'in' && tone === 'good' ? 'Добро пожаловать!' : k === 'out' ? 'До свидания!' : 'Отмечено'), text: nm + ', ' + verb + ' в ' + fT(at) + '.', note};
+  kIdle(again ? 4000 : 6000);
+  renderKiosk();
+}
+setInterval(() => { const c = $('#kClock'); if (c) c.textContent = fT(nowS()); }, 5000);
+/* экран не гаснет, пока открыт экран отметки (где телефон это умеет) */
+let WAKE = null;
+async function keepAwake() { try { if (VIEW === 'kiosk' && navigator.wakeLock && !WAKE) { WAKE = await navigator.wakeLock.request('screen'); WAKE.addEventListener('release', () => { WAKE = null; }); } } catch (e) { WAKE = null; } }
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') keepAwake(); });
+
+/* ---------- управление: владелец ---------- */
+const A = {tab: 'day', d: TODAY(), m: ym(TODAY())};
+const wr = p => Promise.race([p, sleep(4000)]);
+const PHC = {};
+async function loadPhoto(id) {
+  if (PHC[id]) return PHC[id];
+  const s = await FS.collection('photos').doc(id).get();
+  const d = s.exists && s.data() && s.data().d;
+  if (typeof d === 'string' && d.indexOf('data:image/') === 0) PHC[id] = d;
+  return PHC[id] || '';
+}
+function fillPhotos(root) {
+  $$('img[data-ph]', root).forEach(i => { const id = i.getAttribute('data-ph'); i.removeAttribute('data-ph'); loadPhoto(id).then(u => { if (u) { i.src = u; i.parentNode.classList.add('has'); } else i.parentNode.classList.add('none'); }, () => i.parentNode.classList.add('none')); });
+}
+
+function renderAdmin() {
+  const app = $('#app');
+  $('#brandName').textContent = SET.shop || 'Отметка';
+  $$('.tabs button').forEach(b => b.setAttribute('aria-current', b.dataset.tab === A.tab ? 'page' : 'false'));
+  if (!ready()) { app.innerHTML = '<div class="busy card mt"><span class="spin" aria-hidden="true"></span><span>Загружаю…</span></div>'; return; }
+  app.innerHTML = A.tab === 'day' ? dayView() : A.tab === 'itogi' ? itogiView() : workersView();
+  bindAdmin(app);
+}
+function bindAdmin(app) {
+  $$('[data-wd]', app).forEach(b => b.onclick = () => dayWorkerSheet(b.dataset.wd, A.d));
+  $$('[data-dd]', app).forEach(b => b.onclick = () => { A.d = addD(A.d, Number(b.dataset.dd)); if (A.d > TODAY()) A.d = TODAY(); render(); });
+  const dp = $('#dPick', app); if (dp) dp.onchange = () => { if (isDate(dp.value)) { A.d = dp.value > TODAY() ? TODAY() : dp.value; render(); } };
+  const dt = $('#dToday', app); if (dt) dt.onclick = () => { A.d = TODAY(); render(); };
+  $$('[data-mm]', app).forEach(b => b.onclick = () => { A.m = ymAdd(A.m, Number(b.dataset.mm)); render(); });
+  $$('[data-wm]', app).forEach(b => b.onclick = () => workerMonthSheet(b.dataset.wm, A.m));
+  $$('[data-we]', app).forEach(b => b.onclick = () => workerSheet(b.dataset.we));
+  $$('[data-addw]', app).forEach(b => b.onclick = () => workerSheet(null));
+  const cs = $('#csvM', app); if (cs) cs.onclick = () => exportMonth(A.m);
+  $$('[data-kiosk]', app).forEach(b => b.onclick = () => setView('kiosk'));
+  $$('[data-help]', app).forEach(b => b.onclick = helpSheet);
+}
+
+/* --- день --- */
+function dayView() {
+  const d = A.d, T = TODAY(), isT = d === T;
+  subMonth(ym(d));
+  let h = `<div class="dnav"><button class="ib" data-dd="-1" aria-label="Предыдущий день">${I.left}</button>
+    <label class="dlab" for="dPick"><b>${esc(relDay(d) || fDay(d).split(',')[0])}</b><span>${esc(relDay(d) ? fDay(d) : fDs(d))}</span><input type="date" id="dPick" value="${d}" max="${T}" aria-label="Выбрать дату"></label>
+    <button class="ib" data-dd="1" ${d >= T ? 'disabled' : ''} aria-label="Следующий день">${I.right}</button></div>`;
+  if (!isT) h += `<p class="center"><button class="linkbtn" id="dToday">Вернуться к сегодняшнему дню</button></p>`;
+  if (!WK.length) return h + onboarding();
+  if (!MK[ym(d)]) return h + '<div class="busy card mt"><span class="spin" aria-hidden="true"></span><span>Загружаю отметки…</span></div>';
+  const rows = WK.filter(w => activeOn(w, d) || marksOf(w.id, d).length).map(w => { const r = dayInfo(w, d); return {r, s: statusOf(r), f: flagsOf(r)}; }).sort((a, b) => a.s.ord - b.s.ord || byName(a.r.w, b.r.w));
+  const c = {now: 0, late: 0, absent: 0, off: 0, came: 0, early: 0};
+  rows.forEach(x => { const r = x.r; if (!r.active) return; if ((r.state === 'in' || r.state === 'lunch') && !r.noOut) c.now++; if (r.late || r.lateNow) c.late++; if (r.absent || r.lateNow) c.absent++; if (r.sc.off && !r.came) c.off++; if (r.came) c.came++; if (r.early) c.early++; });
+  h += '<div class="tiles">' + (isT ? tile('На работе', c.now, 'good') + tile('Опоздали', c.late, c.late ? 'warn' : '') + tile('Нет на месте', c.absent, c.absent ? 'bad' : '') + tile('Выходной', c.off, '')
+    : tile('Пришли', c.came, 'good') + tile('Опоздали', c.late, c.late ? 'warn' : '') + tile('Прогулы', c.absent, c.absent ? 'bad' : '') + tile('Ушли раньше', c.early, c.early ? 'warn' : '')) + '</div>';
+  h += '<div class="list mt">' + rows.map(x => `<button class="row" data-wd="${esc(x.r.w.id)}">${av(x.r.w.name, x.s.tone)}<span class="t"><b>${esc(x.r.w.name)}</b><span class="st ${x.s.tone}">${esc(x.s.t)}</span>${x.f.length ? `<span class="chips">${x.f.map(f => chip(f[0], f[1])).join('')}</span>` : ''}</span>${I.right}</button>`).join('') + '</div>';
+  if (isT) h += '<p class="hint center mt">Обновляется само. Нажмите на работника, чтобы увидеть фото и время отметок.</p>';
+  return h;
+}
+const tile = (l, v, tone) => `<div class="tile ${tone}"><span class="v">${v}</span><span class="l">${esc(l)}</span></div>`;
+function onboarding() {
+  return `<section class="card mt onb"><h3>С чего начать</h3><ol>
+    <li><b>Добавьте работников.</b> Для каждого задайте график. Программа сама даст ему 4-значный код.</li>
+    <li><b>Раздайте коды.</b> Каждому только его код: по нему он отмечается и по нему его узнаёт программа.</li>
+    <li><b>Поставьте телефон у входа.</b> Откройте на нём эту же ссылку и войдите почтой телефона у входа.</li></ol>
+    <button class="btn full mt8" data-addw>${I.plus}Добавить работника</button>
+    <button class="linkbtn mt8" data-help>Как подготовить телефон у входа</button></section>`;
+}
+
+/* --- работник за день --- */
+function dayWorkerSheet(wid, d, back) {
+  const w = wk(wid); if (!w) return;
+  const st = {kind: 'wd' + wid + d, add: null, ovr: false};
+  const draw = () => {
+    if (SHEET !== st && SHEET) return;
+    const r = dayInfo(w, d), s = statusOf(r), f = flagsOf(r), o = OVR[d] && OVR[d][w.id];
+    let h = head(relDay(d) ? relDay(d) + ', ' + fDs(d) : fDay(d), w.name, w.pos ? `<p class="small mut">${esc(w.pos)}</p>` : '');
+    h += `<section class="card"><p class="st ${s.tone}"><b>${esc(s.t)}</b></p>${f.length ? `<div class="chips mt8">${f.map(x => chip(x[0], x[1])).join('')}</div>` : ''}
+      <p class="small mut mt8">${r.sc.off ? (OVRK[r.sc.k] || 'Выходной') + (o ? ' (изменено на этот день)' : ' по графику') : 'По графику ' + r.sc.f + '–' + r.sc.t + (o ? ' (изменено на этот день)' : '')}${r.work ? ' · отработано ' + durTxt(r.work / 60000) : ''}${r.lunch ? ' · обед ' + durTxt(r.lunch / 60000) : ''}</p>
+      <button class="linkbtn mt8" id="wdOvr">${I.edit}Изменить график на этот день</button></section>`;
+    if (st.ovr) {
+      const cur = st.ovk != null ? st.ovk : o ? o.k : '';
+      h += `<section class="card mt"><h3>График на ${esc(fDs(d))}</h3><div class="seg wrap">${[['', 'Как обычно'], ['off', 'Выходной'], ['sick', 'Больничный'], ['vac', 'Отпуск'], ['ok', 'Отгул'], ['sh', 'Другое время']].map(x => `<button data-ov="${x[0]}" aria-pressed="${cur === x[0]}">${x[1]}</button>`).join('')}</div>
+        <div class="row2 mt8" id="ovT" ${cur === 'sh' ? '' : 'hidden'}><label class="f">С<input type="time" id="ovF" value="${esc(o && o.f || (r.sc.f || '09:00'))}"></label><label class="f">До<input type="time" id="ovTo" value="${esc(o && o.t || (r.sc.t || '18:00'))}"></label></div>
+        <p class="hint mt8">Больничный, отпуск и отгул не считаются прогулом.</p><p class="err" id="ovErr"></p><button class="btn full mt8" id="ovSave">Сохранить</button></section>`;
+    }
+    h += `<div class="sec-h"><h3>Отметки</h3><button class="btn ghost small" id="wdAdd">${I.plus}Добавить</button></div>`;
+    if (st.add) h += `<section class="card"><div class="seg wrap">${Object.keys(KINDS).filter(k => SET.lunch || k === 'in' || k === 'out').map(k => `<button data-ak="${k}" aria-pressed="${st.add.k === k}">${KINDS[k]}</button>`).join('')}</div>
+      <label class="f mt8" for="adT">Время<input type="time" id="adT" value="${esc(st.add.t)}"></label><label class="f mt8" for="adN">Причина<input id="adN" placeholder="Например: забыл отметиться" value="${esc(st.add.n)}"></label>
+      <p class="err" id="adErr"></p><div class="row2 mt8"><button class="btn" id="adGo">Сохранить</button><button class="btn ghost" id="adX">Отмена</button></div></section>`;
+    h += r.marks.length ? '<div class="marks">' + r.marks.map(m => `<div class="mk"><span class="ph ${m.ph ? '' : 'none'}">${m.ph ? `<img data-ph="${esc(m.id)}" alt="Фото: ${esc(w.name)}, ${fT(m.at)}">` : I.cam}</span>
+        <span class="t"><b>${fT(m.at)} · ${esc(KINDS[m.k])}</b><span class="chips">${m.man ? chip('info', 'вручную') : ''}${m.off ? chip('warn', 'без интернета') : ''}${m.np ? chip('warn', 'без фото') : ''}${m.pend ? chip('mut', 'отправляется') : ''}</span>${m.nt ? `<span class="small mut">${esc(m.nt)}</span>` : ''}</span>
+        <button class="ib sm" data-mdel="${esc(m.id)}" aria-label="Удалить отметку">${I.trash}</button></div>`).join('') + '</div>' : '<p class="small mut">Отметок за этот день нет.</p>';
+    h += `<button class="btn ghost full mt" id="wdMonth">${I.chart}Весь месяц: ${esc(w.name.split(/\s+/)[0])}</button>`;
+    openSheet(h, st);
+    fillPhotos($('#sheet'));
+    $$('#sheet img').forEach(i => i.onclick = () => { if (i.src) photoView(i.src, i.alt); });
+    $('#wdOvr').onclick = () => { st.ovr = !st.ovr; st.ovk = null; draw(); };
+    $('#wdMonth').onclick = () => workerMonthSheet(w.id, ym(d), () => dayWorkerSheet(w.id, d));
+    $$('[data-ov]').forEach(b => b.onclick = () => { st.ovk = b.dataset.ov; $$('[data-ov]').forEach(x => x.setAttribute('aria-pressed', x === b)); $('#ovT').hidden = b.dataset.ov !== 'sh'; });
+    const adT = $('#adT'); if (adT) { adT.oninput = () => { st.add.t = adT.value; }; $('#adN').oninput = () => { st.add.n = $('#adN').value; }; }
+    const os = $('#ovSave'); if (os) os.onclick = async () => {
+      const sel = $('[data-ov][aria-pressed="true"]'), k = sel ? sel.dataset.ov : '';
+      let v = null;
+      if (k === 'sh') { const f2 = $('#ovF').value, t2 = $('#ovTo').value; if (!isHM(f2) || !isHM(t2) || tm(t2) <= tm(f2)) { $('#ovErr').textContent = 'Проверьте время: «до» должно быть позже «с».'; return; } v = {k, f: f2, t: t2}; }
+      else if (k) v = {k};
+      const map = Object.assign({}, OVR[d] || {}); if (v) map[w.id] = v; else delete map[w.id];
+      const ref = FS.collection('days').doc(d);
+      if (await act(() => wr(Object.keys(map).length ? ref.set({o: map}) : ref.delete()), 'График на этот день сохранён.')) { st.ovr = false; OVR[d] = map; draw(); }
+    };
+    $('#wdAdd').onclick = () => { const last = r.marks[r.marks.length - 1]; st.add = {k: !last || last.k === 'out' ? 'in' : 'out', t: d === TODAY() ? fT(Date.now()) : (last ? r.sc.t || '18:00' : r.sc.f || '09:00'), n: ''}; if (st.add.k === 'out' && !r.sc.off) st.add.t = d === TODAY() ? fT(Date.now()) : r.sc.t; draw(); };
+    $$('[data-ak]').forEach(b => b.onclick = () => { st.add.k = b.dataset.ak; st.add.t = $('#adT').value; st.add.n = $('#adN').value; draw(); });
+    const ax = $('#adX'); if (ax) ax.onclick = () => { st.add = null; draw(); };
+    const ag = $('#adGo'); if (ag) ag.onclick = async () => {
+      const t = $('#adT').value, n = $('#adN').value.trim().slice(0, 120);
+      if (!isHM(t)) { $('#adErr').textContent = 'Укажите время.'; return; }
+      const at = msAt(d, tm(t));
+      if (at > Date.now() + 60000) { $('#adErr').textContent = 'Это время ещё не наступило.'; return; }
+      const doc = {w: w.id, nm: w.name, k: st.add.k, d, ts: firebase.firestore.Timestamp.fromMillis(at), ct: at, co: 0, man: 1, by: (USER && USER.email) || '', ph: 0};
+      if (n) doc.nt = n;
+      if (await act(() => wr(FS.collection('marks').doc().set(doc)), 'Отметка добавлена.')) { st.add = null; setTimeout(draw, 120); }
+    };
+    $$('[data-mdel]').forEach(b => armed(b, 'Удалить?', async () => {
+      const id = b.dataset.mdel;
+      if (await act(() => wr(FS.collection('marks').doc(id).delete()), 'Отметка удалена.')) { FS.collection('photos').doc(id).delete().catch(() => {}); setTimeout(draw, 120); }
+    }));
+  };
+  st.redraw = draw;
+  draw();
+}
+function photoView(src, alt) {
+  const el = document.createElement('div'); el.className = 'pv'; el.innerHTML = `<img src="${src}" alt="${esc(alt || '')}"><button class="ib" aria-label="Закрыть">${I.close}</button>`;
+  el.onclick = () => el.remove(); document.body.appendChild(el);
+}
+
+/* --- итоги месяца --- */
+function itogiView() {
+  const m = A.m, cur = ym(TODAY());
+  subMonth(m);
+  let h = `<div class="dnav"><button class="ib" data-mm="-1" aria-label="Предыдущий месяц">${I.left}</button><div class="dlab"><b>${esc(ymLabel(m))}</b><span>${m === cur ? 'по сегодняшний день' : 'итоги месяца'}</span></div><button class="ib" data-mm="1" ${m >= cur ? 'disabled' : ''} aria-label="Следующий месяц">${I.right}</button></div>`;
+  if (!WK.length) return h + onboarding();
+  if (!MK[m]) return h + '<div class="busy card mt"><span class="spin" aria-hidden="true"></span><span>Загружаю отметки…</span></div>';
+  if (m > cur) return h + '<p class="mut center mt">Этот месяц ещё не начался.</p>';
+  const S = WK.filter(w => monthDays(m).some(d => d <= TODAY() && activeOn(w, d))).map(w => monthSum(w, m)).sort((a, b) => b.bad - a.bad || byName(a.w, b.w));
+  const t = S.reduce((a, s) => { a.late += s.late; a.lateMin += s.lateMin; a.absent += s.absent; a.early += s.early; a.noOut += s.noOut; a.work += s.work; return a; }, {late: 0, lateMin: 0, absent: 0, early: 0, noOut: 0, work: 0});
+  h += '<div class="tiles">' + tile('Опозданий', t.late, t.late ? 'warn' : '') + tile('Прогулов', t.absent, t.absent ? 'bad' : '') + tile('Ушли раньше', t.early, t.early ? 'warn' : '') + tile('Часов всего', Math.round(t.work / 3600000), '') + '</div>';
+  if (t.lateMin) h += `<p class="small mut center">Всего опозданий на ${esc(durTxt(t.lateMin))}${t.noOut ? ' · не отметили уход ' + t.noOut + ' ' + pl(t.noOut, 'раз', 'раза', 'раз') : ''}.</p>`;
+  h += '<div class="list mt">' + S.map(s => {
+    const ch = [];
+    if (s.absent) ch.push(chip('bad', 'прогулов: ' + s.absent));
+    if (s.late) ch.push(chip('warn', 'опозданий: ' + s.late + ' (' + durTxt(s.lateMin) + ')'));
+    if (s.early) ch.push(chip('warn', 'ранних уходов: ' + s.early));
+    if (s.noOut) ch.push(chip('warn', 'без ухода: ' + s.noOut));
+    if (s.longL) ch.push(chip('warn', 'долгий обед: ' + s.longL));
+    if (s.excused) ch.push(chip('info', 'больничный, отпуск: ' + s.excused));
+    if (!ch.length && s.came) ch.push(chip('good', 'без нарушений'));
+    return `<button class="row" data-wm="${esc(s.w.id)}">${av(s.w.name, s.absent ? 'bad' : s.bad ? 'warn' : 'good')}<span class="t"><b>${esc(s.w.name)}</b><span class="st mut">${s.came} из ${s.plan} ${pl(s.plan, 'рабочего дня', 'рабочих дней', 'рабочих дней')} · ${hours(s.work)} ч</span><span class="chips">${ch.join('')}</span></span>${I.right}</button>`;
+  }).join('') + '</div>';
+  h += `<button class="btn ghost full mt" id="csvM">${I.save}Скачать для Excel</button>`;
+  h += `<p class="hint mt8">Опоздание считается, если работник пришёл позже начала графика больше чем на ${SET.grace} мин. Это значение меняется в настройках.</p>`;
+  return h;
+}
+function workerMonthSheet(wid, m, back) {
+  const w = wk(wid); if (!w) return;
+  subMonth(m);
+  const draw = () => {
+    if (!MK[m]) { openSheet(head(ymLabel(m), w.name) + '<div class="busy"><span class="spin"></span><span>Загружаю…</span></div>', {kind: 'wm' + wid}); setTimeout(draw, 300); return; }
+    const s = monthSum(w, m), first = pd(m + '-01'), lead = (first.getDay() + 6) % 7;
+    let h = head(ymLabel(m), w.name, `<p class="small mut">${esc(schedTxt(w.sched))}</p>`);
+    h += '<div class="tiles">' + tile('Дней на работе', s.came + ' из ' + s.plan, '') + tile('Часов', hours(s.work), '') + tile('Опозданий', s.late, s.late ? 'warn' : '') + tile('Прогулов', s.absent, s.absent ? 'bad' : '') + '</div>';
+    h += '<div class="cal mt"><div class="cw">' + WORDER.map(i => `<span>${WD[i]}</span>`).join('') + '</div><div class="cg">' + '<span></span>'.repeat(lead) + monthDays(m).map(d => {
+      const r = s.days.find(x => x.d === d), st = r ? statusOf(r) : null, tone = !r ? 'fut' : !r.active ? 'mut' : r.absent ? 'bad' : (r.late || r.early || r.noOut || r.longL) ? 'warn' : r.came ? 'good' : r.excused ? 'info' : 'mut';
+      return `<button class="cd ${tone}" ${r ? `data-cd="${d}"` : 'disabled'} aria-label="${esc(fDs(d) + (st ? ': ' + st.t : ''))}"><b>${pd(d).getDate()}</b><i></i></button>`;
+    }).join('') + '</div></div>';
+    h += `<p class="legend small mut">${[['good', 'вовремя'], ['warn', 'нарушение'], ['bad', 'прогул'], ['info', 'больничный, отпуск, отгул'], ['mut', 'выходной']].map(x => `<span><i class="${x[0]}"></i>${x[1]}</span>`).join('')}</p>`;
+    const bad = s.days.filter(r => flagsOf(r).length).reverse();
+    if (bad.length) h += '<div class="sec-h"><h3>Нарушения</h3></div><div class="list">' + bad.map(r => `<button class="row" data-cd="${r.d}"><span class="t"><b>${esc(fDay(r.d))}</b><span class="chips">${flagsOf(r).map(f => chip(f[0], f[1])).join('')}</span></span>${I.right}</button>`).join('') + '</div>';
+    h += `<button class="btn ghost full mt" id="wmEdit">${I.edit}График и код работника</button>`;
+    if (back) h += `<button class="btn ghost full mt8" id="wmBack">${I.back}Назад</button>`;
+    openSheet(h, {kind: 'wm' + wid + m, redraw: draw});
+    $$('[data-cd]').forEach(b => b.onclick = () => dayWorkerSheet(w.id, b.dataset.cd));
+    $('#wmEdit').onclick = () => workerSheet(w.id);
+    const bk = $('#wmBack'); if (bk) bk.onclick = back;
+  };
+  draw();
+}
+function exportMonth(m) {
+  const rows = [['Работник', 'Должность', 'Рабочих дней по графику', 'Был на работе, дней', 'Часов', 'Опозданий', 'Минут опозданий', 'Ранних уходов', 'Минут раньше', 'Прогулов', 'Уход не отмечен', 'Больничный, отпуск, отгул']];
+  const S = WK.filter(w => monthDays(m).some(d => d <= TODAY() && activeOn(w, d))).map(w => monthSum(w, m)).sort((a, b) => byName(a.w, b.w));
+  S.forEach(s => rows.push([s.w.name, s.w.pos, s.plan, s.came, String(hours(s.work)).replace('.', ','), s.late, s.lateMin, s.early, s.earlyMin, s.absent, s.noOut, s.excused]));
+  rows.push([]); rows.push(['Дата', 'Работник', 'График', 'Приход', 'Уход', 'Отработано, ч', 'Нарушения']);
+  S.forEach(s => s.days.forEach(r => { if (!r.active || (r.sc.off && !r.came)) return; const fm = r.marks.find(x => x.k === 'in'), lo = r.marks.filter(x => x.k === 'out').pop(); rows.push([r.d, s.w.name, r.sc.off ? (OVRK[r.sc.k] || 'выходной') : r.sc.f + '–' + r.sc.t, fm ? fT(fm.at) : '', lo ? fT(lo.at) : '', String(hours(r.work)).replace('.', ','), flagsOf(r).map(f => f[1]).join(', ')]); }));
+  saveFile('otmetka-' + m + '.csv', csvOf(rows));
+}
+
+/* --- работники --- */
+function workersView() {
+  const act = WK.filter(w => !w.fired || w.fired > TODAY()).sort(byName), gone = WK.filter(w => w.fired && w.fired <= TODAY()).sort(byName);
+  let h = `<div class="sec-h" style="margin-top:8px"><h2>Работники</h2><button class="btn small" data-addw>${I.plus}Добавить</button></div>`;
+  if (!WK.length) return h + onboarding();
+  h += '<div class="list">' + act.map(w => `<button class="row" data-we="${esc(w.id)}">${av(w.name)}<span class="t"><b>${esc(w.name)}</b><span class="st mut">${esc((w.pos ? w.pos + ' · ' : '') + schedTxt(w.sched))}</span></span><span class="pin" aria-label="Код">${esc(w.pin)}</span></button>`).join('') + '</div>';
+  if (gone.length) h += `<details class="mt"><summary class="small mut">Уволенные (${gone.length})</summary><div class="list mt8">` + gone.map(w => `<button class="row" data-we="${esc(w.id)}">${av(w.name, 'mut')}<span class="t"><b>${esc(w.name)}</b><span class="st mut">уволен с ${esc(fDs(w.fired))}</span></span></button>`).join('') + '</div></details>';
+  h += `<section class="card mt"><h3>Экран отметки</h3><p class="small">Телефон у входа: откройте эту же ссылку и войдите почтой телефона у входа. Можно проверить отметку прямо здесь.</p><div class="row2 mt8"><button class="btn ghost" data-kiosk>${I.door}Открыть здесь</button><button class="btn ghost" data-help>Как подготовить</button></div></section>`;
+  return h;
+}
+function workerSheet(id) {
+  const old = id ? wk(id) : null;
+  const F = old ? clone(old) : {id: uid('w'), name: '', pos: '', phone: '', pin: newPin(), sched: clone(DEF_SCHED), from: TODAY(), fired: ''};
+  const st = {kind: 'we' + F.id};
+  const draw = () => {
+    let h = head(old ? 'Работник' : 'Новый работник', old ? old.name : 'Добавить работника');
+    h += `<div class="form"><label class="f" for="weN">Имя и фамилия<input id="weN" autocomplete="off" value="${esc(F.name)}"></label>
+      <div class="row2"><label class="f" for="weP">Должность<input id="weP" autocomplete="off" placeholder="Продавец" value="${esc(F.pos)}"></label><label class="f" for="wePh">Телефон<input id="wePh" type="tel" inputmode="tel" autocomplete="off" value="${esc(F.phone)}"></label></div></div>
+      <section class="card mt"><h3>Код для отметки</h3><div class="pinrow"><span class="pin big">${esc(F.pin)}</span><button class="btn ghost small" id="wePin">${I.key}Другой код</button></div>
+      <p class="small mut mt8">Код знает только этот работник. По нему его узнаёт телефон у входа.</p>
+      ${F.phone && phD(F.phone).length === 11 ? `<a class="btn wa full mt8" target="_blank" rel="noopener" href="https://wa.me/${phD(F.phone)}?text=${encodeURIComponent((F.name.split(/\s+/)[0] || '') + ', ваш код для отметки прихода и ухода: ' + F.pin + '. Никому его не говорите.')}">${I.chat}Отправить код в WhatsApp</a>` : ''}</section>
+      <section class="card mt"><div class="sec-h" style="margin:0 0 8px"><h3>График</h3></div>
+      <div class="seg wrap">${[['ms', 'Пн–Сб'], ['mf', 'Пн–Пт'], ['all', 'Без выходных'], ['cp', 'Как в пн на все дни']].map(x => `<button data-tpl="${x[0]}">${x[1]}</button>`).join('')}</div>
+      <div class="sched mt8">${WORDER.map(i => { const v = F.sched[i]; return `<div class="sd"><label class="tg"><input type="checkbox" data-on="${i}" ${v ? 'checked' : ''}><span>${WD[i][0].toUpperCase() + WD[i].slice(1)}</span></label>${v ? `<input type="time" data-f="${i}" value="${v.f}" aria-label="${WDF[i]}: с"><span class="mut">–</span><input type="time" data-t="${i}" value="${v.t}" aria-label="${WDF[i]}: до">` : '<span class="mut small">выходной</span>'}</div>`; }).join('')}</div></section>
+      <p class="err" id="weErr"></p><button class="btn full mt" id="weSave">${old ? 'Сохранить' : 'Добавить работника'}</button>`;
+    if (old) h += `<section class="card mt"><h3>${old.fired ? 'Уволен с ' + esc(fDs(old.fired)) : 'Увольнение'}</h3><p class="small mut">${old.fired ? 'Его история сохранена. Можно вернуть на работу.' : 'Код перестанет работать, а история отметок останется.'}</p>
+      <div class="row2 mt8"><button class="btn ghost" id="weFire">${old.fired ? 'Вернуть на работу' : 'Уволить с сегодня'}</button><button class="btn ghost danger" id="weDel">${I.trash}Удалить</button></div></section>`;
+    openSheet(h, st);
+    const sync = () => { F.name = $('#weN').value; F.pos = $('#weP').value; F.phone = $('#wePh').value; WORDER.forEach(i => { const f = $(`[data-f="${i}"]`), t = $(`[data-t="${i}"]`); if (f && t && F.sched[i]) F.sched[i] = {f: f.value, t: t.value}; }); };
+    $('#wePin').onclick = () => { sync(); F.pin = newPin(); draw(); };
+    $$('[data-on]').forEach(c => c.onchange = () => { sync(); const i = c.dataset.on; const base = WORDER.map(j => F.sched[j]).filter(Boolean)[0]; F.sched[i] = c.checked ? clone(base || {f: '09:00', t: '18:00'}) : null; draw(); });
+    $$('[data-tpl]').forEach(b => b.onclick = () => {
+      sync(); const k = b.dataset.tpl, base = F.sched[1] || {f: '09:00', t: '18:00'};
+      for (let i = 0; i < 7; i++) {
+        if (k === 'ms') F.sched[i] = i === 0 ? null : clone(base);
+        else if (k === 'mf') F.sched[i] = i === 0 || i === 6 ? null : clone(base);
+        else if (k === 'all') F.sched[i] = clone(base);
+        else if (k === 'cp' && F.sched[i]) F.sched[i] = clone(base);
+      }
+      draw();
+    });
+    $('#weSave').onclick = async () => {
+      sync();
+      const name = F.name.trim();
+      if (!name) { $('#weErr').textContent = 'Впишите имя.'; return; }
+      for (const i of WORDER) { const v = F.sched[i]; if (v && (!isHM(v.f) || !isHM(v.t) || tm(v.t) <= tm(v.f))) { $('#weErr').textContent = WDF[i][0].toUpperCase() + WDF[i].slice(1) + ': конец должен быть позже начала.'; return; } }
+      if (WK.some(w => w.id !== F.id && w.pin === F.pin && (!w.fired || w.fired > TODAY()))) { $('#weErr').textContent = 'Этот код уже у другого работника. Нажмите «Другой код».'; return; }
+      F.name = name;
+      if (await act(() => wr(FS.collection('workers').doc(F.id).set(packW(F))), old ? 'Сохранено.' : 'Работник добавлен. Его код: ' + F.pin)) { if (old) closeSheet(); else { closeSheet(); A.tab = 'workers'; render(); } }
+    };
+    const fb = $('#weFire'); if (fb) armed(fb, old.fired ? 'Нажмите ещё раз' : 'Точно уволить?', async () => { sync(); F.fired = old.fired ? '' : TODAY(); if (await act(() => wr(FS.collection('workers').doc(F.id).set(packW(F))), old.fired ? 'Работник снова в списке.' : 'Работник уволен.')) closeSheet(); });
+    const db = $('#weDel'); if (db) armed(db, 'Удалить совсем?', async () => { if (await act(() => wr(FS.collection('workers').doc(F.id).delete()), 'Работник удалён. Его прошлые отметки остались в журнале.')) closeSheet(); });
+  };
+  draw();
+}
+
+/* --- настройки --- */
+function settingsSheet() {
+  const F = clone(SET);
+  const draw = () => {
+    openSheet(head('Отметка', 'Настройки') + `<div class="form">
+      <label class="f" for="sShop">Название магазина<input id="sShop" autocomplete="off" value="${esc(F.shop)}" placeholder="Например: Магазин Медета"></label>
+      <label class="f" for="sGr">Сколько минут опоздания прощать<input id="sGr" type="number" inputmode="numeric" min="0" max="60" value="${F.grace}"></label>
+      <p class="hint">Если 5, то пришедший в 9:05 при начале в 9:00 не опоздал, а в 9:06 уже опоздал на 6 минут.</p>
+      <label class="tg big"><input type="checkbox" id="sPh" ${F.photo ? 'checked' : ''}><span>Фото при отметке</span></label>
+      <label class="tg big"><input type="checkbox" id="sLu" ${F.lunch ? 'checked' : ''}><span>Отмечать обед</span></label>
+      ${F.lunch ? `<label class="f" for="sLm">Обед, минут не больше<input id="sLm" type="number" inputmode="numeric" min="10" max="240" value="${F.lunchMax}"></label>` : ''}
+      <label class="f" for="sKeep">Хранить фото, дней<select id="sKeep">${[30, 60, 90, 180].map(n => `<option value="${n}" ${F.keep === n ? 'selected' : ''}>${n}</option>`).join('')}</select></label>
+      <p class="err" id="sErr"></p><button class="btn" id="sSave">Сохранить</button></div>
+      <section class="card mt"><h3>Экран отметки</h3><p class="small">Проверьте, как работник отмечается, прямо на этом телефоне.</p><div class="row2 mt8"><button class="btn ghost" id="sKiosk">${I.door}Открыть</button><button class="btn ghost" id="sHelp">Как подготовить</button></div></section>
+      <section class="card mt"><h3>Вход</h3><p class="small">Вы вошли как ${esc((USER && USER.email) || '')}.</p><button class="btn ghost full mt8" id="sOut">${I.out}Выйти на этом телефоне</button></section>`, {kind: 'set'});
+    const sync = () => { F.shop = $('#sShop').value.trim(); F.grace = int($('#sGr').value, 0, 60, F.grace); F.photo = $('#sPh').checked; F.lunch = $('#sLu').checked; const lm = $('#sLm'); if (lm) F.lunchMax = int(lm.value, 10, 240, F.lunchMax); F.keep = int($('#sKeep').value, 7, 365, 60); };
+    $('#sLu').onchange = () => { sync(); draw(); };
+    $('#sSave').onclick = async () => { sync(); if (await act(() => wr(FS.collection('meta').doc('settings').set(cleanSet(F))), 'Настройки сохранены.')) closeSheet(); };
+    $('#sKiosk').onclick = () => { closeSheet(); setView('kiosk'); };
+    $('#sHelp').onclick = helpSheet;
+    armed($('#sOut'), 'Нажмите ещё раз, чтобы выйти', () => { closeSheet(); firebase.auth().signOut(); });
+  };
+  draw();
+}
+function helpSheet() {
+  openSheet(head('Телефон у входа', 'Как подготовить') + `<ol class="steps">
+    <li>Откройте в браузере ссылку на эту программу и войдите <b>почтой телефона у входа</b>. Тогда на нём будет только экран отметки.</li>
+    <li>Добавьте значок на главный экран: «Поделиться» → «На экран “Домой”» (на Android: меню → «Добавить на главный экран»).</li>
+    <li>Разрешите камеру, когда телефон спросит. На iPhone: Настройки → Safari → Камера → «Разрешить».</li>
+    <li>Чтобы экран не гас: Настройки → Экран и яркость → Автоблокировка → «Никогда». Держите телефон на зарядке.</li>
+    <li>Чтобы работники не выходили из программы, на iPhone включите «Гид-доступ»: Настройки → Универсальный доступ → Гид-доступ. Затем в программе трижды нажмите боковую кнопку.</li>
+    <li>Предупредите работников, что при отметке делается фото. По закону о персональных данных лучше взять с них письменное согласие.</li></ol>
+    <p class="small mut">Чтобы выйти на телефоне у входа, нажмите и подержите часы 2 секунды.</p>`, {kind: 'help'});
+}
+
+/* ---------- запуск: облако, вход, подписки ---------- */
+const CFG = window.FB_CFG || null, APP = window.APP_CFG || {admins: [], kiosk: ''};
+let FS = null, USER = null, UNSUB = [], MSUB = {}, TODAYSUB = '';
+const isAdminEmail = e => (APP.admins || []).map(x => String(x).toLowerCase()).indexOf(String(e || '').toLowerCase()) >= 0;
+
+function render() {
+  document.body.classList.toggle('kiosk', VIEW === 'kiosk');
+  $('#top').hidden = VIEW !== 'admin'; $('#tabs').hidden = VIEW !== 'admin';
+  if (VIEW === 'kiosk') renderKiosk(); else if (VIEW === 'admin') renderAdmin();
+}
+function changed() {
+  if (VIEW === 'kiosk') { if (K.step === 'pad' || K.step === 'done') renderKiosk(); return; }
+  render();
+  if (SHEET && SHEET.redraw) SHEET.redraw();
+}
+function setView(v) {
+  lsSet('otm-view', v); VIEW = v; K.step = 'pad'; K.code = ''; window.scrollTo(0, 0);
+  if (v === 'kiosk') { subToday(); keepAwake(); }
+  render();
+}
+function stopAll() { UNSUB.forEach(f => { try { f(); } catch (e) {} }); Object.keys(MSUB).forEach(k => { try { MSUB[k](); } catch (e) {} }); UNSUB = []; MSUB = {}; TODAYSUB = ''; MK = {}; Object.keys(GOT).forEach(k => delete GOT[k]); WK = []; OVR = {}; SET = cleanSet({}); }
+const onErr = e => { const c = String((e && e.code) || ''); toast(/permission/.test(c) ? 'Нет доступа к данным. Проверьте, что почта добавлена владельцем.' : 'Связь с облаком прервалась. Закройте и откройте приложение.', true); };
+function subBase() {
+  UNSUB.push(FS.collection('workers').onSnapshot(s => { WK = s.docs.map(x => cleanW(x.id, x.data())).sort(byName); GOT.workers = 1; changed(); }, onErr));
+  UNSUB.push(FS.collection('meta').doc('settings').onSnapshot(s => { SET = cleanSet(s.exists ? s.data() : {}); GOT.meta = 1; changed(); }, onErr));
+  if (ROLE === 'admin') UNSUB.push(FS.collection('days').onSnapshot(s => { const o = {}; s.docs.forEach(x => { const v = x.data(); if (isDate(x.id) && v && v.o) o[x.id] = v.o; }); OVR = o; GOT.days = 1; changed(); }, onErr));
+}
+function snapMarks(s) { return s.docs.map(x => cleanM(x.id, x.data({serverTimestamps: 'estimate'}), x.metadata && x.metadata.hasPendingWrites)); }
+/* отметки за месяц (владелец) */
+function subMonth(m) {
+  if (MSUB[m] || !FS) return;
+  const keys = Object.keys(MSUB).filter(k => /^\d{4}-\d{2}$/.test(k));
+  if (keys.length >= 3) { const old = keys.filter(k => k !== ym(TODAY()) && k !== m)[0]; if (old) { MSUB[old](); delete MSUB[old]; delete MK[old]; } }
+  MSUB[m] = FS.collection('marks').where('d', '>=', m + '-01').where('d', '<=', m + '-31').onSnapshot(s => { MK[m] = snapMarks(s); GOT['m' + m] = 1; changed(); }, onErr);
+}
+/* отметки за сегодня (телефон у входа) */
+function subToday() {
+  const T = TODAY();
+  if (ROLE === 'admin') { subMonth(ym(T)); GOT.today = 1; return; }
+  if (TODAYSUB === T) return;
+  if (MSUB.today) MSUB.today();
+  TODAYSUB = T; GOT.today = 0;
+  if (MSUB.todayDay) MSUB.todayDay();
+  if (ROLE === 'kiosk') MSUB.todayDay = (FS.collection('days').doc(T).onSnapshot(s => { const v = s.exists ? s.data() : null; OVR = {}; if (v && v.o) OVR[T] = v.o; changed(); }, () => {}));
+  MSUB.today = FS.collection('marks').where('d', '==', T).onSnapshot(s => {
+    const list = snapMarks(s); MK = {}; MK[ym(T)] = list; GOT.today = 1;
+    // поправка часов телефона по времени сервера
+    s.docs.forEach(x => { const v = x.data(); if (v.dev === DEVID && !(x.metadata && x.metadata.hasPendingWrites) && typeof v.ct === 'number') { const ts = tsMs(v.ts); if (ts != null && Math.abs(ts - v.ct) < 600000) lsSet('otm-off', ts - v.ct); } });
+    changed();
+  }, onErr);
+}
+/* старые фото удаляются сами (раз в день, с телефона владельца) */
+async function cleanPhotos() {
+  const T = TODAY(); if (lsGet('otm-clean', '') === T) return; lsSet('otm-clean', T);
+  try {
+    const s = await FS.collection('photos').where('day', '<', addD(T, -SET.keep)).limit(150).get();
+    for (const x of s.docs) { try { await x.ref.delete(); } catch (e) {} }
+  } catch (e) {}
+}
+function startApp() {
+  if (!CFG || !window.firebase || !firebase.initializeApp) {
+    $('#app').innerHTML = `<section class="card mt"><h3>Не удалось загрузить программу</h3><p class="small">${CFG ? 'Проверьте интернет и откройте страницу заново.' : 'Программа ещё не подключена к облаку.'}</p></section>`;
+    return;
+  }
+  if (!firebase.apps.length) firebase.initializeApp(CFG);
+  FS = firebase.firestore();
+  try { FS.enablePersistence({synchronizeTabs: true}).catch(() => {}); } catch (e) {}
+  firebase.auth().onAuthStateChanged(u => {
+    const prev = USER; USER = u || null;
+    if (!u) { stopAll(); ROLE = ''; VIEW = ''; render(); $('#app').innerHTML = ''; loginScreen(); return; }
+    if (prev && prev.uid === u.uid) return;
+    hideLogin(); stopAll();
+    ROLE = isAdminEmail(u.email) ? 'admin' : 'kiosk';
+    VIEW = ROLE === 'admin' ? (lsGet('otm-view', '') === 'kiosk' ? 'kiosk' : 'admin') : 'kiosk';
+    subBase(); subToday();
+    if (ROLE === 'admin') { subMonth(ym(TODAY())); setTimeout(() => { if (GOT.meta) cleanPhotos(); }, 8000); }
+    if (VIEW === 'kiosk') keepAwake();
+    render();
+  });
+}
+/* переключатели вкладок и шапки */
+$$('.tabs button').forEach(b => b.onclick = () => { A.tab = b.dataset.tab; if (A.tab === 'day') A.d = TODAY(); window.scrollTo(0, 0); render(); });
+$('#openSet').onclick = settingsSheet;
+/* смена дня и живое обновление */
+setInterval(() => {
+  if (!USER) return;
+  if (TODAYSUB && TODAYSUB !== TODAY() && ROLE === 'kiosk') { subToday(); }
+  if (VIEW === 'admin' && A.tab === 'day' && !SHEET) render();
+  else if (VIEW === 'admin' && SHEET && SHEET.redraw && SHEET.kind && SHEET.kind.indexOf('wd') === 0) SHEET.redraw();
+}, 60000);
+startApp();
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body></html>
