@@ -176,6 +176,19 @@ body.kiosk #toast{bottom:calc(20px + env(safe-area-inset-bottom,0px))}
 .big-ok svg{width:42px;height:42px;stroke-width:2.6}
 .kcard.done.warn .big-ok{background:var(--warn-soft);color:var(--warn)}
 .kcard.done h2{font-size:26px}.kcard.done p{font-size:18px;margin-top:6px}
+.kstat{display:flex;align-items:center;justify-content:center;gap:8px;border-radius:14px;padding:12px;margin-top:14px;font-size:18px;font-weight:750}
+.kstat.good{background:var(--good-soft);color:var(--good)}.kstat.warn{background:var(--warn-soft);color:var(--warn)}.kstat.mut{background:var(--soft);color:var(--mut)}
+.kstat svg{width:24px;height:24px;stroke-width:2.6}
+.btn.in{background:var(--good);border-color:var(--good);color:#fff}
+.btn.out{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.ktime{font-size:56px!important;font-weight:800;line-height:1.05;font-variant-numeric:tabular-nums;letter-spacing:-.02em;margin:4px 0 2px!important}
+.kbar{height:5px;border-radius:3px;background:var(--soft);overflow:hidden;margin-top:16px}
+.kbar i{display:block;height:100%;width:100%;background:var(--acc);transform-origin:left;animation:kb linear forwards}
+@keyframes kb{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+.big-ok.q{background:var(--warn-soft);color:var(--warn);font-size:44px;font-weight:800}
+.kcard.conf p{font-size:18px;margin-top:8px}
+.klast{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;padding:10px 12px;border-radius:14px;background:var(--good-soft);color:var(--good);font-weight:700;text-align:center}
+.klast svg{flex:none}
 .knote{background:var(--warn-soft);color:var(--warn);font-weight:700;border-radius:14px;padding:12px;margin-top:14px!important;font-size:16px!important}
 @media (max-width:360px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.kclock{font-size:36px}.pad button{min-height:60px}}
 @media (min-width:700px){#app{max-width:680px;margin:0 auto}.top{max-width:680px;margin:0 auto}}
@@ -193,7 +206,7 @@ body.kiosk #toast{bottom:calc(20px + env(safe-area-inset-bottom,0px))}
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-<script>window.FB_CFG = {"apiKey":"AIzaSyCUOyXcIekzd44FyCs0NIqPSW4ft16zhqY","authDomain":"otmetka-medet.firebaseapp.com","projectId":"otmetka-medet","storageBucket":"otmetka-medet.firebasestorage.app","messagingSenderId":"298722417294","appId":"1:298722417294:web:6556aaa17f930c585187df"}; window.APP_CFG = {"admins":["mursalovabduim@gmail.com","zhanbolat92@gmail.com"],"kiosk":""};</script>
+<script>window.FB_CFG = {"apiKey":"AIzaSyCUOyXcIekzd44FyCs0NIqPSW4ft16zhqY","authDomain":"otmetka-medet.firebaseapp.com","projectId":"otmetka-medet","storageBucket":"otmetka-medet.firebasestorage.app","messagingSenderId":"298722417294","appId":"1:298722417294:web:6556aaa17f930c585187df"}; window.APP_CFG = {"admins":["mursalovabduim@gmail.com","zhanbolat92@gmail.com"],"kiosk":"vhod@magazin.kz"};</script>
 <script>
 'use strict';
 /* ---------- мелочи ---------- */
@@ -525,7 +538,16 @@ const DEVID = (() => { let v = lsGet('otm-dev', ''); if (!v) { v = uid('dv'); ls
 const clockOff = () => { const v = lsGet('otm-off', 0); return typeof v === 'number' && Math.abs(v) < 864e5 ? v : 0; };
 const nowS = () => Date.now() + clockOff();
 const K = {code: '', step: 'pad', w: null, err: '', tries: 0, lock: 0, timer: 0, done: null, cam: null};
-function kReset() { clearTimeout(K.timer); camStop(); K.code = ''; K.step = 'pad'; K.w = null; K.done = null; K.err = ''; renderKiosk(); }
+function kReset() { clearTimeout(K.timer); camStop(); K.code = ''; K.step = 'pad'; K.w = null; K.done = null; K.conf = null; K.ok = ''; K.err = ''; renderKiosk(); }
+/* короткий звук после отметки */
+let AC = null;
+function audioUnlock() { try { if (!AC) { const C = window.AudioContext || window.webkitAudioContext; if (C) AC = new C(); } if (AC && AC.state === 'suspended') AC.resume(); } catch (e) {} }
+function chime(ok) {
+  try {
+    if (!AC) return; const t0 = AC.currentTime;
+    (ok ? [880, 1318] : [660, 494]).forEach((f, i) => { const o = AC.createOscillator(), g = AC.createGain(), t = t0 + i * .17; o.type = 'sine'; o.frequency.value = f; g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.3, t + .02); g.gain.exponentialRampToValueAtTime(.0001, t + .35); o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t + .37); });
+  } catch (e) {}
+}
 function kIdle(ms) { clearTimeout(K.timer); K.timer = setTimeout(kReset, ms); }
 function kAuto() { return WK.filter(w => !w.fired || w.fired > TODAY()); }
 
@@ -540,24 +562,31 @@ function renderKiosk() {
       <div class="dots" aria-label="Введено цифр: ${K.code.length} из 4">${[0, 1, 2, 3].map(i => `<i class="${i < K.code.length ? 'on' : ''}"></i>`).join('')}</div>
       <p class="kerr" role="alert">${esc(K.err)}</p>
       <div class="pad">${['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'del'].map(k => k === '' ? '<span></span>' : `<button data-k="${k}" ${locked ? 'disabled' : ''} aria-label="${k === 'del' ? 'Стереть' : k}">${k === 'del' ? I.del : k}</button>`).join('')}</div></section>`;
+    if (K.last && K.last.until > Date.now()) h += `<p class="klast">${I.check}<span>${esc(K.last.text)}</span></p>`;
     if (!kAuto().length) h += '<p class="hint center mt">Работники ещё не добавлены. Их добавляет владелец в своём телефоне.</p>';
   } else if (K.step === 'who') {
     const w = K.w, r = dayInfo(w, T, marksOf(w.id, T), nowS()), last = r.marks[r.marks.length - 1];
     const acts = [];
-    if (r.state === 'none' || r.state === 'out') acts.push(['in', 'Отметить приход', I.door]);
-    if (r.state === 'in') { acts.push(['out', 'Отметить уход', I.out]); if (SET.lunch) acts.push(['lin', 'Уйти на обед', I.food]); }
-    if (r.state === 'lunch') { acts.push(['lout', 'Вернуться с обеда', I.door]); acts.push(['out', 'Отметить уход', I.out]); }
+    if (r.state === 'none' || r.state === 'out') acts.push(['in', 'Отметить приход', I.door, 'in']);
+    if (r.state === 'in') { acts.push(['out', 'Отметить уход', I.out, 'out']); if (SET.lunch) acts.push(['lin', 'Уйти на обед', I.food, 'ghost']); }
+    if (r.state === 'lunch') { acts.push(['lout', 'Вернуться с обеда', I.door, 'in']); acts.push(['out', 'Отметить уход', I.out, 'ghost']); }
+    const li = r.marks.filter(m => m.k === 'in').pop(), ll = r.marks.filter(m => m.k === 'lin').pop(), lo = r.marks.filter(m => m.k === 'out').pop();
+    const stat = r.state === 'in' && li ? ['good', 'Приход отмечен в ' + fT(li.at)] : r.state === 'lunch' && ll ? ['warn', 'Вы на обеде с ' + fT(ll.at)] : r.state === 'out' && lo ? ['mut', 'Уход отмечен в ' + fT(lo.at)] : null;
     h += `<section class="kcard who">${av(w.name, 'xl')}<h2>${esc(w.name)}</h2>
       <p class="mut">${r.sc.off ? esc(r.excused ? OVRK[r.sc.k] : 'Сегодня у вас выходной') : 'Сегодня по графику ' + r.sc.f + '–' + r.sc.t}</p>
-      ${last ? `<p class="small mut">Последняя отметка: ${esc(KINDS[last.k].toLowerCase())} в ${fT(last.at)}</p>` : ''}
-      <div class="kacts">${acts.map((a, i) => `<button class="btn ${i ? 'ghost' : ''} xl" data-act="${a[0]}">${a[2]}${esc(a[1])}</button>`).join('')}</div>
+      ${stat ? `<p class="kstat ${stat[0]}">${stat[0] === 'good' ? I.check : ''}<span>${esc(stat[1])}</span></p>` : ''}
+      <div class="kacts">${acts.map(a => `<button class="btn ${a[3]} xl" data-act="${a[0]}">${a[2]}${esc(a[1])}</button>`).join('')}</div>
       <button class="linkbtn mt" data-cancel>Это не я</button></section>`;
+  } else if (K.step === 'conf') {
+    const c = K.conf;
+    h += `<section class="kcard conf"><span class="big-ok q">?</span><h2>${esc(c.title)}</h2><p>${esc(c.text)}</p>
+      <div class="kacts"><button class="btn out xl" id="kYes">${esc(c.yes)}</button><button class="btn ghost xl" id="kNo">Нет, назад</button></div></section>`;
   } else if (K.step === 'cam') {
     h += `<section class="kcard cam"><p class="kq">Посмотрите в камеру</p><div class="vbox"><video id="kVid" playsinline muted autoplay></video><span class="cnt" id="kCnt"></span></div>
       <div id="kCamAlt" class="stack mt" hidden><p class="small mut">Камера не включилась. Сделайте фото кнопкой ниже.</p><button class="btn xl" id="kShot">${I.cam}Сделать фото</button><button class="linkbtn" id="kNoPh">Отметиться без фото</button></div></section>`;
   } else if (K.step === 'done') {
     const o = K.done;
-    h += `<section class="kcard done ${o.tone}"><span class="big-ok">${I.check}</span><h2>${esc(o.title)}</h2><p>${esc(o.text)}</p>${o.note ? `<p class="knote">${esc(o.note)}</p>` : ''}<button class="btn ghost mt" data-cancel>Готово</button></section>`;
+    h += `<section class="kcard done ${o.tone}"><span class="big-ok">${I.check}</span><h2>${esc(o.title)}</h2><p class="ktime">${esc(o.time)}</p><p>${esc(o.text)}</p>${o.note ? `<p class="knote">${esc(o.note)}</p>` : ''}<button class="btn ghost mt" data-cancel>Готово</button><div class="kbar" aria-hidden="true"><i style="animation-duration:${o.ms}ms"></i></div></section>`;
   }
   if (ROLE === 'admin') h += '<p class="center mt"><button class="linkbtn" id="kBack">Вернуться в управление</button></p>';
   h += '</div>';
@@ -568,6 +597,8 @@ function bindKiosk() {
   $$('[data-k]').forEach(b => b.onclick = () => kKey(b.dataset.k));
   $$('[data-act]').forEach(b => b.onclick = () => kAct(b.dataset.act));
   $$('[data-cancel]').forEach(b => b.onclick = kReset);
+  const ky = $('#kYes'); if (ky) ky.onclick = () => { K.ok = K.conf.k; kAct(K.conf.k); };
+  const kn = $('#kNo'); if (kn) kn.onclick = () => { K.step = 'who'; K.conf = null; kIdle(25000); renderKiosk(); };
   const kb = $('#kBack'); if (kb) kb.onclick = () => { camStop(); setView('admin'); };
   const c = $('#kClock');
   if (c && ROLE === 'kiosk') { let t = 0; const st = () => { t = setTimeout(kioskMenu, 2000); }, en = () => clearTimeout(t); c.addEventListener('touchstart', st); c.addEventListener('touchend', en); c.addEventListener('mousedown', st); c.addEventListener('mouseup', en); }
@@ -582,6 +613,7 @@ document.addEventListener('keydown', e => {
   if (/^\d$/.test(e.key)) kKey(e.key); else if (e.key === 'Backspace') kKey('del');
 });
 function kKey(k) {
+  audioUnlock();
   if (K.lock > Date.now()) return;
   K.err = '';
   if (k === 'del') K.code = K.code.slice(0, -1);
@@ -595,9 +627,22 @@ function kKey(k) {
   renderKiosk();
 }
 async function kAct(k) {
+  audioUnlock();
   const w = K.w; if (!w) return;
-  const T = TODAY(), list = marksOf(w.id, T), last = list[list.length - 1];
-  if (last && last.k === k && nowS() - last.at < 120000) { kDone(w, k, last.at, true); return; }
+  const T = TODAY(), list = marksOf(w.id, T), last = list[list.length - 1], now = nowS();
+  if (last && last.k === k && now - last.at < 120000) { kDone(w, k, last.at, true); return; }
+  /* защита от случайного ухода: сразу после прихода или раньше графика — переспросить */
+  if ((k === 'out' || k === 'lin') && K.ok !== k) {
+    const back = list.filter(m => m.k === 'in' || m.k === 'lout').pop(), sc = schedFor(w, T), early = k === 'out' && !sc.off && minOf(now) < tm(sc.t) - SET.grace;
+    const recent = back && now - back.at < 30 * 60000;
+    if (recent || early) {
+      const ago = back ? Math.max(0, Math.round((now - back.at) / 60000)) : 0;
+      K.conf = {k, title: k === 'out' ? 'Точно уходите?' : 'Точно уходите на обед?', yes: k === 'out' ? 'Да, отметить уход' : 'Да, ухожу на обед',
+        text: recent ? (back.k === 'in' ? 'Ваш приход отмечен ' : 'Вы вернулись с обеда ') + (ago < 1 ? 'только что' : ago + ' ' + pl(ago, 'минуту', 'минуты', 'минут') + ' назад') + '. Если вы пришли на работу, ничего нажимать не нужно.' : 'По графику вы работаете до ' + sc.t + '. Уход раньше будет виден владельцу.'};
+      K.step = 'conf'; kIdle(20000); renderKiosk(); return;
+    }
+  }
+  K.ok = '';
   K.kind = k;
   if (SET.photo) { K.step = 'cam'; kIdle(60000); renderKiosk(); return; }
   kSave(w, k, '');
@@ -644,9 +689,13 @@ function kDone(w, k, at, again) {
     if (k === 'out' && m < tm(r.sc.t) - SET.grace) { tone = 'warn'; note = 'Уход раньше графика на ' + durTxt(tm(r.sc.t) - m) + '. Конец по графику в ' + r.sc.t + '.'; }
   }
   if (k === 'lout' && SET.lunch) { const l = r.marks.filter(x => x.k === 'lin').pop(); if (l && at - l.at > SET.lunchMax * 60000) { tone = 'warn'; note = 'Обед длился ' + durTxt((at - l.at) / 60000) + ', это дольше ' + durTxt(SET.lunchMax) + '.'; } }
-  const verb = {in: 'вы пришли', out: 'вы ушли', lin: 'вы ушли на обед', lout: 'вы вернулись с обеда'}[k];
-  K.step = 'done'; K.done = {tone, title: again ? 'Вы уже отметились' : (k === 'in' && tone === 'good' ? 'Добро пожаловать!' : k === 'out' ? 'До свидания!' : 'Отмечено'), text: nm + ', ' + verb + ' в ' + fT(at) + '.', note};
-  kIdle(again ? 4000 : 6000);
+  const title = {in: 'Приход отмечен', out: 'Уход отмечен', lin: 'Обед отмечен', lout: 'Возвращение отмечено'}[k];
+  const greet = {in: 'Добро пожаловать, ' + nm + '!', out: 'До свидания, ' + nm + '!', lin: 'Приятного аппетита, ' + nm + '!', lout: nm + ', хорошей работы!'}[k];
+  const ms = again ? 6000 : 8000;
+  K.step = 'done'; K.conf = null; K.done = {tone, title: again ? 'Уже отмечено' : title, time: fT(at), text: again ? nm + ', повторять не нужно.' : greet, note, ms};
+  K.last = {text: nm + ': ' + title.toLowerCase() + ' в ' + fT(at), until: Date.now() + 90000};
+  chime(tone === 'good');
+  kIdle(ms);
   renderKiosk();
 }
 setInterval(() => { const c = $('#kClock'); if (c) c.textContent = fT(nowS()); }, 5000);
