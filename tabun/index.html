@@ -284,6 +284,45 @@ dl.kv .linkbtn{min-height:0;padding:0;text-align:left}
 .sp{flex:none;border:0;background:none;display:grid;justify-items:center;gap:4px;width:76px;padding:0;color:var(--ink)}
 .sp .hi{width:68px;height:68px}.sp span:last-child{font-size:12px;font-weight:650;max-width:76px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .vi{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px 4px 4px 12px}
+.wx{padding:12px 14px}
+.wxh{display:flex;gap:12px;align-items:center}.wxh .t{display:grid;gap:2px;min-width:0}
+.small.bad{color:var(--bad)}
+.wxtop{display:flex;align-items:center;gap:12px;width:100%;border:0;background:none;padding:0;text-align:left;color:var(--ink)}
+.wxtop .t{display:grid;gap:2px;flex:1;min-width:0}.wxtop>svg{color:var(--mut);flex:none}
+.wxnow{display:flex;align-items:center;gap:6px;flex:none}
+.wxi svg{width:34px;height:34px;color:var(--acc)}
+.wxt{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.wxr{display:grid;gap:6px;margin-top:10px}
+.wxa{display:flex;justify-content:space-between;gap:8px;align-items:center;border:0;border-radius:12px;padding:9px 12px;text-align:left;font-size:14px}
+.wxa span{font-size:13px;font-weight:650;white-space:nowrap}
+.wxa.bad{background:var(--bad-soft);color:var(--bad)}.wxa.warn{background:var(--warn-soft);color:var(--warn)}
+.wxdays{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-top:12px}
+.wxd{display:grid;justify-items:center;gap:2px;border:0;background:var(--soft);border-radius:12px;padding:7px 0 6px;color:var(--ink);min-width:0}
+.wxd .dn{font-size:12px;font-weight:700;color:var(--mut)}
+.wxd svg{width:22px;height:22px;color:var(--acc)}
+.wxd b{font-size:14px;font-variant-numeric:tabular-nums}.wxd .mn{font-size:12px;color:var(--mut);font-variant-numeric:tabular-nums}
+.wxd.bad{background:var(--bad-soft)}.wxd.bad svg{color:var(--bad)}.wxd.warn{background:var(--warn-soft)}.wxd.warn svg{color:var(--warn)}
+.wxu{margin:8px 0 0}
+.wxlist{display:grid;gap:8px}.wxrow{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px 12px;min-width:0}
+.wxl{display:flex;gap:12px;align-items:center;min-width:0}.wxl .t{display:grid;gap:2px;flex:1;min-width:0}.wxl .cnt{flex:none}
+.wxadv{font-size:14px;line-height:1.4;border-radius:10px;padding:8px 10px;margin:8px 0 0}
+.wxadv.bad{background:var(--bad-soft);color:var(--bad)}.wxadv.warn{background:var(--warn-soft);color:var(--warn)}
+.ic.warn{background:var(--warn-soft);color:var(--warn)}
+.banner.warn{background:var(--warn-soft);color:var(--ink)}.banner.warn>p b{color:var(--warn)}
+.ped{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);grid-template-rows:repeat(4,auto);gap:6px}
+.ped .pc.big{grid-row:span 2}
+.ped>:nth-child(1){grid-column:1;grid-row:1/3}.ped>:nth-child(2){grid-column:2;grid-row:1}.ped>:nth-child(3){grid-column:2;grid-row:2}
+.ped>:nth-child(4){grid-column:1;grid-row:3/5}.ped>:nth-child(5){grid-column:2;grid-row:3}.ped>:nth-child(6){grid-column:2;grid-row:4}
+.pc{display:flex;gap:8px;align-items:center;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:8px 10px;color:var(--ink);min-width:0;min-height:56px}
+.pc.big{flex-direction:column;align-items:flex-start;justify-content:center}
+.pc .tx{display:grid;gap:1px;min-width:0}
+.pc .r{font-size:11px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.03em}
+.pc .n{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pc .m{font-size:12px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pc.none{border-style:dashed;background:transparent;flex-direction:column;align-items:flex-start;justify-content:center;gap:1px}.pc.none .n{color:var(--mut);font-weight:600}
+.pedw{display:flex;gap:8px;align-items:flex-start;background:var(--warn-soft);color:var(--ink);border-radius:12px;padding:10px 12px;font-size:14px;margin:8px 0 0}
+.pedw svg{color:var(--warn);flex:none}.pedw b{color:var(--warn)}
+@media (max-width:360px){.wxt{font-size:26px}.wxd b{font-size:13px}.wxd svg{width:20px;height:20px}}
 </style>
 <header class="top" id="top"><span class="logo"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M29 4 L32.5 11 C37.5 13 41 18.5 41 25.5 L41 44 L25 44 C25 39 23.5 36.5 21 35 C17.5 35.5 13.5 37.5 10 37.5 C6.5 37.5 4.5 34.5 5.5 31.5 C8 25 14 17.5 20.5 12.5 L22.5 4.5 L26 9.5 Z" fill="currentColor" stroke="none"/></svg></span><div class="brand"><b id="farmName">Табун</b><span id="farmSub">учёт табуна</span></div><button class="ib" id="openSet" aria-label="Настройки"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2.2"/><circle cx="10" cy="17" r="2.2"/></svg></button></header>
 <main id="app"></main>
@@ -396,7 +435,8 @@ function packH(h) {
   return o;
 }
 function cleanG(id, x) { x = x || {}; return {id, name: str(x.name, 40).trim() || 'Без названия', stallion: str(x.stallion, 40), place: str(x.place, 60), kind: x.kind === 'other' ? 'other' : 'uyir', ord: Number(x.ord) || 0}; }
-function cleanSet(s) { s = s || {}; return {farm: str(s.farm, 60), phone: str(s.phone, 30), masts: Array.isArray(s.masts) && s.masts.length ? s.masts.map(v => str(v, 30)).filter(Boolean).slice(0, 40) : MASTS0.slice(), vacs: Array.isArray(s.vacs) && s.vacs.length ? s.vacs.map(v => str(v, 60)).filter(Boolean).slice(0, 30) : VAC0.slice()}; }
+function cleanLoc(l) { return l && isFinite(Number(l.lat)) && isFinite(Number(l.lon)) && l.lat !== null ? {name: str(l.name, 60) || 'Пастбище', lat: Number(l.lat), lon: Number(l.lon)} : null; }
+function cleanSet(s) { s = s || {}; return {farm: str(s.farm, 60), phone: str(s.phone, 30), loc: cleanLoc(s.loc), masts: Array.isArray(s.masts) && s.masts.length ? s.masts.map(v => str(v, 30)).filter(Boolean).slice(0, 40) : MASTS0.slice(), vacs: Array.isArray(s.vacs) && s.vacs.length ? s.vacs.map(v => str(v, 60)).filter(Boolean).slice(0, 30) : VAC0.slice()}; }
 
 /* ---------- состояние ---------- */
 let MODE = 'loading';
@@ -492,6 +532,20 @@ function demoData() {
       if (rnd() < .25) { const tb = dIn(Y - 1, 4, 6); const t = add({sex: rnd() < .5 ? 'f' : 'm', born: tb, grp: gid, mother: m, father: st}); out.horses[t].ev = vacEv(tb).concat([{id: uid('e'), d: dIn(Y, 9, 9), k: 'w', v: 210 + Math.floor(rnd() * 60)}]); }
     }
     for (let i = 0; i < 2; i++) { const kb = dIn(Y - 2, 4, 6); const k = add({sex: 'f', born: kb, grp: gid}); out.horses[k].ev = vacEv(kb); }
+  });
+  // родословная: часть кобыл и жеребцов происходит из других косяков
+  const HH = out.horses, yr = id => Number(HH[id].born.slice(0, 4)), stIds = Object.keys(out.groups).map(k => out.groups[k].stallion);
+  const oldM = Object.keys(HH).filter(id => HH[id].sex === 'f' && !HH[id].mother && ageMonths(HH[id].born, T) >= 48).sort((p, q) => HH[p].born.localeCompare(HH[q].born));
+  oldM.concat(stIds).forEach(id => {
+    if (rnd() > .6) return; const h = HH[id];
+    const ms = oldM.filter(o => o !== id && HH[o].grp !== h.grp && yr(o) <= yr(id) - 4), fs = stIds.filter(o => o !== id && HH[o].grp !== h.grp && yr(o) <= yr(id) - 3);
+    if (ms.length) h.mother = pick(ms); if (fs.length && h.sex === 'f') h.father = pick(fs);
+  });
+  // в трёх косяках подросли дочери жеребца — программа подскажет перевести их
+  ['g2', 'g5', 'g7'].forEach(gid => {
+    const s = out.groups[gid].stallion, ms = Object.keys(HH).filter(id => HH[id].grp === gid && HH[id].sex === 'f' && ageMonths(HH[id].born, T) >= 60);
+    const fl = Object.keys(HH).filter(id => HH[id].grp === gid && HH[id].sex === 'f' && !HH[id].mother && yr(id) === Y - 2);
+    fl.slice(0, gid === 'g5' ? 2 : 1).forEach(id => { HH[id].father = s; HH[id].mother = pick(ms); });
   });
   out.groups.g11 = {name: 'Молодняк на откорм', stallion: '', place: 'Загон у фермы', kind: 'other', ord: 10};
   out.groups.g12 = {name: 'Рабочие лошади', stallion: '', place: 'Ферма', kind: 'other', ord: 11};
@@ -698,6 +752,7 @@ function bindViews(app) {
   $$('[data-golost]', app).forEach(b => b.onclick = () => { V.tab = 'list'; V.st = 'lost'; V.cat = ''; V.g = ''; V.q = ''; render(); });
   $$('[data-y]', app).forEach(b => b.onclick = () => { V.y += Number(b.dataset.y); render(); });
   $$('[data-csv]', app).forEach(b => b.onclick = () => exportCsv(b.dataset.csv));
+  bindWx(app);
 }
 
 /* --- главная --- */
@@ -705,10 +760,12 @@ function homeView() {
   const live = HS.filter(alive), T = TODAY(), Y = T.slice(0, 4);
   const byCat = {}; live.forEach(h => { const c = catOf(h); byCat[c] = (byCat[c] || 0) + 1; });
   const mx = Math.max.apply(null, CAT_ORDER.map(c => byCat[c] || 0).concat([1]));
-  let h = `<section class="hero mt8"><span class="big">${live.length}</span><span class="l">${pl(live.length, 'голова', 'головы', 'голов')} в табуне</span></section>`;
+  let h = `<section class="hero mt8"><span class="big">${live.length}</span><span class="l">${pl(live.length, 'голова', 'головы', 'голов')} в табуне</span></section>` + wxCard();
   h += '<section class="card mt"><h3>Состав табуна</h3><div class="bars mt8">' + CAT_ORDER.filter(c => byCat[c]).map(c => `<button class="bar" data-go="list" data-cat="${c}"><span class="bl"><b>${esc(CATS[c].kz)}</b><span>${esc(CATS[c].ru)}</span></span><span class="bt"><i style="width:${Math.max(3, Math.round((byCat[c] || 0) / mx * 100))}%"></i></span><span class="bv">${byCat[c]}</span></button>`).join('') + '</div></section>';
   const lost = lostOf();
   if (lost.length) h += `<div class="sec-h"><h3>Пропали</h3>${chip('bad', lost.length + ' ' + pl(lost.length, 'лошадь', 'лошади', 'лошадей'))}</div><div class="list">` + lost.slice(0, 5).map(x => `<button class="row" data-h="${esc(x.id)}">${horseAv(x)}<span class="t"><b>${esc(hName(x))}</b><span class="st bad">${esc(lostAgo(x))}</span>${lostWhere(x) ? `<span class="small mut">${esc(lostWhere(x))}</span>` : ''}</span></button>`).join('') + (lost.length > 5 ? `<button class="btn ghost full" data-golost>Все пропавшие (${lost.length})</button>` : '') + '</div>';
+  const kg0 = kinGroups();
+  if (kg0.length) h += `<div class="sec-h"><h3>Родство в косяках</h3>${chip('warn', kg0.reduce((a, x) => a + x.L.length, 0) + ' ' + pl(kg0.reduce((a, x) => a + x.L.length, 0), 'кобыла', 'кобылы', 'кобыл'))}</div><div class="list">` + kg0.slice(0, 4).map(x => `<button class="row" data-gopen="${esc(x.g.id)}"><span class="ic warn">${I.flag}</span><span class="t"><b>${esc(x.g.name)}</b><span class="st warn">у жеребца в косяке ${esc(kinSum(x.L))}</span></span></button>`).join('') + '</div>';
   const due = dueList(14), over = due.filter(x => x.nx < T);
   h += `<div class="sec-h"><h3>Скоро нужно сделать</h3>${over.length ? chip('bad', 'просрочено: ' + over.length) : ''}</div>`;
   h += due.length ? '<div class="list">' + due.slice(0, 8).map((x, i) => `<button class="row" data-due="${i}"><span class="ic ${x.nx < T ? 'bad' : 'acc'}">${I.syr}</span><span class="t"><b>${esc(x.name)}</b><span class="st ${x.nx < T ? 'bad' : 'mut'}">${x.nx < T ? 'просрочено с ' + fDs(x.nx) : x.last !== x.nx ? 'с ' + fDs(x.nx) + ' по ' + fDs(x.last) : x.nx === T ? 'сегодня' : fDs(x.nx) + ', через ' + dBetween(T, x.nx) + ' дн.'}</span></span><span class="cnt">${x.ids.length} ${pl(x.ids.length, 'голова', 'головы', 'голов')}</span></button>`).join('') + '</div>' : '<p class="small mut">На ближайшие две недели прививок и обработок не запланировано.</p>';
@@ -832,6 +889,7 @@ function horseSheet(id) {
     const vk = Object.keys(v).sort();
     x += '<div class="sec-h"><h3>Прививки и обработки</h3></div>';
     x += vk.length ? '<div class="list">' + vk.map(k => { const e = v[k], od = e.nx && e.nx < T; return `<div class="row static"><span class="ic ${od ? 'bad' : 'acc'}">${I.syr}</span><span class="t"><b>${esc(k)}</b><span class="st ${od ? 'bad' : 'mut'}">была ${esc(fDy(e.d))}${e.nx ? (od ? ' · просрочена с ' : ' · следующая ') + esc(fDy(e.nx)) : ''}</span></span></div>`; }).join('') + '</div>' : '<p class="small mut">Записей нет.</p>';
+    x += pedHtml(h);
     if (kids.length) x += `<div class="sec-h"><h3>${h.sex === 'f' ? 'Приплод' : 'Потомство'}</h3><span class="mut">${kids.length}</span></div><div class="list">` + kids.slice(0, 12).map(k => `<button class="row" data-hh="${esc(k.id)}">${horseAv(k)}<span class="t"><b>${esc(hName(k))}</b><span class="st mut">${esc((k.sex === 'f' ? 'кобылка' : 'жеребчик') + ' · ' + (k.born ? fDy(k.born) : '') + (alive(k) ? '' : ' · ' + ST[k.st].toLowerCase()))}</span></span></button>`).join('') + '</div>';
     x += '<div class="sec-h"><h3>История</h3></div>';
     x += h.ev.length ? '<div class="hist">' + h.ev.slice().reverse().slice(0, 40).map(e => `<div class="he"><span class="d">${esc(fDy(e.d))}</span><span class="t"><b>${esc(EVK[e.k])}${e.k === 'vac' && e.t ? ': ' + esc(e.t) : ''}</b>${evLine(e)}</span><button class="ib sm" data-edel="${esc(e.id)}" aria-label="Удалить запись">${I.trash}</button></div>`).join('') + '</div>' : '<p class="small mut">Пока пусто.</p>';
@@ -842,6 +900,7 @@ function horseSheet(id) {
     $$('[data-g]').forEach(b => b.onclick = () => groupSheet(b.dataset.g));
     $$('[data-ev]').forEach(b => b.onclick = () => { const k = b.dataset.ev; if (k === 'foal') foalSheet(h.id); else evSheet([h.id], k, () => horseSheet(h.id)); });
     $('#hEdit').onclick = () => editHorse(h.id);
+    $$('[data-pedset]').forEach(b => b.onclick = () => editHorse(h.id));
     $('#hPh').onclick = () => photoMenu(h);
     const ap = $('#hAddPh'); if (ap) ap.onclick = () => pickPhoto(h);
     const hf = $('#hFound'); if (hf) hf.onclick = () => foundSheet(h.id);
@@ -929,11 +988,12 @@ function foalSheet(mid) {
     if (!F.dead) x += `<div class="seg">${[['f', 'Кобылка'], ['m', 'Жеребчик']].map(o => `<button data-fs="${o[0]}" aria-pressed="${F.sex === o[0]}">${o[1]}</button>`).join('')}</div>
       <div class="row2"><label class="f" for="fT">Бирка<input id="fT" inputmode="numeric" autocomplete="off" value="${esc(F.tag)}"></label><label class="f" for="fC">Масть${mastSel("fC", F.color)}</label></div>
       <label class="f" for="fN">Кличка<input id="fN" autocomplete="off" value="${esc(F.name)}" placeholder="необязательно"></label>
-      <label class="f" for="fF">Отец<select id="fF"><option value="">— неизвестен —</option>${stal.map(h => `<option value="${esc(h.id)}" ${h.id === F.father ? 'selected' : ''}>${esc(hName(h))}</option>`).join('')}</select></label>`;
+      <label class="f" for="fF">Отец<select id="fF"><option value="">— неизвестен —</option>${stal.map(h => `<option value="${esc(h.id)}" ${h.id === F.father ? 'selected' : ''}>${esc(hName(h))}</option>`).join('')}</select></label>` + (hz(F.father) && kinTo(hz(F.father), m) ? `<p class="pedw">${I.flag}<span><b>Близкое родство:</b> кобыла — ${esc(kinTo(hz(F.father), m))} этого жеребца.</span></p>` : '');
     x += '<p class="err" id="fErr"></p><button class="btn" id="fGo">Сохранить</button></div>';
     openSheet(x, {kind: 'foal'});
     const sync = () => { F.d = $('#fD').value; F.dead = $('#fDead').checked; if ($('#fT')) { F.tag = $('#fT').value.trim(); F.color = mastVal('fC'); F.name = $('#fN').value.trim(); F.father = $('#fF').value; } };
     $('#fDead').onchange = () => { sync(); draw(); };
+    const ff = $('#fF'); if (ff) ff.onchange = () => { sync(); draw(); };
     $$('[data-fs]').forEach(b => b.onclick = () => { sync(); F.sex = b.dataset.fs; draw(); });
     $('#fGo').onclick = () => {
       sync();
@@ -1024,6 +1084,8 @@ function groupSheet(id) {
   let x = head(g.place || (g.kind === 'uyir' ? 'Косяк' : 'Группа'), g.name);
   x += `<p class="small mut">${m.length} ${pl(m.length, 'голова', 'головы', 'голов')}${st ? ' · жеребец ' + esc(hName(st)) : ''}</p>`;
   x += `<div class="acts mt8">${[['gv', I.syr, 'Прививка всем'], ['ga', I.plus, 'Добавить лошадь'], ['ge', I.edit, 'Изменить']].map(a => `<button data-${a[0]}>${a[1]}<span>${a[2]}</span></button>`).join('')}</div>`;
+  const kin = groupKin(g);
+  if (kin.length) x += `<div class="banner warn mt"><p><b>У жеребца в косяке его родня: ${esc(kinSum(kin))}.</b> Чтобы не было близкородственного приплода, переведите их в другой косяк.</p><div class="list mt8">${kin.map(k => `<button class="row" data-h="${esc(k.h.id)}">${horseAv(k.h)}<span class="t"><b>${esc(hName(k.h))}</b><span class="st warn">${esc(k.r)} жеребца · ${esc(ageTxt(k.h.born))}</span></span></button>`).join('')}</div><button class="btn small mt8" id="gKinMove">${I.move}Перевести их</button></div>`;
   const wp = m.filter(h => h.ph);
   if (wp.length) x += '<div class="strip mt">' + wp.slice(0, 40).map(h => `<button class="sp" data-h="${esc(h.id)}">${horseAv(h)}<span>${esc(h.name || h.tag)}</span></button>`).join('') + '</div>';
   x += '<div class="list mt">' + m.map(hRow).join('') + '</div>';
@@ -1033,6 +1095,7 @@ function groupSheet(id) {
   $('[data-gv]').onclick = () => evSheet(m.map(h => h.id), 'vac');
   $('[data-ga]').onclick = () => editHorse(null, {grp: g.id});
   $('[data-ge]').onclick = () => editGroup(g.id);
+  const km = $('#gKinMove'); if (km) km.onclick = () => evSheet(kin.map(k => k.h.id), 'move', () => groupSheet(g.id));
   const gd = $('#gDel'); if (gd) armed(gd, 'Удалить?', () => act(() => API.delG(g.id), 'Группа удалена.').then(ok => { if (ok) closeSheet(); }));
 }
 function editGroup(id) {
@@ -1069,6 +1132,7 @@ function settingsSheet() {
       <p class="small mut">Прививки и обработки в списке</p><div class="vlist">${F.vacs.map((v, i) => `<div class="vi"><span>${esc(v)}</span><button class="ib sm" data-vdel="${i}" aria-label="Убрать">${I.close}</button></div>`).join('')}</div>
       <div class="row2"><input id="sV" autocomplete="off" placeholder="Добавить в список"><button class="btn ghost" id="sVAdd">${I.plus}Добавить</button></div>
       <p class="err" id="sErr"></p><button class="btn" id="sSave">Сохранить</button></div>
+      <section class="card mt"><h3>Погода</h3><p class="small">${SET.loc ? 'Прогноз для: <b>' + esc(SET.loc.name) + '</b>' : 'Место не указано.'}</p><button class="btn ghost full mt8" id="sLoc">${WXI.pin}${SET.loc ? 'Изменить место' : 'Указать место'}</button></section>
       <section class="card mt"><h3>Резервная копия</h3><p class="small">Сохраните весь табун одним файлом на телефон.</p><button class="btn ghost full mt8" id="sBk">${I.save}Сохранить копию</button></section>
       ${MODE === 'demo' ? `<section class="card mt"><h3>Пример</h3><p class="small">Сейчас открыт пример с выдуманными лошадьми. Чтобы вести настоящий учёт, программу подключают к облаку: тогда данные хранятся надёжно и видны на нескольких телефонах.</p><button class="btn ghost full mt8" id="sReset">Начать пример заново</button></section>` : ''}`, {kind: 'set'});
     const sync = () => { F.farm = $('#sF').value.trim(); F.phone = $('#sPh').value.trim(); };
@@ -1077,6 +1141,7 @@ function settingsSheet() {
     $$('[data-vdel]').forEach(b => b.onclick = () => { sync(); F.vacs.splice(Number(b.dataset.vdel), 1); draw(); });
     $('#sVAdd').onclick = () => { sync(); const v = $('#sV').value.trim(); if (v && F.vacs.indexOf(v) < 0) F.vacs.push(v.slice(0, 60)); draw(); };
     $('#sSave').onclick = () => { sync(); if (!F.vacs.length) { $('#sErr').textContent = 'Оставьте хотя бы одну прививку в списке.'; return; } act(() => API.saveSet(F), 'Сохранено.').then(ok => { if (ok) closeSheet(); }); };
+    $('#sLoc').onclick = locSheet;
     $('#sBk').onclick = () => saveFile('tabun-kopiya-' + TODAY() + '.json', JSON.stringify(API.backup()));
     const r = $('#sReset'); if (r) armed(r, 'Нажмите ещё раз', () => { closeSheet(); resetDemo(); });
   };
@@ -1166,8 +1231,211 @@ async function lostAd(h) {
 }
 function dataToBlob(d) { const a = String(d).split(','), b = atob(a[1] || ''), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return new Blob([u], {type: 'image/jpeg'}); }
 
+/* ---------- погода для пастбища (Open-Meteo, бесплатно, без ключа) ---------- */
+const WXK = 'tabun-wx';
+const WXI = {
+  sun: sv('<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/>'),
+  part: sv('<path d="M8.5 6.2A3.6 3.6 0 0 1 15 7.4"/><path d="M8.6 2.8v1.4M3.6 7.6H5M4.9 4l1 1"/><path d="M7 19.5h10a3.5 3.5 0 0 0 .4-7A5 5 0 0 0 8 11.2a4.2 4.2 0 0 0-1 8.3z"/>'),
+  cloud: sv('<path d="M7 18.5h10a3.8 3.8 0 0 0 .5-7.6A5.5 5.5 0 0 0 7 10a4.3 4.3 0 0 0 0 8.5z"/>'),
+  fog: sv('<path d="M4 9h16M6 13h12M4 17h16"/>'),
+  rain: sv('<path d="M7 14.5h10a3.6 3.6 0 0 0 .4-7.2A5.2 5.2 0 0 0 7.4 6.4 4 4 0 0 0 7 14.5z"/><path d="M8.5 17.5 7.5 20M12.5 17.5l-1 2.5M16.5 17.5l-1 2.5"/>'),
+  snow: sv('<path d="M7 14h10a3.6 3.6 0 0 0 .4-7.2A5.2 5.2 0 0 0 7.4 5.9 4 4 0 0 0 7 14z"/><path d="M8 18h.01M12 20h.01M16 18h.01M10 21.5h.01M14 21.5h.01" stroke-width="2.6"/>'),
+  storm: sv('<path d="M7 14h10a3.6 3.6 0 0 0 .4-7.2A5.2 5.2 0 0 0 7.4 5.9 4 4 0 0 0 7 14z"/><path d="M12.5 14.5 10.5 18h3l-2 3.5"/>'),
+  wind: sv('<path d="M3 9h11a2.5 2.5 0 1 0-2.5-2.5M3 13h15a2.5 2.5 0 1 1-2.5 2.5M3 17h7"/>'),
+  pin: sv('<path d="M12 21s-6.5-6-6.5-11a6.5 6.5 0 0 1 13 0c0 5-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/>'),
+  gps: sv('<circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3"/>')
+};
+const WXC = c => c === 0 ? ['sun', 'Ясно'] : c === 1 ? ['sun', 'Малооблачно'] : c === 2 ? ['part', 'Переменная облачность'] : c === 3 ? ['cloud', 'Пасмурно'] : c === 45 || c === 48 ? ['fog', 'Туман'] :
+  c >= 51 && c <= 55 ? ['rain', 'Морось'] : c === 56 || c === 57 ? ['rain', 'Ледяная морось'] : c >= 61 && c <= 65 ? ['rain', c === 65 ? 'Сильный дождь' : 'Дождь'] : c === 66 || c === 67 ? ['rain', 'Ледяной дождь'] :
+  c >= 71 && c <= 75 ? ['snow', c === 75 ? 'Сильный снег' : 'Снег'] : c === 77 ? ['snow', 'Снежная крупа'] : c >= 80 && c <= 82 ? ['rain', 'Ливень'] : c === 85 || c === 86 ? ['snow', 'Снегопад'] : c === 95 ? ['storm', 'Гроза'] : c >= 96 ? ['storm', 'Гроза с градом'] : ['cloud', '—'];
+const isSnowC = c => (c >= 71 && c <= 77) || c === 85 || c === 86;
+const DIRS = ['северный', 'северо-восточный', 'восточный', 'юго-восточный', 'южный', 'юго-западный', 'западный', 'северо-западный'];
+const dirTxt = d => d == null || !isFinite(d) ? '' : DIRS[Math.round(((d % 360) + 360) % 360 / 45) % 8];
+const DW = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
+const tC = v => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(Math.round(v)) + '°';
+let WX = lsGet(WXK, null), WXBUSY = false, WXERR = '';
+
+/* что опасно для табуна в этот день */
+function wxRisks(d) {
+  const r = [], snow = d.snow >= 1 || isSnowC(d.code), g = d.gust || 0;
+  if (snow && g >= 15) r.push({k: 'buran', tone: 'bad', t: 'Буран', a: 'Снег с сильным ветром: табун может уйти по ветру и потеряться. Пригоните лошадей к укрытию, проверьте, все ли на месте, заготовьте сено.'});
+  if (d.code === 56 || d.code === 57 || d.code === 66 || d.code === 67 || (d.rain >= 1 && d.min < 0 && d.max > -3 && (d.snow || 0) < d.rain)) r.push({k: 'ice', tone: 'bad', t: 'Гололёд', a: 'Дождь при морозе даёт ледяную корку: лошади не смогут добывать траву из-под снега (опасность жұта). Подготовьте сено и следите за слабыми.'});
+  if (d.min <= -30) r.push({k: 'frost', tone: 'bad', t: 'Сильный мороз ' + tC(d.min), a: 'Жеребят и слабых лошадей держите в укрытии, дайте больше корма. Проверьте, не замёрзла ли вода.'});
+  else if (d.min <= -25) r.push({k: 'frost', tone: 'warn', t: 'Мороз ' + tC(d.min), a: 'Молодняк лучше держать в укрытии. Проверьте воду на водопое.'});
+  if (!r.some(x => x.k === 'buran') && g >= 20) r.push({k: 'wind', tone: 'warn', t: 'Сильный ветер ' + Math.round(g) + ' м/с', a: 'Держите табун в низине или за укрытием.'});
+  if (!r.some(x => x.k === 'buran') && d.snow >= 10) r.push({k: 'snow', tone: 'warn', t: 'Сильный снег ' + Math.round(d.snow) + ' см', a: 'Траву занесёт, приготовьте подкормку.'});
+  if (d.code >= 95) r.push({k: 'storm', tone: 'warn', t: d.code >= 96 ? 'Гроза с градом' : 'Гроза', a: 'Не держите табун на возвышенности и у одиноких деревьев.'});
+  if (d.max >= 35) r.push({k: 'heat', tone: 'warn', t: 'Жара ' + tC(d.max), a: 'Водопой чаще, нужна тень. Не гоняйте лошадей в полдень.'});
+  return r;
+}
+function wxParse(j) {
+  const D = j.daily || {}, c = j.current || {}, days = [];
+  (D.time || []).forEach((t, i) => {
+    const v = k => (D[k] && D[k][i] != null) ? Number(D[k][i]) : null;
+    const snowCm = v('snowfall_sum') || 0, pr = v('precipitation_sum') || 0;
+    days.push({d: t, code: v('weather_code') || 0, max: v('temperature_2m_max') || 0, min: v('temperature_2m_min') || 0, pr, snow: snowCm, rain: Math.max(0, pr - snowCm * 0.7), gust: v('wind_gusts_10m_max') || 0, dir: v('wind_direction_10m_dominant')});
+  });
+  return {cur: c.temperature_2m != null ? {t: Number(c.temperature_2m), code: Number(c.weather_code) || 0, wind: Number(c.wind_speed_10m) || 0, gust: Number(c.wind_gusts_10m) || 0} : null, days};
+}
+async function wxLoad(force) {
+  const L = SET.loc; if (!L || WXBUSY) return;
+  const same = WX && Math.abs(WX.lat - L.lat) < 0.01 && Math.abs(WX.lon - L.lon) < 0.01;
+  if (!force && same && Date.now() - WX.at < 60 * 60 * 1000) return;
+  if (!navigator.onLine && same) return;
+  WXBUSY = true; WXERR = ''; wxRedraw();
+  const u = 'https://api.open-meteo.com/v1/forecast?latitude=' + L.lat.toFixed(4) + '&longitude=' + L.lon.toFixed(4) + '&current=temperature_2m,weather_code,wind_speed_10m,wind_gusts_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,snowfall_sum,wind_gusts_10m_max,wind_direction_10m_dominant&wind_speed_unit=ms&timezone=auto&forecast_days=7';
+  try {
+    const ctl = typeof AbortController !== 'undefined' ? new AbortController() : null, tm = setTimeout(() => { if (ctl) ctl.abort(); }, 12000);
+    const res = await fetch(u, ctl ? {signal: ctl.signal} : {}); clearTimeout(tm);
+    if (!res.ok) throw new Error('http ' + res.status);
+    const p = wxParse(await res.json());
+    if (!p.days.length) throw new Error('empty');
+    WX = {at: Date.now(), lat: L.lat, lon: L.lon, cur: p.cur, days: p.days}; lsSet(WXK, WX);
+  } catch (e) { WXERR = navigator.onLine ? 'Не удалось получить прогноз.' : 'Нет интернета.'; }
+  WXBUSY = false; wxRedraw();
+}
+function wxRedraw() {
+  const el = $('#wxbox'); if (el) el.outerHTML = wxCard();
+  const b = $('#wxbox'); if (b) bindWx(b);
+  if (SHEET && SHEET.kind === 'wx' && SHEET.redraw) SHEET.redraw();
+}
+function wxDays() { const T = TODAY(); return WX && WX.lat === (SET.loc || {}).lat ? WX.days.filter(d => d.d >= T) : []; }
+function wxAgo() { if (!WX) return ''; const m = Math.round((Date.now() - WX.at) / 60000); return m < 2 ? 'только что' : m < 60 ? m + ' мин назад' : m < 60 * 24 ? Math.round(m / 60) + ' ч назад' : fDs(ds(new Date(WX.at))); }
+function wxCard() {
+  const L = SET.loc;
+  if (!L) return `<section class="card wx mt" id="wxbox"><div class="wxh"><span class="ic">${WXI.part}</span><span class="t"><b>Погода на пастбище</b><span class="small mut">Укажите, где пасётся табун: программа предупредит о буране, морозе и гололёде.</span></span></div><button class="btn ghost full mt8" data-wxset>${WXI.pin}Указать место</button></section>`;
+  const days = wxDays();
+  if (!days.length) return `<section class="card wx mt" id="wxbox"><div class="wxh"><span class="ic">${WXI.part}</span><span class="t"><b>Погода · ${esc(L.name)}</b><span class="small ${WXERR ? 'bad' : 'mut'}">${WXBUSY ? 'Загружаю прогноз…' : esc(WXERR || 'Прогноз появится, когда будет интернет.')}</span></span></div>${!WXBUSY ? '<button class="btn ghost full mt8" data-wxre>Обновить</button>' : ''}</section>`;
+  const risk = []; days.forEach((d, i) => wxRisks(d).forEach(r => { const j = risk.findIndex(x => x.k === r.k), o = Object.assign({i, d: d.d}, r); if (j < 0) risk.push(o); else if (r.tone === 'bad' && risk[j].tone !== 'bad') risk[j] = o; }));
+  const c = days[0].d === TODAY() && WX.cur ? WX.cur : null, d0 = days[0], ic = WXC(c ? c.code : d0.code);
+  let x = `<section class="card wx mt" id="wxbox"><button class="wxtop" data-wxopen><span class="wxnow"><span class="wxi">${WXI[ic[0]]}</span><span class="wxt">${c ? tC(c.t) : tC(d0.max)}</span></span><span class="t"><b>${esc(L.name)}</b><span class="small mut">${esc(ic[1])}${c ? ' · ветер ' + Math.round(c.wind) + ' м/с' : ''} · ${tC(d0.max)} / ${tC(d0.min)}</span></span>${I.right}</button>`;
+  if (risk.length) x += '<div class="wxr">' + risk.slice(0, 3).map(r => `<button class="wxa ${r.tone}" data-wxopen><b>${esc(r.t)}</b><span>${esc(wxWhen(r.d))}</span></button>`).join('') + '</div>';
+  x += '<div class="wxdays">' + days.slice(0, 7).map(d => { const k = WXC(d.code), rr = wxRisks(d), tone = rr.some(z => z.tone === 'bad') ? 'bad' : rr.length ? 'warn' : ''; return `<button class="wxd ${tone}" data-wxopen aria-label="${esc(wxWhen(d.d) + ': ' + k[1] + ', ' + tC(d.max) + ' / ' + tC(d.min))}"><span class="dn">${d.d === TODAY() ? 'сег' : DW[pd(d.d).getDay()]}</span>${WXI[k[0]]}<b>${tC(d.max)}</b><span class="mn">${tC(d.min)}</span></button>`; }).join('') + '</div>';
+  x += `<p class="small mut wxu">${WXBUSY ? 'Обновляю…' : 'Обновлено ' + esc(wxAgo()) + (WXERR ? ' · ' + esc(WXERR) : '')}</p></section>`;
+  return x;
+}
+function wxWhen(d) { const n = dBetween(TODAY(), d); return n === 0 ? 'сегодня' : n === 1 ? 'завтра' : DW[pd(d).getDay()] + ', ' + fDs(d); }
+function bindWx(root) {
+  $$('[data-wxopen]', root).forEach(b => b.onclick = wxSheet);
+  $$('[data-wxset]', root).forEach(b => b.onclick = locSheet);
+  $$('[data-wxre]', root).forEach(b => b.onclick = () => wxLoad(true));
+}
+function wxSheet() {
+  const st = {kind: 'wx'};
+  const draw = () => {
+    const L = SET.loc, days = wxDays();
+    let x = head('Погода', L ? L.name : 'Пастбище');
+    if (!days.length) x += `<p class="mut">${esc(WXBUSY ? 'Загружаю прогноз…' : WXERR || 'Прогноза пока нет.')}</p>`;
+    x += '<div class="wxlist">' + days.map(d => {
+      const k = WXC(d.code), rr = wxRisks(d), tone = rr.some(z => z.tone === 'bad') ? 'bad' : rr.length ? 'warn' : '';
+      const info = [k[1], d.gust >= 1 ? 'порывы ' + Math.round(d.gust) + ' м/с' + (dirTxt(d.dir) ? ', ' + dirTxt(d.dir) : '') : '', d.snow >= 0.5 ? 'снег ' + (Math.round(d.snow * 10) / 10) + ' см' : d.pr >= 0.5 ? 'осадки ' + (Math.round(d.pr * 10) / 10) + ' мм' : ''].filter(Boolean).join(' · ');
+      return `<div class="wxrow"><div class="wxl"><span class="ic ${tone}">${WXI[k[0]]}</span><span class="t"><b>${esc(wxWhen(d.d).replace(/^./, s => s.toUpperCase()))}</b><span class="st mut">${esc(info)}</span></span><span class="cnt">${tC(d.max)}<span class="mut"> / ${tC(d.min)}</span></span></div>${rr.map(r => `<p class="wxadv ${r.tone}"><b>${esc(r.t)}.</b> ${esc(r.a)}</p>`).join('')}</div>`;
+    }).join('') + '</div>';
+    x += `<p class="small mut mt8">${WX && days.length ? 'Обновлено ' + esc(wxAgo()) + '. ' : ''}Без интернета показан последний полученный прогноз. Данные: Open-Meteo.</p>`;
+    x += `<div class="row2 mt"><button class="btn ghost" id="wxRe" ${WXBUSY ? 'disabled' : ''}>Обновить</button><button class="btn ghost" id="wxLoc">${WXI.pin}Другое место</button></div>`;
+    openSheet(x, st);
+    $('#wxRe').onclick = () => wxLoad(true);
+    $('#wxLoc').onclick = locSheet;
+  };
+  st.redraw = draw;
+  draw();
+}
+/* выбор места: поиск по названию или по телефону */
+function locSheet() {
+  const st = {kind: 'loc', q: '', res: null, busy: false, err: ''};
+  const draw = () => {
+    let x = head('Погода', 'Где пасётся табун?');
+    x += `<p class="small mut">Найдите ближайшее село или районный центр. Можно определить место по телефону, когда вы на пастбище.</p>
+      <div class="row2 mt8"><input id="lcq" autocomplete="off" placeholder="Например: Шалкар" value="${esc(st.q)}"><button class="btn" id="lcGo" ${st.busy ? 'disabled' : ''}>${I.search}Найти</button></div>
+      <button class="btn ghost full mt8" id="lcGps" ${st.busy ? 'disabled' : ''}>${WXI.gps}Я сейчас на пастбище</button>
+      <p class="err" id="lcErr">${esc(st.err)}</p>`;
+    if (st.busy) x += '<div class="busy mt8"><span class="spin" aria-hidden="true"></span><span>Ищу…</span></div>';
+    if (st.res) x += st.res.length ? '<div class="list mt8">' + st.res.map((r, i) => `<button class="row" data-lc="${i}"><span class="ic">${WXI.pin}</span><span class="t"><b>${esc(r.name)}</b><span class="st mut">${esc(r.sub)}</span></span></button>`).join('') + '</div>' : '<p class="mut mt8">Ничего не нашлось. Попробуйте другое написание или ближайший город.</p>';
+    if (SET.loc) x += `<p class="small mut mt">Сейчас: <b>${esc(SET.loc.name)}</b></p><button class="linkbtn" id="lcOff">Не показывать погоду</button>`;
+    openSheet(x, st);
+    const q = $('#lcq');
+    const find = async () => {
+      st.q = q.value.trim(); if (st.q.length < 2) { st.err = 'Впишите название.'; draw(); return; }
+      st.busy = true; st.err = ''; st.res = null; draw();
+      try {
+        const r = await fetch('https://geocoding-api.open-meteo.com/v1/search?count=8&language=ru&format=json&name=' + encodeURIComponent(st.q));
+        const j = await r.json();
+        st.res = (j.results || []).map(z => ({name: str(z.name, 60), sub: [z.admin2, z.admin1, z.country].filter(Boolean).join(', '), lat: Number(z.latitude), lon: Number(z.longitude)})).filter(z => isFinite(z.lat) && isFinite(z.lon));
+      } catch (e) { st.err = navigator.onLine ? 'Поиск не ответил, попробуйте ещё раз.' : 'Нет интернета.'; }
+      st.busy = false; draw();
+    };
+    $('#lcGo').onclick = find;
+    q.onkeydown = e => { if (e.key === 'Enter') find(); };
+    $('#lcGps').onclick = () => {
+      if (!navigator.geolocation) { st.err = 'Телефон не умеет определять место.'; draw(); return; }
+      st.busy = true; st.err = ''; draw();
+      navigator.geolocation.getCurrentPosition(p => { st.busy = false; setLoc({name: 'Пастбище (по телефону)', lat: p.coords.latitude, lon: p.coords.longitude}); },
+        e => { st.busy = false; st.err = e && e.code === 1 ? 'Разрешите доступ к месту в настройках браузера или найдите село по названию.' : 'Не удалось определить место. Найдите село по названию.'; draw(); }, {enableHighAccuracy: false, timeout: 15000, maximumAge: 600000});
+    };
+    $$('[data-lc]').forEach(b => b.onclick = () => { const r = st.res[Number(b.dataset.lc)]; setLoc({name: r.name, lat: r.lat, lon: r.lon}); });
+    const off = $('#lcOff'); if (off) off.onclick = () => { const s = clone(SET); s.loc = null; act(() => API.saveSet(s), 'Погода скрыта.').then(ok => { if (ok) closeSheet(); }); };
+  };
+  draw();
+}
+function setLoc(l) {
+  const s = clone(SET); s.loc = {name: str(l.name, 60), lat: Math.round(l.lat * 1e4) / 1e4, lon: Math.round(l.lon * 1e4) / 1e4};
+  act(() => API.saveSet(s), 'Место сохранено.').then(ok => { if (ok) { closeSheet(); wxLoad(true); } });
+}
+window.addEventListener('online', () => wxLoad(false));
+
+/* ---------- родословная и родство ---------- */
+/* предки лошади: id → поколение (1 — родители, 2 — деды) */
+function ancestors(id, depth) {
+  const out = {}, walk = (x, g) => { const h = hz(x); if (!h || g > depth) return; [h.mother, h.father].forEach(p => { if (p && hz(p) && !(p in out && out[p] <= g)) { out[p] = g; walk(p, g + 1); } }); };
+  walk(id, 1); return out;
+}
+const ROLE = {f: 'отец', m: 'мать', ff: 'дед по отцу', fm: 'бабушка по отцу', mf: 'дед по матери', mm: 'бабушка по матери'};
+function pedCell(id, role, big) {
+  const h = hz(id);
+  if (!h) return `<div class="pc none${big ? ' big' : ''}"><span class="r">${esc(ROLE[role])}</span><span class="n">неизвестно</span></div>`;
+  const y = h.born ? h.born.slice(0, 4) : '';
+  return `<button class="pc${big ? ' big' : ''}" data-hh="${esc(h.id)}">${big ? horseAv(h) : ''}<span class="tx"><span class="r">${esc(ROLE[role])}</span><b class="n">${esc(hName(h))}</b><span class="m">${esc([h.color, y ? y + ' г.' : '', alive(h) ? '' : ST[h.st].toLowerCase()].filter(Boolean).join(' · '))}</span></span></button>`;
+}
+function pedHtml(h) {
+  const mo = hz(h.mother), fa = hz(h.father);
+  let x = '<div class="sec-h"><h3>Родословная</h3>' + (mo || fa ? `<span class="mut">${Object.keys(ancestors(h.id, 6)).length} ${pl(Object.keys(ancestors(h.id, 6)).length, 'предок', 'предка', 'предков')}</span>` : '') + '</div>';
+  if (!mo && !fa) return x + `<p class="small mut">Родители не указаны. <button class="linkbtn" data-pedset>Указать мать и отца</button></p>`;
+  x += '<div class="ped">' + pedCell(h.father, 'f', 1) + pedCell(fa && fa.father, 'ff') + pedCell(fa && fa.mother, 'fm') + pedCell(h.mother, 'm', 1) + pedCell(mo && mo.father, 'mf') + pedCell(mo && mo.mother, 'mm') + '</div>';
+  const k = parentsKin(h);
+  if (k) x += `<p class="pedw">${I.flag}<span><b>Родители в родстве.</b> ${esc(k)}</span></p>`;
+  return x;
+}
+/* общий предок у матери и отца */
+function parentsKin(h) {
+  const mo = hz(h.mother), fa = hz(h.father); if (!mo || !fa) return '';
+  const a = ancestors(mo.id, 4), b = ancestors(fa.id, 4);
+  if (b[mo.id]) return 'Мать приходится отцу ' + (b[mo.id] === 1 ? 'матерью' : 'бабушкой или прабабушкой') + '.';
+  if (a[fa.id]) return 'Отец приходится матери ' + (a[fa.id] === 1 ? 'отцом' : 'дедом или прадедом') + '.';
+  const c = Object.keys(a).filter(id => b[id]).sort((p, q) => (a[p] + b[p]) - (a[q] + b[q]));
+  if (!c.length) return '';
+  const g = a[c[0]] + b[c[0]], who = hName(hz(c[0]));
+  return g === 2 ? 'У матери и отца ' + (hz(c[0]).sex === 'f' ? 'общая мать' : 'общий отец') + ' (' + who + '): они брат и сестра.' : 'Общий предок: ' + who + '.';
+}
+/* кем кобыла приходится жеребцу */
+function kinTo(stal, mare) {
+  if (!stal || !mare || stal.id === mare.id) return '';
+  if (mare.father === stal.id) return 'дочь';
+  const mm = hz(mare.mother), mf = hz(mare.father);
+  if ((mm && mm.father === stal.id) || (mf && mf.father === stal.id)) return 'внучка';
+  if (stal.mother === mare.id) return 'мать';
+  if ((stal.mother && stal.mother === mare.mother) || (stal.father && stal.father === mare.father)) return 'сестра';
+  return '';
+}
+/* в косяке у жеребца его родня — кобылы от двух лет */
+function groupKin(g) {
+  const s = hz(g.stallion); if (!s || !alive(s) || g.kind !== 'uyir') return [];
+  return HS.filter(h => alive(h) && h.grp === g.id && h.sex === 'f' && ageMonths(h.born) >= 24).map(h => ({h, r: kinTo(s, h)})).filter(x => x.r);
+}
+function kinSum(L) { const c = {}; L.forEach(x => { c[x.r] = (c[x.r] || 0) + 1; }); const W = {'дочь': ['дочь', 'дочери', 'дочерей'], 'внучка': ['внучка', 'внучки', 'внучек'], 'сестра': ['сестра', 'сестры', 'сестёр'], 'мать': ['мать', 'матери', 'матерей']}; return Object.keys(c).map(k => c[k] + ' ' + pl(c[k], W[k][0], W[k][1], W[k][2])).join(', '); }
+function kinGroups() { return GS.map(g => ({g, L: groupKin(g)})).filter(x => x.L.length); }
+
 /* ---------- хранение: пример в памяти телефона (облако подключим для настоящего учёта) ---------- */
-const DKEY = 'tabun-demo-v3';
+const DKEY = 'tabun-demo-v4';
 let DATA = null;
 function applyData() {
   Object.keys(HM).forEach(k => delete HM[k]);
@@ -1184,23 +1452,26 @@ const API = {
   async delH(id) { delete DATA.horses[id]; persist(); changed(); },
   async saveG(g) { DATA.groups[g.id] = {name: g.name, stallion: g.stallion, place: g.place, kind: g.kind, ord: g.ord}; persist(); changed(); },
   async delG(id) { delete DATA.groups[id]; persist(); changed(); },
-  async saveSet(s) { DATA.settings = {farm: s.farm, phone: s.phone, vacs: s.vacs, masts: s.masts}; persist(); changed(); },
+  async saveSet(s) { DATA.settings = {farm: s.farm, phone: s.phone, vacs: s.vacs, masts: s.masts, loc: s.loc || null}; persist(); changed(); },
   backup() { return {app: 'tabun', v: 1, at: new Date().toISOString(), horses: DATA.horses, groups: DATA.groups, settings: DATA.settings}; }
 };
 function resetDemo() {
-  DATA = demoData(); DATA.settings = {farm: 'Пример: КХ «Ақбоз»'};
+  DATA = demoData(); DATA.settings = DEMO_SET();
   persist(); V.tab = 'home'; V.sel = null; V.q = ''; V.cat = ''; V.g = ''; changed(); window.scrollTo(0, 0);
   toast('Пример начат заново.');
 }
+const DEMO_SET = () => ({farm: 'Пример: КХ «Ақбоз»', loc: {name: 'Шалкар', lat: 47.8333, lon: 59.6}});
 /* ---------- запуск ---------- */
 $$('.tabs button').forEach(b => b.onclick = () => { V.tab = b.dataset.tab; if (V.tab !== 'list') V.sel = null; window.scrollTo(0, 0); render(); });
 $('#openSet').onclick = settingsSheet;
 (function start() {
   DATA = lsGet(DKEY, null);
-  if (!DATA || !DATA.horses || !DATA.groups) { DATA = demoData(); DATA.settings = {farm: 'Пример: КХ «Ақбоз»'}; persist(); }
+  if (!DATA || !DATA.horses || !DATA.groups) { DATA = demoData(); DATA.settings = DEMO_SET(); persist(); }
   MODE = 'demo';
   applyData(); render();
+  wxLoad(false);
 })();
+document.addEventListener('visibilitychange', () => { if (!document.hidden) wxLoad(false); });
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>
 </body></html>
