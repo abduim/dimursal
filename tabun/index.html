@@ -68,7 +68,7 @@ input[type="time"],input[type="date"]{-webkit-appearance:none;appearance:none}
 .brand{min-width:0;flex:1;display:grid;line-height:1.2}
 .brand b{font-size:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .brand span{font-size:13px;color:var(--mut);font-weight:600}
-.tabs{position:fixed;z-index:20;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));background:var(--surface);border-top:1px solid var(--line);padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
+.tabs{position:fixed;z-index:20;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));background:var(--surface);border-top:1px solid var(--line);padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
 .tabs button{border:0;background:none;display:grid;justify-items:center;gap:2px;font-size:12px;font-weight:700;color:var(--mut);min-height:52px;padding:4px 0;border-radius:12px}
 .tabs button svg{width:22px;height:22px}
 .tabs button[aria-current="page"]{color:var(--acc);background:var(--acc-soft)}
@@ -350,6 +350,7 @@ dl.kv dd.bad{color:var(--bad);font-weight:700}
 .btn.bad{background:var(--bad);border-color:var(--bad);color:#fff}
 .linkbtn.inl{min-height:0;padding:0;display:inline}
 .banner.wal{margin:0 0 12px}
+.tabs.five{grid-template-columns:repeat(5,minmax(0,1fr))}
 .tabs button{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media (prefers-color-scheme:dark){.leaflet-tile-pane{filter:brightness(.82) contrast(1.05)}.btn.bad{color:#2A0E0B}}
 </style>
@@ -1117,7 +1118,7 @@ function groupSheet(id) {
   let x = head(g.place || (g.kind === 'uyir' ? 'Косяк' : 'Группа'), g.name);
   x += `<p class="small mut">${m.length} ${pl(m.length, 'голова', 'головы', 'голов')}${st ? ' · жеребец ' + esc(hName(st)) : ''}</p>`;
   x += `<div class="acts mt8">${[['gv', I.syr, 'Прививка всем'], ['ga', I.plus, 'Добавить лошадь'], ['ge', I.edit, 'Изменить']].map(a => `<button data-${a[0]}>${a[1]}<span>${a[2]}</span></button>`).join('')}</div>`;
-  const wl = WS.filter(w => w.grps.indexOf(g.id) >= 0);
+  const wl = WELLS_ON ? WS.filter(w => w.grps.indexOf(g.id) >= 0) : [];
   if (wl.length) x += '<p class="small mut">Водопой: ' + wl.map(w => `<button class="linkbtn inl" data-w="${esc(w.id)}">${esc(w.name)}</button>`).join(', ') + '</p>';
   const kin = groupKin(g);
   if (kin.length) x += `<div class="banner warn mt"><p><b>У жеребца в косяке его родня: ${esc(kinSum(kin))}.</b> Чтобы не было близкородственного приплода, переведите их в другой косяк.</p><div class="list mt8">${kin.map(k => `<button class="row" data-h="${esc(k.h.id)}">${horseAv(k.h)}<span class="t"><b>${esc(hName(k.h))}</b><span class="st warn">${esc(k.r)} жеребца · ${esc(ageTxt(k.h.born))}</span></span></button>`).join('')}</div><button class="btn small mt8" id="gKinMove">${I.move}Перевести их</button></div>`;
@@ -1471,6 +1472,7 @@ function kinSum(L) { const c = {}; L.forEach(x => { c[x.r] = (c[x.r] || 0) + 1; 
 function kinGroups() { return GS.map(g => ({g, L: groupKin(g)})).filter(x => x.L.length); }
 
 /* ---------- колодцы и водопой ---------- */
+const WELLS_ON = false; /* пока скрыто: раздел ещё додумываем. true — вернуть вкладку */
 const WK = {well: 'Колодец', bore: 'Скважина', pond: 'Водоём'};
 const WLK = {fix: 'Ремонт', clean: 'Чистка', check: 'Осмотр', note: 'Заметка'};
 const WI = {
@@ -1544,6 +1546,7 @@ function wAlerts() { return WS.map(w => ({w, s: wsim(w)})).filter(x => x.s && x.
 
 /* --- главная: тревоги по воде --- */
 function wHomeHtml() {
+  if (!WELLS_ON) return '';
   const L = wAlerts(); if (!L.length) return '';
   return `<div class="sec-h"><h3>Вода</h3>${chip(L.some(x => wTone(x.s) === 'bad') ? 'bad' : 'warn', L.length + ' ' + pl(L.length, 'тревога', 'тревоги', 'тревог'))}</div><div class="list">` + L.map(x => { const t = wTone(x.s); return `<button class="row" data-w="${esc(x.w.id)}"><span class="ic ${t}">${WI.drop}</span><span class="t"><b>${esc(x.w.name)}</b><span class="st ${t}">${esc(x.s.alerts[0].t)}</span>${x.s.alerts.length > 1 ? `<span class="small mut">ещё: ${esc(x.s.alerts.slice(1).map(a => a.t.toLowerCase()).join(', '))}</span>` : ''}</span></button>`; }).join('') + '</div>';
 }
@@ -1793,6 +1796,7 @@ function resetDemo() {
 }
 const DEMO_SET = () => ({farm: 'Пример: КХ «Ақбоз»', loc: {name: 'Шалкар', lat: 47.8333, lon: 59.6}});
 /* ---------- запуск ---------- */
+if (!WELLS_ON) { const wb = $('.tabs [data-tab="wells"]'); if (wb) wb.remove(); $('.tabs').classList.remove('five'); }
 $$('.tabs button').forEach(b => b.onclick = () => { V.tab = b.dataset.tab; if (V.tab !== 'list') V.sel = null; window.scrollTo(0, 0); render(); });
 $('#openSet').onclick = settingsSheet;
 (function start() {

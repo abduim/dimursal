@@ -1,5 +1,5 @@
 /* Табун: работа без интернета. Своё — сначала из сети, библиотеки — из запаса, кусочки карты — из запаса. */
-var C = 'tabun-v5', TC = 'tabun-tiles';
+var C = 'tabun-v6', TC = 'tabun-tiles';
 self.addEventListener('install', function () { self.skipWaiting(); });
 self.addEventListener('activate', function (e) { e.waitUntil(self.clients.claim()); });
 function trim(c) { c.keys().then(function (k) { if (k.length > 600) for (var i = 0; i < k.length - 500; i++) c.delete(k[i]); }); }
