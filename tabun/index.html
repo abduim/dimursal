@@ -11,14 +11,14 @@
   --bg:#F5F1E9; --surface:#FFFFFF; --soft:#ECE5D8; --ink:#2A2118; --mut:#6B5F52; --line:#E2D8C7;
   --acc:#2F6A47; --acc-ink:#FFFFFF; --acc-soft:#E1EEE4;
   --good:#1D7A47; --good-soft:#DFF2E6; --warn:#8F5300; --warn-soft:#FBEED6; --bad:#B3261E; --bad-soft:#FBE3E1; --info:#5644B0; --info-soft:#ECE8FA;
-  --wa:#1F7A4D; --scrim:rgba(15,25,35,.45); --shadow:0 10px 30px -16px rgba(15,25,35,.45);
+  --wtr:#2C6E9B; --wtr-soft:#E1EDF5; --wa:#1F7A4D; --scrim:rgba(15,25,35,.45); --shadow:0 10px 30px -16px rgba(15,25,35,.45);
   color-scheme:light;
 }
 @media (prefers-color-scheme:dark){:root{
   --bg:#15120E; --surface:#201B15; --soft:#2B241C; --ink:#EEE6DA; --mut:#ADA090; --line:#3A3127;
   --acc:#7CC79A; --acc-ink:#0C2416; --acc-soft:#1E3326;
   --good:#5CC98C; --good-soft:#15352A; --warn:#F0B55A; --warn-soft:#3A2C12; --bad:#FF8A80; --bad-soft:#3D1C1A; --info:#B3A6FF; --info-soft:#29234A;
-  --wa:#1F7A4D; --scrim:rgba(0,0,0,.6); --shadow:0 10px 30px -16px rgba(0,0,0,.85); color-scheme:dark}}
+  --wtr:#7DB7E0; --wtr-soft:#1A2D3A; --wa:#1F7A4D; --scrim:rgba(0,0,0,.6); --shadow:0 10px 30px -16px rgba(0,0,0,.85); color-scheme:dark}}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui,sans-serif;-webkit-font-smoothing:antialiased;
@@ -68,7 +68,7 @@ input[type="time"],input[type="date"]{-webkit-appearance:none;appearance:none}
 .brand{min-width:0;flex:1;display:grid;line-height:1.2}
 .brand b{font-size:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .brand span{font-size:13px;color:var(--mut);font-weight:600}
-.tabs{position:fixed;z-index:20;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface);border-top:1px solid var(--line);padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
+.tabs{position:fixed;z-index:20;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));background:var(--surface);border-top:1px solid var(--line);padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
 .tabs button{border:0;background:none;display:grid;justify-items:center;gap:2px;font-size:12px;font-weight:700;color:var(--mut);min-height:52px;padding:4px 0;border-radius:12px}
 .tabs button svg{width:22px;height:22px}
 .tabs button[aria-current="page"]{color:var(--acc);background:var(--acc-soft)}
@@ -323,14 +323,44 @@ dl.kv .linkbtn{min-height:0;padding:0;text-align:left}
 .pedw{display:flex;gap:8px;align-items:flex-start;background:var(--warn-soft);color:var(--ink);border-radius:12px;padding:10px 12px;font-size:14px;margin:8px 0 0}
 .pedw svg{color:var(--warn);flex:none}.pedw b{color:var(--warn)}
 @media (max-width:360px){.wxt{font-size:26px}.wxd b{font-size:13px}.wxd svg{width:20px;height:20px}}
+.ic.wtr{background:var(--wtr-soft);color:var(--wtr)}
+.tank{width:14px;height:40px;border-radius:5px;border:1.5px solid var(--line);background:var(--soft);display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;flex:none}
+.tank i{display:block;width:100%;background:var(--wtr)}.tank.bad i{background:var(--bad)}
+.wrow .tank{margin-left:4px}
+.wmap{height:290px;border-radius:18px;overflow:hidden;border:1px solid var(--line);background:var(--soft);position:relative;z-index:0}
+.wmapin{width:100%;height:100%}
+.wmap-ph{display:grid;place-items:center;height:100%;margin:0;color:var(--mut);font-size:14px;text-align:center;padding:0 16px}
+.pmap{height:230px;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:var(--soft);position:relative;z-index:0}
+.wmk span{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#fff;border:2.5px solid #2C6E9B;color:#2C6E9B;box-shadow:0 2px 6px rgba(0,0,0,.35);box-sizing:border-box}
+.wmk span svg{width:18px;height:18px}
+.wmk.bad span{border-color:#fff;background:#B3261E;color:#fff}
+.wmk.warn span{border-color:#fff;background:#B86E00;color:#fff}
+.wmk.mut span{border-color:#6B5F52;color:#6B5F52}
+.leaflet-tooltip.wtip{background:#fff;color:#2A2118;border:0;border-radius:8px;font-weight:700;font-size:12px;padding:2px 7px;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.leaflet-tooltip.wtip:before{display:none}
+.leaflet-container{font:inherit;background:var(--soft)}
+.leaflet-container .leaflet-control-attribution{font-size:10px}
+.wst .wlv{display:flex;align-items:center;gap:14px;margin-bottom:12px}
+.wst .tank{width:24px;height:60px;border-radius:7px}
+.wlv .t{display:grid}.wlv .v{font-size:30px;font-weight:800;line-height:1.05;font-variant-numeric:tabular-nums}.wlv .l{font-size:13px;color:var(--mut);font-weight:650}
+dl.kv dd.bad{color:var(--bad);font-weight:700}
+.warnt{color:var(--warn);font-weight:700}
+.wchart{width:100%;height:auto;display:block;margin-bottom:6px}
+.wchart .hit{cursor:pointer}.wchart .hit.on{fill:var(--ink);fill-opacity:.08}
+.btn.bad{background:var(--bad);border-color:var(--bad);color:#fff}
+.linkbtn.inl{min-height:0;padding:0;display:inline}
+.banner.wal{margin:0 0 12px}
+.tabs button{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (prefers-color-scheme:dark){.leaflet-tile-pane{filter:brightness(.82) contrast(1.05)}.btn.bad{color:#2A0E0B}}
 </style>
 <header class="top" id="top"><span class="logo"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M29 4 L32.5 11 C37.5 13 41 18.5 41 25.5 L41 44 L25 44 C25 39 23.5 36.5 21 35 C17.5 35.5 13.5 37.5 10 37.5 C6.5 37.5 4.5 34.5 5.5 31.5 C8 25 14 17.5 20.5 12.5 L22.5 4.5 L26 9.5 Z" fill="currentColor" stroke="none"/></svg></span><div class="brand"><b id="farmName">Табун</b><span id="farmSub">учёт табуна</span></div><button class="ib" id="openSet" aria-label="Настройки"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2.2"/><circle cx="10" cy="17" r="2.2"/></svg></button></header>
 <main id="app"></main>
 <div id="selbar" hidden></div>
-<nav class="tabs four" aria-label="Разделы">
+<nav class="tabs five" aria-label="Разделы">
   <button data-tab="home"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5 12 5l8 6.5V20H4z"/><path d="M10 20v-5h4v5"/></svg>Главная</button>
   <button data-tab="list"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></svg>Лошади</button>
   <button data-tab="groups"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="9" r="3"/><circle cx="16" cy="9" r="3"/><path d="M3 19c.6-3 2.6-4.6 5-4.6s4.4 1.6 5 4.6M11 19c.6-3 2.6-4.6 5-4.6s4.4 1.6 5 4.6"/></svg>Косяки</button>
+  <button data-tab="wells"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5c3 4 6 7.3 6 10.7a6 6 0 0 1-12 0c0-3.4 3-6.7 6-10.7z"/></svg>Колодцы</button>
   <button data-tab="stats"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V11M12 20V5M19 20v-6"/></svg>Итоги</button>
 </nav>
 <div id="sheet" hidden><div class="panel" role="dialog" aria-modal="true" aria-label="Подробности"></div></div>
@@ -727,10 +757,11 @@ function render() {
   $('#farmSub').textContent = MODE === 'demo' ? 'пример · учёт табуна' : 'учёт табуна';
   $$('.tabs button').forEach(b => b.setAttribute('aria-current', b.dataset.tab === V.tab ? 'page' : 'false'));
   if (MODE === 'loading') { app.innerHTML = '<div class="busy card mt"><span class="spin" aria-hidden="true"></span><span>Загружаю табун…</span></div>'; return; }
-  app.innerHTML = (MODE === 'demo' ? demoBanner() : '') + (V.tab === 'home' ? homeView() : V.tab === 'list' ? listView() : V.tab === 'groups' ? groupsView() : statsView());
+  app.innerHTML = (MODE === 'demo' ? demoBanner() : '') + (V.tab === 'home' ? homeView() : V.tab === 'list' ? listView() : V.tab === 'groups' ? groupsView() : V.tab === 'wells' ? wellsView() : statsView());
   bindViews(app);
   fillPh(app);
   selBar();
+  if (V.tab === 'wells') drawWellMap();
 }
 function demoBanner() { return `<div class="banner"><p><b>Это пример</b> с выдуманным табуном на 500 голов. Пробуйте всё что угодно: изменения хранятся только на этом телефоне.</p><button class="linkbtn" data-reset>Начать пример заново</button></div>`; }
 function bindViews(app) {
@@ -753,6 +784,8 @@ function bindViews(app) {
   $$('[data-y]', app).forEach(b => b.onclick = () => { V.y += Number(b.dataset.y); render(); });
   $$('[data-csv]', app).forEach(b => b.onclick = () => exportCsv(b.dataset.csv));
   bindWx(app);
+  $$('[data-w]', app).forEach(b => b.onclick = () => wellSheet(b.dataset.w));
+  $$('[data-addw]', app).forEach(b => b.onclick = () => editWell(null));
 }
 
 /* --- главная --- */
@@ -760,7 +793,7 @@ function homeView() {
   const live = HS.filter(alive), T = TODAY(), Y = T.slice(0, 4);
   const byCat = {}; live.forEach(h => { const c = catOf(h); byCat[c] = (byCat[c] || 0) + 1; });
   const mx = Math.max.apply(null, CAT_ORDER.map(c => byCat[c] || 0).concat([1]));
-  let h = `<section class="hero mt8"><span class="big">${live.length}</span><span class="l">${pl(live.length, 'голова', 'головы', 'голов')} в табуне</span></section>` + wxCard();
+  let h = `<section class="hero mt8"><span class="big">${live.length}</span><span class="l">${pl(live.length, 'голова', 'головы', 'голов')} в табуне</span></section>` + wxCard() + wHomeHtml();
   h += '<section class="card mt"><h3>Состав табуна</h3><div class="bars mt8">' + CAT_ORDER.filter(c => byCat[c]).map(c => `<button class="bar" data-go="list" data-cat="${c}"><span class="bl"><b>${esc(CATS[c].kz)}</b><span>${esc(CATS[c].ru)}</span></span><span class="bt"><i style="width:${Math.max(3, Math.round((byCat[c] || 0) / mx * 100))}%"></i></span><span class="bv">${byCat[c]}</span></button>`).join('') + '</div></section>';
   const lost = lostOf();
   if (lost.length) h += `<div class="sec-h"><h3>Пропали</h3>${chip('bad', lost.length + ' ' + pl(lost.length, 'лошадь', 'лошади', 'лошадей'))}</div><div class="list">` + lost.slice(0, 5).map(x => `<button class="row" data-h="${esc(x.id)}">${horseAv(x)}<span class="t"><b>${esc(hName(x))}</b><span class="st bad">${esc(lostAgo(x))}</span>${lostWhere(x) ? `<span class="small mut">${esc(lostWhere(x))}</span>` : ''}</span></button>`).join('') + (lost.length > 5 ? `<button class="btn ghost full" data-golost>Все пропавшие (${lost.length})</button>` : '') + '</div>';
@@ -1084,6 +1117,8 @@ function groupSheet(id) {
   let x = head(g.place || (g.kind === 'uyir' ? 'Косяк' : 'Группа'), g.name);
   x += `<p class="small mut">${m.length} ${pl(m.length, 'голова', 'головы', 'голов')}${st ? ' · жеребец ' + esc(hName(st)) : ''}</p>`;
   x += `<div class="acts mt8">${[['gv', I.syr, 'Прививка всем'], ['ga', I.plus, 'Добавить лошадь'], ['ge', I.edit, 'Изменить']].map(a => `<button data-${a[0]}>${a[1]}<span>${a[2]}</span></button>`).join('')}</div>`;
+  const wl = WS.filter(w => w.grps.indexOf(g.id) >= 0);
+  if (wl.length) x += '<p class="small mut">Водопой: ' + wl.map(w => `<button class="linkbtn inl" data-w="${esc(w.id)}">${esc(w.name)}</button>`).join(', ') + '</p>';
   const kin = groupKin(g);
   if (kin.length) x += `<div class="banner warn mt"><p><b>У жеребца в косяке его родня: ${esc(kinSum(kin))}.</b> Чтобы не было близкородственного приплода, переведите их в другой косяк.</p><div class="list mt8">${kin.map(k => `<button class="row" data-h="${esc(k.h.id)}">${horseAv(k.h)}<span class="t"><b>${esc(hName(k.h))}</b><span class="st warn">${esc(k.r)} жеребца · ${esc(ageTxt(k.h.born))}</span></span></button>`).join('')}</div><button class="btn small mt8" id="gKinMove">${I.move}Перевести их</button></div>`;
   const wp = m.filter(h => h.ph);
@@ -1095,6 +1130,7 @@ function groupSheet(id) {
   $('[data-gv]').onclick = () => evSheet(m.map(h => h.id), 'vac');
   $('[data-ga]').onclick = () => editHorse(null, {grp: g.id});
   $('[data-ge]').onclick = () => editGroup(g.id);
+  $$('#sheet [data-w]').forEach(b => b.onclick = () => wellSheet(b.dataset.w));
   const km = $('#gKinMove'); if (km) km.onclick = () => evSheet(kin.map(k => k.h.id), 'move', () => groupSheet(g.id));
   const gd = $('#gDel'); if (gd) armed(gd, 'Удалить?', () => act(() => API.delG(g.id), 'Группа удалена.').then(ok => { if (ok) closeSheet(); }));
 }
@@ -1434,12 +1470,305 @@ function groupKin(g) {
 function kinSum(L) { const c = {}; L.forEach(x => { c[x.r] = (c[x.r] || 0) + 1; }); const W = {'дочь': ['дочь', 'дочери', 'дочерей'], 'внучка': ['внучка', 'внучки', 'внучек'], 'сестра': ['сестра', 'сестры', 'сестёр'], 'мать': ['мать', 'матери', 'матерей']}; return Object.keys(c).map(k => c[k] + ' ' + pl(c[k], W[k][0], W[k][1], W[k][2])).join(', '); }
 function kinGroups() { return GS.map(g => ({g, L: groupKin(g)})).filter(x => x.L.length); }
 
+/* ---------- колодцы и водопой ---------- */
+const WK = {well: 'Колодец', bore: 'Скважина', pond: 'Водоём'};
+const WLK = {fix: 'Ремонт', clean: 'Чистка', check: 'Осмотр', note: 'Заметка'};
+const WI = {
+  drop: sv('<path d="M12 3.5c3 4 6 7.3 6 10.7a6 6 0 0 1-12 0c0-3.4 3-6.7 6-10.7z"/>'),
+  pump: sv('<path d="M7 21V9h6v12M5 21h10M13 12h3a2 2 0 0 1 2 2v2.5"/><path d="M18 17.5c-.9 1.1-1.3 1.8-1.3 2.3a1.3 1.3 0 0 0 2.6 0c0-.5-.4-1.2-1.3-2.3z"/><path d="M10 9V4.5M8 4.5h4"/>'),
+  route: sv('<circle cx="6" cy="17.5" r="2"/><circle cx="18" cy="6.5" r="2"/><path d="M8 17.5h7.5a3 3 0 0 0 0-6h-7a3 3 0 0 1 0-6H16"/>'),
+  sig: sv('<path d="M5 19v-2M9.5 19v-5M14 19v-8M18.5 19V8"/>')
+};
+const L_HEAD = 30; /* примерно литров на лошадь в день — для подсказок, у каждого хозяйства своё */
+let WS = [];
+const WSIM = {}; /* пример: что сделали с насосом с телефона в этой сессии */
+
+function cleanWl(e) { e = e || {}; return {id: str(e.id, 40) || uid('l'), d: isDate(e.d) ? e.d : TODAY(), k: WLK[e.k] ? e.k : 'note', t: str(e.t, 200), v: num(e.v) > 0 ? Math.round(num(e.v)) : 0}; }
+function cleanW(id, x) {
+  x = x || {};
+  const la = num(x.lat), lo = num(x.lon), ok = x.lat !== null && x.lat !== '' && isFinite(la) && isFinite(lo) && Math.abs(la) <= 90 && Math.abs(lo) <= 180;
+  return {id, name: str(x.name, 50).trim() || 'Колодец', kind: WK[x.kind] ? x.kind : 'well', lat: ok ? la : null, lon: ok ? lo : null,
+    grps: Array.isArray(x.grps) ? x.grps.map(g => str(g, 40)).filter(Boolean).slice(0, 20) : [], cam: str(x.cam, 300).trim(), auto: !!x.auto, smart: !!x.smart,
+    note: str(x.note, 200), dm: str(x.dm, 10), ord: Number(x.ord) || 0, log: Array.isArray(x.log) ? x.log.map(cleanWl) : []};
+}
+function packW(w) { const o = {}; ['name', 'kind', 'lat', 'lon', 'grps', 'cam', 'auto', 'smart', 'note', 'dm', 'ord', 'log'].forEach(k => { o[k] = w[k]; }); return o; }
+const wz = id => WS.find(w => w.id === id) || null;
+const wHeads = w => HS.filter(h => alive(h) && w.grps.indexOf(h.grp) >= 0).length;
+const fmtL = v => Math.round(v).toLocaleString('ru-RU') + ' л';
+const hm = t => { const d = new Date(t); return pad(d.getHours()) + ':' + pad(d.getMinutes()); };
+const agoMin = m => m < 1 ? 'только что' : m < 60 ? m + ' мин назад' : m < 60 * 24 ? Math.floor(m / 60) + ' ч ' + (m % 60 ? m % 60 + ' мин ' : '') + 'назад' : Math.floor(m / 1440) + ' дн. назад';
+const camUrl = c => /^https?:\/\//i.test(c) ? c : '';
+function hsh(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+function rng(seed) { let s = seed || 1; return () => { s = (Math.imul(s, 1103515245) + 12345) >>> 0; return (s >>> 8) / 16777216; }; }
+
+/* Состояние колодца по данным контроллера. Пока контроллеров нет, в примере данные выдуманные,
+   но тревоги считаются по-настоящему: по уровню воды, работе насоса, связи и расходу. */
+function wsim(w) {
+  if (!w.smart) return null;
+  if (MODE !== 'demo') return {nodata: true, alerts: []};
+  const T = TODAY(), now = Date.now(), dt = new Date(), minNow = dt.getHours() * 60 + dt.getMinutes(), x = WSIM[w.id] || {};
+  const r = rng(hsh(w.id + T)), n = wHeads(w), base = Math.max(1, n) * L_HEAD;
+  const dm = x.fixed ? 'ok' : w.dm || 'ok', r10 = v => Math.round(v / 10) * 10;
+  const days = [];
+  for (let i = 14; i >= 1; i--) days.push({d: addD(T, -i), v: r10(base * (0.86 + 0.26 * r()))});
+  if (dm === 'low') days[13].v = r10(base * 0.47);
+  const ref = days.slice(6, 13), avg = r10(ref.reduce((a, z) => a + z.v, 0) / ref.length);
+  const s = {n, base, days, avg, today: r10(base * minNow / 1440 * (0.9 + 0.2 * r()) * (dm === 'low' ? 0.5 : 1)), alerts: [], info: '',
+    level: 72 + Math.floor(r() * 22), pump: false, pumpMin: 0, lastFill: 20 + Math.floor(r() * 70), seen: 1 + Math.floor(r() * 4),
+    power: r() < .6 ? 'solar' : 'grid', batt: 76 + Math.floor(r() * 20), stopped: false, filling: false};
+  if (dm === 'leak') { s.level = 17; s.pump = true; s.pumpMin = 41 + Math.floor(minNow % 9); s.power = 'grid'; }
+  if (dm === 'low') { s.level = 97; s.lastFill = 170 + Math.floor(r() * 40); }
+  if (dm === 'offline') { s.seen = 415 + Math.floor(r() * 30); s.batt = 11; s.power = 'solar'; s.level = null; s.lastFill = null; }
+  if (x.stop && !x.fixed) { s.pump = false; s.pumpMin = 0; s.stopped = true; s.info = 'Насос выключен с телефона в ' + hm(x.stop) + '. Проверьте трубу и воду в колодце, потом включите снова.'; }
+  if (x.fill) {
+    const el = (now - x.fill) / 1000, L0 = x.from == null ? 60 : x.from;
+    if (el < 15) { s.pump = true; s.filling = true; s.pumpMin = 0; s.level = Math.min(100, Math.round(L0 + (100 - L0) * el / 15)); s.info = 'Долив с телефона: насос выключится сам, когда корыто наполнится.'; }
+    else { s.pump = false; s.level = 100; s.lastFill = Math.max(0, Math.round((now - x.fill) / 60000)); }
+  }
+  /* тревоги */
+  if (s.seen > 120) s.alerts.push({tone: 'warn', k: 'off', t: 'Нет связи ' + Math.floor(s.seen / 60) + ' ч', a: 'Последний раз контроллер выходил на связь в ' + hm(now - s.seen * 60000) + (s.power === 'solar' ? ', батарея была ' + s.batt + '%. Скорее всего, села батарея (было пасмурно) или пропала связь.' : '. Возможно, пропало электричество или связь.') + ' Поплавок доливает воду и без связи, но лучше проверить на месте.'});
+  if (s.pump && !s.filling && s.pumpMin > 25) s.alerts.push({tone: 'bad', k: 'run', t: 'Насос работает ' + s.pumpMin + ' мин без остановки', a: 'Обычно корыто наполняется за 5–10 минут. Возможно, течёт труба или в колодце кончилась вода. Если насос долго работает «всухую», он сгорает. Выключите его и проверьте на месте.'});
+  if (s.level != null && s.level < 25 && !s.filling) s.alerts.push({tone: 'bad', k: 'lvl', t: 'Мало воды в корыте: ' + s.level + '%', a: 'Лошадям может не хватить воды.'});
+  if (days[13].v < avg * 0.6) s.alerts.push({tone: 'warn', k: 'drink', t: 'Вчера выпили вдвое меньше обычного', a: 'Обычно здесь выпивают около ' + fmtL(avg) + ' в день, вчера — ' + fmtL(days[13].v) + '. Возможно, часть косяка ушла с пастбища или нашла другую воду. Проверьте, все ли лошади на месте.'});
+  return s;
+}
+const wTone = s => !s ? 'mut' : s.nodata ? 'mut' : s.alerts.some(a => a.tone === 'bad') ? 'bad' : s.alerts.length ? 'warn' : 'good';
+function wLine(w, s) {
+  if (!s) return w.auto ? 'автодолив без датчиков' : 'без автодолива и датчиков';
+  if (s.nodata) return 'ждём данные от контроллера';
+  if (s.alerts.length) return s.alerts[0].t;
+  return ['корыто ' + s.level + '%', s.pump ? 'насос доливает' : 'насос выключен', 'вчера ' + fmtL(s.days[13].v)].join(' · ');
+}
+function tankHtml(lv) { return `<span class="tank ${lv != null && lv < 25 ? 'bad' : ''}" aria-hidden="true"><i style="height:${lv == null ? 0 : Math.max(4, lv)}%"></i></span>`; }
+function wAlerts() { return WS.map(w => ({w, s: wsim(w)})).filter(x => x.s && x.s.alerts.length); }
+
+/* --- главная: тревоги по воде --- */
+function wHomeHtml() {
+  const L = wAlerts(); if (!L.length) return '';
+  return `<div class="sec-h"><h3>Вода</h3>${chip(L.some(x => wTone(x.s) === 'bad') ? 'bad' : 'warn', L.length + ' ' + pl(L.length, 'тревога', 'тревоги', 'тревог'))}</div><div class="list">` + L.map(x => { const t = wTone(x.s); return `<button class="row" data-w="${esc(x.w.id)}"><span class="ic ${t}">${WI.drop}</span><span class="t"><b>${esc(x.w.name)}</b><span class="st ${t}">${esc(x.s.alerts[0].t)}</span>${x.s.alerts.length > 1 ? `<span class="small mut">ещё: ${esc(x.s.alerts.slice(1).map(a => a.t.toLowerCase()).join(', '))}</span>` : ''}</span></button>`; }).join('') + '</div>';
+}
+
+/* --- вкладка «Колодцы» --- */
+function wellsView() {
+  const S = WS.map(w => ({w, s: wsim(w)})), al = S.filter(x => x.s && x.s.alerts.length).length, sm = S.filter(x => x.s && !x.s.nodata);
+  const yest = sm.reduce((a, x) => a + x.s.days[13].v, 0);
+  let h = `<div class="sec-h"><h3>Колодцы</h3><button class="linkbtn" data-addw>${I.plus}Добавить</button></div>`;
+  if (!WS.length) return h + `<section class="card"><p>Добавьте колодцы, скважины и водоёмы, где пьёт табун. Отметьте их на карте, укажите, какие косяки туда ходят, и записывайте ремонт и чистку.</p><button class="btn full mt8" data-addw>${I.plus}Добавить колодец</button></section>`;
+  h += `<div class="tiles">${tile('Тревоги', al, al ? 'bad' : 'good', al ? 'нужно проверить' : 'всё в порядке')}${tile('С датчиками', sm.length + ' из ' + WS.length, '', 'видно воду и насос')}${tile('Вчера выпили', sm.length ? (Math.round(yest / 100) / 10).toLocaleString('ru-RU') + ' т' : '—', '', sm.length ? 'по датчикам' : '')}</div>`;
+  const fr = wxDays().filter(d => d.min <= -20);
+  if (fr.length) { const m = fr.reduce((a, d) => d.min < a.min ? d : a, fr[0]); h += `<div class="banner warn"><p><b>Морозы до ${tC(m.min)} (${esc(wxWhen(m.d))}).</b> Проверьте, не замерзает ли вода в корытах и трубах.</p></div>`; }
+  h += '<div class="wmap mt" id="wmap"><p class="wmap-ph">Загружаю карту…</p></div>';
+  h += '<div class="list mt">' + S.map(x => { const t = wTone(x.s); return `<button class="row wrow" data-w="${esc(x.w.id)}"><span class="ic ${t === 'good' ? 'wtr' : t}">${WI.drop}</span><span class="t"><b>${esc(x.w.name)}</b><span class="st ${t === 'good' ? 'mut' : t}">${esc(wLine(x.w, x.s))}</span><span class="small mut">${esc(x.w.grps.map(g => grp(g) ? grp(g).name : '').filter(Boolean).join(', ') || 'косяки не указаны')}</span></span>${x.s && !x.s.nodata ? tankHtml(x.s.level, t) : ''}</button>`; }).join('') + '</div>';
+  if (MODE === 'demo') h += '<p class="small mut mt8">В примере показания датчиков выдуманные. Настоящие придут от контроллера на колодце.</p>';
+  return h;
+}
+
+/* --- карта (Leaflet лежит рядом с программой, грузится только когда нужна) --- */
+let LFP = null, WMAP = null, WMAPEL = null, WLAYER = null;
+function loadLeaflet() {
+  if (window.L && window.L.map) return Promise.resolve(window.L);
+  if (LFP) return LFP;
+  LFP = new Promise((res, rej) => {
+    const c = document.createElement('link'); c.rel = 'stylesheet'; c.href = 'lib/leaflet.css'; document.head.appendChild(c);
+    const s = document.createElement('script'); s.src = 'lib/leaflet.js';
+    s.onload = () => window.L ? res(window.L) : rej(new Error('leaflet'));
+    s.onerror = () => { LFP = null; s.remove(); rej(new Error('leaflet')); };
+    document.head.appendChild(s);
+  });
+  return LFP;
+}
+function tiles(LF) { return LF.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 18, crossOrigin: true, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'}); }
+function lfMap(LF, el, o) { const m = LF.map(el, Object.assign({zoomControl: true, attributionControl: true}, o || {})); m.attributionControl.setPrefix('<a href="https://leafletjs.com" target="_blank" rel="noopener">Leaflet</a>'); tiles(LF).addTo(m); return m; }
+function wIcon(LF, tone) { return LF.divIcon({className: 'wmk ' + tone, html: '<span>' + WI.drop + '</span>', iconSize: [34, 34], iconAnchor: [17, 17]}); }
+async function drawWellMap() {
+  const slot = $('#wmap'); if (!slot) return;
+  let LF; try { LF = await loadLeaflet(); } catch (e) { if (document.body.contains(slot)) slot.innerHTML = '<p class="wmap-ph">Карта появится, когда будет интернет.</p>'; return; }
+  if (!document.body.contains(slot)) return;
+  if (!WMAPEL) { WMAPEL = document.createElement('div'); WMAPEL.className = 'wmapin'; }
+  slot.innerHTML = ''; slot.appendChild(WMAPEL);
+  let fit = false;
+  if (!WMAP) { WMAP = lfMap(LF, WMAPEL); WLAYER = LF.layerGroup().addTo(WMAP); fit = true; }
+  WMAP.invalidateSize();
+  WLAYER.clearLayers();
+  const pts = [];
+  WS.forEach(w => {
+    if (w.lat == null) return;
+    const s = wsim(w), t = wTone(s);
+    const mk = LF.marker([w.lat, w.lon], {icon: wIcon(LF, t === 'good' ? 'wtr' : t), title: w.name, keyboard: true});
+    mk.bindTooltip(esc(w.name), {permanent: true, direction: 'bottom', offset: [0, 14], className: 'wtip'});
+    mk.on('click', () => wellSheet(w.id));
+    WLAYER.addLayer(mk); pts.push([w.lat, w.lon]);
+  });
+  if (fit) {
+    if (pts.length > 1) WMAP.fitBounds(LF.latLngBounds(pts).pad(0.2), {maxZoom: 13});
+    else if (pts.length) WMAP.setView(pts[0], 12);
+    else WMAP.setView(SET.loc ? [SET.loc.lat, SET.loc.lon] : [47.8333, 59.6], 9);
+  }
+}
+
+/* --- карточка колодца --- */
+function wChart(s) {
+  const D = s.days, W = 300, H = 92, B = 76, n = D.length, gap = 2, bw = (W - gap * (n - 1)) / n;
+  const mx = Math.max.apply(null, D.map(d => d.v).concat([s.avg])) * 1.08, Y = v => B - v / mx * (B - 4), low = s.avg * 0.6;
+  const bar = (x, y, w, h) => { const r = Math.min(4, w / 2, h); return `M${x.toFixed(1)},${B}V${(y + r).toFixed(1)}Q${x.toFixed(1)},${y.toFixed(1)} ${(x + r).toFixed(1)},${y.toFixed(1)}H${(x + w - r).toFixed(1)}Q${(x + w).toFixed(1)},${y.toFixed(1)} ${(x + w).toFixed(1)},${(y + r).toFixed(1)}V${B}Z`; };
+  let g = `<line x1="0" x2="${W}" y1="${B}" y2="${B}" stroke="var(--line)" stroke-width="1"/>`;
+  D.forEach((d, i) => { const x = i * (bw + gap), y = Y(d.v); g += `<path d="${bar(x, y, bw, B - y)}" fill="${d.v < low ? 'var(--warn)' : 'var(--wtr)'}"/>`; });
+  g += `<line x1="0" x2="${W}" y1="${Y(s.avg).toFixed(1)}" y2="${Y(s.avg).toFixed(1)}" stroke="var(--ink)" stroke-opacity=".55" stroke-width="1.2" stroke-dasharray="4 4"/>`;
+  g += `<text x="0" y="${H - 2}" font-size="10" fill="var(--mut)">${esc(fDs(D[0].d))}</text><text x="${W}" y="${H - 2}" font-size="10" fill="var(--mut)" text-anchor="end">вчера</text>`;
+  D.forEach((d, i) => { g += `<rect class="hit" data-ci="${i}" x="${(i * (bw + gap)).toFixed(1)}" y="0" width="${(bw + gap).toFixed(1)}" height="${B}" fill="transparent"/>`; });
+  return `<svg class="wchart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Сколько воды выпивали за 14 дней: от ${fmtL(Math.min.apply(null, D.map(d => d.v)))} до ${fmtL(Math.max.apply(null, D.map(d => d.v)))} в день">${g}</svg>`;
+}
+function wellSheet(id) {
+  const st = {kind: 'w' + id};
+  const draw = () => {
+    const w = wz(id); if (!w) { closeSheet(); return; }
+    const s = wsim(w), t = wTone(s), gs = w.grps.map(grp).filter(Boolean);
+    let x = head(WK[w.kind] + (w.auto ? ' · автодолив' : ''), w.name);
+    if (s && !s.nodata) {
+      x += s.alerts.map(a => `<div class="banner ${a.tone} wal"><p><b>${esc(a.t)}.</b> ${esc(a.a)}</p>${a.k === 'run' ? `<button class="btn small bad mt8" id="wStop">${WI.pump}Выключить насос</button>` : ''}</div>`).join('');
+      if (s.info) x += `<div class="banner wal"><p>${esc(s.info)}</p>${s.stopped ? `<button class="btn small mt8" id="wRun">${WI.pump}Включить снова</button>` : ''}</div>`;
+      const pumpTxt = s.pump ? (s.filling ? 'доливает (включили с телефона)' : 'работает ' + s.pumpMin + ' мин') : s.stopped ? 'выключен с телефона' : s.lastFill == null ? 'нет данных' : 'выключен · доливал ' + agoMin(s.lastFill);
+      x += `<section class="card wst"><div class="wlv">${tankHtml(s.level, t)}<span class="t"><span class="v">${s.level == null ? '—' : s.level + '%'}</span><span class="l">${s.level == null ? 'уровень неизвестен' : 'вода в корыте'}</span></span></div>
+        <dl class="kv"><dt>Насос</dt><dd class="${s.pump && !s.filling ? 'bad' : ''}">${esc(pumpTxt)}</dd><dt>Связь</dt><dd class="${s.seen > 120 ? 'warnt' : ''}">${esc(s.seen > 120 ? 'нет ' + agoMin(s.seen).replace(' назад', '') : 'на связи ' + agoMin(s.seen))}</dd><dt>Питание</dt><dd>${esc(s.power === 'solar' ? 'солнечная панель, батарея ' + s.batt + '%' : 'от сети')}</dd></dl>
+        ${w.auto && !s.pump && !s.stopped && s.seen <= 120 ? `<button class="btn ghost full mt" id="wFill">${WI.drop}Долить воду</button>` : ''}</section>`;
+      const yv = s.days[13].v;
+      x += `<div class="sec-h"><h3>Сколько выпили</h3><span class="mut">14 дней</span></div><section class="card">${wChart(s)}<p class="small mut" id="wcap">Нажмите на столбик, чтобы увидеть день.</p>
+        <p class="small mt8">Обычно ≈ <b>${fmtL(s.avg)}</b> в день (пунктир) · вчера <b class="${yv < s.avg * 0.6 ? 'warnt' : ''}">${fmtL(yv)}</b> · сегодня к ${hm(Date.now())} — ${fmtL(s.today)}</p>
+        <p class="small mut mt8">${s.n} ${pl(s.n, 'лошадь', 'лошади', 'лошадей')} пьют здесь. Если выпили намного меньше обычного, возможно, часть косяка ушла.</p></section>`;
+    } else if (s && s.nodata) x += '<section class="card"><p class="small">Контроллер подключён. Ждём первые данные.</p></section>';
+    else x += `<section class="card"><p class="small">${w.auto ? 'Автодолив стоит, но датчиков нет.' : 'Автодолива и датчиков нет.'} Если поставить контроллер, здесь будут видны вода в корыте, работа насоса и сколько выпили за день, а тревоги будут приходить в Telegram.</p></section>`;
+    x += `<div class="row2 mt">${w.cam ? `<button class="btn ghost" id="wCam">${I.cam}Камера</button>` : ''}${w.lat != null ? `<a class="btn ghost" href="https://www.google.com/maps/dir/?api=1&destination=${w.lat},${w.lon}" target="_blank" rel="noopener">${WI.route}Как доехать</a>` : ''}</div>`;
+    x += `<div class="sec-h"><h3>Кто пьёт</h3></div>` + (gs.length ? '<div class="list">' + gs.map(g => { const c = HS.filter(h => alive(h) && h.grp === g.id).length; return `<button class="row" data-g="${esc(g.id)}"><span class="ic">${I.users}</span><span class="t"><b>${esc(g.name)}</b><span class="st mut">${c} ${pl(c, 'голова', 'головы', 'голов')} · ≈ ${fmtL(c * L_HEAD)} в день</span></span></button>`; }).join('') + '</div>' : '<p class="small mut">Косяки не указаны.</p>');
+    x += `<div class="sec-h"><h3>Обслуживание</h3><button class="linkbtn" id="wLog">${I.plus}Записать</button></div>`;
+    const lg = w.log.slice().sort((a, b) => b.d.localeCompare(a.d)), sum = lg.reduce((a, e) => a + e.v, 0);
+    x += lg.length ? '<div class="hist">' + lg.map(e => `<div class="he"><span class="d">${esc(fDy(e.d))}</span><span class="t"><b>${esc(WLK[e.k])}${e.v ? ' · ' + esc(money(e.v)) : ''}</b>${e.t ? `<span class="small mut">${esc(e.t)}</span>` : ''}</span><button class="ib sm" data-ldel="${esc(e.id)}" aria-label="Удалить запись">${I.trash}</button></div>`).join('') + '</div>' + (sum ? `<p class="small mut mt8">Потрачено на колодец: ${esc(money(sum))}</p>` : '') : '<p class="small mut">Записей нет.</p>';
+    if (w.note) x += `<p class="small mt">${esc(w.note)}</p>`;
+    x += `<button class="btn ghost full mt" id="wEdit">${I.edit}Изменить</button>`;
+    openSheet(x, st);
+    $$('#sheet [data-g]').forEach(b => b.onclick = () => groupSheet(b.dataset.g));
+    $('#wEdit').onclick = () => editWell(w.id);
+    $('#wLog').onclick = () => wLogSheet(w.id);
+    const cam = $('#wCam'); if (cam) cam.onclick = () => { const u = camUrl(w.cam); if (u) window.open(u, '_blank', 'noopener'); else toast(w.dm ? 'В примере камеры нет. У фермера здесь откроется его камера.' : 'Откройте приложение камеры: ' + w.cam); };
+    const stp = $('#wStop'); if (stp) armed(stp, 'Нажмите ещё раз: выключить', () => { WSIM[w.id] = {stop: Date.now()}; toast('Насос выключен.'); refreshW(w.id); });
+    const run = $('#wRun'); if (run) armed(run, 'Нажмите ещё раз: включить', () => startFill(w.id, 17, true));
+    const fill = $('#wFill'); if (fill) armed(fill, 'Нажмите ещё раз: включить насос', () => startFill(w.id, s.level));
+    const ch = $('#sheet .wchart'); if (ch) $$('.hit', ch).forEach(b => b.onclick = () => { const d = s.days[Number(b.dataset.ci)]; $('#wcap').textContent = fDs(d.d) + ': ' + fmtL(d.v) + (d.v < s.avg * 0.6 ? ' — намного меньше обычного' : ''); $$('.hit', ch).forEach(z => z.classList.toggle('on', z === b)); });
+    $$('[data-ldel]').forEach(b => armed(b, 'Удалить?', () => { const n = clone(w); n.log = n.log.filter(e => e.id !== b.dataset.ldel); act(() => API.saveW(n), 'Запись удалена.'); }));
+  };
+  st.redraw = draw;
+  draw();
+}
+function refreshW(id) { if (SHEET && SHEET.kind === 'w' + id && SHEET.redraw) SHEET.redraw(); if (V.tab === 'wells' || V.tab === 'home') render(); }
+function startFill(id, from, fixed) {
+  WSIM[id] = {fill: Date.now(), from: from == null ? 60 : from, fixed: !!fixed};
+  toast('Насос включён. Выключится сам, когда корыто наполнится.');
+  refreshW(id);
+  let n = 0; const iv = setInterval(() => { n++; refreshW(id); if (n >= 8) clearInterval(iv); }, 2000);
+}
+
+/* --- запись об обслуживании --- */
+function wLogSheet(id) {
+  const w = wz(id); if (!w) return;
+  const F = {k: 'fix', d: TODAY(), t: '', v: ''};
+  const draw = () => {
+    openSheet(head(w.name, 'Обслуживание') + `<div class="form"><div class="seg wrap">${Object.keys(WLK).map(k => `<button data-lk="${k}" aria-pressed="${F.k === k}">${WLK[k]}</button>`).join('')}</div>
+      <label class="f" for="lD">Дата<input id="lD" type="date" value="${esc(F.d)}" max="${TODAY()}"></label>
+      <label class="f" for="lT">Что сделали<input id="lT" autocomplete="off" value="${esc(F.t)}" placeholder="Например: заменили поплавок"></label>
+      <label class="f" for="lV">Сколько потратили, ₸<input id="lV" inputmode="numeric" autocomplete="off" value="${esc(F.v)}" placeholder="необязательно"></label>
+      <p class="err" id="lErr"></p><button class="btn" id="lGo">Сохранить</button><button class="btn ghost" id="lBack">Назад</button></div>`, {kind: 'wl'});
+    const sync = () => { F.d = $('#lD').value; F.t = $('#lT').value.trim(); F.v = $('#lV').value.trim(); };
+    $$('[data-lk]').forEach(b => b.onclick = () => { sync(); F.k = b.dataset.lk; draw(); });
+    $('#lBack').onclick = () => wellSheet(id);
+    $('#lGo').onclick = () => {
+      sync();
+      if (!isDate(F.d)) { $('#lErr').textContent = 'Укажите дату.'; return; }
+      if (F.v && !(num(F.v) >= 0)) { $('#lErr').textContent = 'Сумма — только цифры.'; return; }
+      const n = clone(wz(id)); n.log.push(cleanWl({id: uid('l'), d: F.d, k: F.k, t: F.t, v: F.v}));
+      act(() => API.saveW(n), 'Записано.').then(ok => { if (ok) wellSheet(id); });
+    };
+  };
+  draw();
+}
+
+/* --- добавить или изменить колодец --- */
+let PICKMAP = null;
+function editWell(id) {
+  const old = id ? wz(id) : null;
+  const F = old ? clone(old) : {id: uid('w'), name: '', kind: 'well', lat: null, lon: null, grps: [], cam: '', auto: true, smart: false, note: '', dm: '', ord: WS.length, log: []};
+  const draw = () => {
+    let x = head(old ? old.name : 'Новый колодец', old ? 'Изменить' : 'Добавить колодец');
+    x += `<div class="form"><label class="f" for="wN">Название<input id="wN" autocomplete="off" value="${esc(F.name)}" placeholder="Например: колодец у Ақсай"></label>
+      <div class="seg">${Object.keys(WK).map(k => `<button data-wk="${k}" aria-pressed="${F.kind === k}">${WK[k]}</button>`).join('')}</div>
+      <p class="small mut">Где находится</p>
+      <button class="btn ghost" id="wGps">${WXI.gps}Я сейчас у колодца</button>
+      <div class="pmap" id="pmap"><p class="wmap-ph">Загружаю карту…</p></div>
+      <p class="small mut" id="wCoord">${F.lat != null ? 'Точка: ' + F.lat.toFixed(5) + ', ' + F.lon.toFixed(5) + '. Нажмите на карту, чтобы передвинуть.' : 'Нажмите на карту, где колодец, или определите место по телефону.'}</p>
+      <p class="small mut">Какие косяки здесь пьют</p><div class="chips">${GS.map(g => `<button class="fchip" data-wg="${esc(g.id)}" aria-pressed="${F.grps.indexOf(g.id) >= 0}">${esc(g.name)}</button>`).join('')}</div>
+      <label class="tg"><input type="checkbox" id="wA" ${F.auto ? 'checked' : ''}><span>Стоит автодолив (поплавок или датчик)</span></label>
+      <label class="tg"><input type="checkbox" id="wS" ${F.smart ? 'checked' : ''}><span>Подключён контроллер с датчиками</span></label>
+      <label class="f" for="wC">Камера<input id="wC" autocomplete="off" value="${esc(F.cam)}" placeholder="Ссылка или название приложения"></label>
+      <label class="f" for="wNt">Заметка<input id="wNt" autocomplete="off" value="${esc(F.note)}" placeholder="Например: глубина 12 м"></label>
+      <p class="err" id="wErr"></p><button class="btn" id="wSave">${old ? 'Сохранить' : 'Добавить'}</button></div>`;
+    if (old) x += `<section class="card mt"><h3>Удалить колодец</h3><p class="small mut">Записи об обслуживании тоже удалятся.</p><button class="btn ghost danger full mt8" id="wDel">${I.trash}Удалить</button></section>`;
+    openSheet(x, {kind: 'ew'});
+    const sync = () => { F.name = $('#wN').value.trim(); F.auto = $('#wA').checked; F.smart = $('#wS').checked; F.cam = $('#wC').value.trim(); F.note = $('#wNt').value.trim(); };
+    const coordTxt = () => { $('#wCoord').textContent = F.lat != null ? 'Точка: ' + F.lat.toFixed(5) + ', ' + F.lon.toFixed(5) + '. Нажмите на карту, чтобы передвинуть.' : 'Нажмите на карту, где колодец, или определите место по телефону.'; };
+    $$('[data-wk]').forEach(b => b.onclick = () => { sync(); F.kind = b.dataset.wk; $$('[data-wk]').forEach(z => z.setAttribute('aria-pressed', String(z === b))); });
+    $$('[data-wg]').forEach(b => b.onclick = () => { const g = b.dataset.wg, i = F.grps.indexOf(g); if (i >= 0) F.grps.splice(i, 1); else F.grps.push(g); b.setAttribute('aria-pressed', String(i < 0)); });
+    let mk = null;
+    const place = (LF, m) => { if (F.lat == null) return; if (mk) mk.setLatLng([F.lat, F.lon]); else mk = LF.marker([F.lat, F.lon], {icon: wIcon(LF, 'wtr')}).addTo(m); };
+    loadLeaflet().then(LF => {
+      const el = $('#pmap'); if (!el) return;
+      el.innerHTML = '';
+      if (PICKMAP) { try { PICKMAP.remove(); } catch (e) {} PICKMAP = null; }
+      const c = F.lat != null ? [F.lat, F.lon] : WS.filter(w => w.lat != null).length ? [WS.filter(w => w.lat != null)[0].lat, WS.filter(w => w.lat != null)[0].lon] : SET.loc ? [SET.loc.lat, SET.loc.lon] : [47.8333, 59.6];
+      PICKMAP = lfMap(LF, el); PICKMAP.setView(c, F.lat != null ? 13 : 10);
+      place(LF, PICKMAP);
+      PICKMAP.on('click', e => { F.lat = Math.round(e.latlng.lat * 1e5) / 1e5; F.lon = Math.round(e.latlng.lng * 1e5) / 1e5; place(LF, PICKMAP); coordTxt(); });
+      setTimeout(() => { if (PICKMAP) PICKMAP.invalidateSize(); }, 250);
+    }).catch(() => { const el = $('#pmap'); if (el) el.innerHTML = '<p class="wmap-ph">Карта появится, когда будет интернет. Место можно определить по телефону.</p>'; });
+    $('#wGps').onclick = () => {
+      if (!navigator.geolocation) { $('#wErr').textContent = 'Телефон не умеет определять место.'; return; }
+      $('#wErr').textContent = ''; $('#wCoord').textContent = 'Определяю место…';
+      navigator.geolocation.getCurrentPosition(p => {
+        F.lat = Math.round(p.coords.latitude * 1e5) / 1e5; F.lon = Math.round(p.coords.longitude * 1e5) / 1e5; coordTxt();
+        if (PICKMAP && window.L) { place(window.L, PICKMAP); PICKMAP.setView([F.lat, F.lon], 14); }
+      }, e => { coordTxt(); $('#wErr').textContent = e && e.code === 1 ? 'Разрешите доступ к месту в настройках браузера или нажмите на карту.' : 'Не удалось определить место. Нажмите на карту.'; }, {enableHighAccuracy: true, timeout: 20000, maximumAge: 60000});
+    };
+    $('#wSave').onclick = () => {
+      sync();
+      if (!F.name) { $('#wErr').textContent = 'Впишите название.'; return; }
+      act(() => API.saveW(cleanW(F.id, F)), old ? 'Сохранено.' : 'Колодец добавлен.').then(ok => { if (ok) wellSheet(F.id); });
+    };
+    const del = $('#wDel'); if (del) armed(del, 'Удалить совсем?', () => act(() => API.delW(old.id), 'Колодец удалён.').then(ok => { if (ok) closeSheet(); }));
+  };
+  draw();
+}
+
+/* --- пример: колодцы вокруг Шалкара --- */
+function demoWells() {
+  const T = TODAY();
+  return {
+    w1: {name: 'Колодец Ақсай', kind: 'well', lat: 47.951, lon: 59.412, grps: ['g1', 'g2'], cam: 'Приложение камеры', auto: true, smart: true, dm: 'ok', ord: 0,
+      log: [{id: 'l11', d: addD(T, -41), k: 'clean', t: 'почистили колодец и корыто', v: 15000}, {id: 'l12', d: addD(T, -12), k: 'check', t: 'поплавок в порядке'}]},
+    w2: {name: 'Скважина у Южной балки', kind: 'bore', lat: 47.702, lon: 59.788, grps: ['g3', 'g4'], cam: 'Приложение камеры', auto: true, smart: true, dm: 'leak', ord: 1,
+      log: [{id: 'l21', d: addD(T, -75), k: 'fix', t: 'заменили насос', v: 185000}]},
+    w3: {name: 'Колодец на жайлау', kind: 'well', lat: 48.034, lon: 59.705, grps: ['g5', 'g6', 'g7'], cam: '', auto: true, smart: true, dm: 'low', ord: 2,
+      log: [{id: 'l31', d: addD(T, -30), k: 'check', t: 'проверили трубы перед зимой'}]},
+    w4: {name: 'Колодец у қыстау', kind: 'well', lat: 47.866, lon: 59.951, grps: ['g8', 'g9', 'g10'], cam: 'Приложение камеры', auto: true, smart: true, dm: 'offline', ord: 3,
+      log: [{id: 'l41', d: addD(T, -120), k: 'fix', t: 'заменили аккумулятор контроллера', v: 25000}]},
+    w5: {name: 'Старый колодец', kind: 'well', lat: 47.668, lon: 59.452, grps: ['g11', 'g12'], cam: '', auto: false, smart: false, dm: '', ord: 4,
+      note: 'Вода солоноватая. Только для молодняка и рабочих лошадей.', log: [{id: 'l51', d: addD(T, -200), k: 'clean', t: 'вычистили ил', v: 40000}]}
+  };
+}
+
 /* ---------- хранение: пример в памяти телефона (облако подключим для настоящего учёта) ---------- */
 const DKEY = 'tabun-demo-v4';
 let DATA = null;
 function applyData() {
   Object.keys(HM).forEach(k => delete HM[k]);
   HS = Object.keys(DATA.horses).map(id => cleanH(id, DATA.horses[id]));
+  WS = Object.keys(DATA.wells || {}).map(id => cleanW(id, DATA.wells[id])).sort((a, b) => a.ord - b.ord || a.name.localeCompare(b.name, 'ru'));
   GS = Object.keys(DATA.groups).map(id => cleanG(id, DATA.groups[id])).sort((a, b) => a.ord - b.ord || a.name.localeCompare(b.name, 'ru'));
   SET = cleanSet(DATA.settings);
   derive();
@@ -1452,11 +1781,13 @@ const API = {
   async delH(id) { delete DATA.horses[id]; persist(); changed(); },
   async saveG(g) { DATA.groups[g.id] = {name: g.name, stallion: g.stallion, place: g.place, kind: g.kind, ord: g.ord}; persist(); changed(); },
   async delG(id) { delete DATA.groups[id]; persist(); changed(); },
+  async saveW(w) { DATA.wells = DATA.wells || {}; DATA.wells[w.id] = packW(w); persist(); changed(); },
+  async delW(id) { if (DATA.wells) delete DATA.wells[id]; persist(); changed(); },
   async saveSet(s) { DATA.settings = {farm: s.farm, phone: s.phone, vacs: s.vacs, masts: s.masts, loc: s.loc || null}; persist(); changed(); },
-  backup() { return {app: 'tabun', v: 1, at: new Date().toISOString(), horses: DATA.horses, groups: DATA.groups, settings: DATA.settings}; }
+  backup() { return {app: 'tabun', v: 1, at: new Date().toISOString(), horses: DATA.horses, groups: DATA.groups, wells: DATA.wells || {}, settings: DATA.settings}; }
 };
 function resetDemo() {
-  DATA = demoData(); DATA.settings = DEMO_SET();
+  DATA = demoData(); DATA.settings = DEMO_SET(); DATA.wells = demoWells();
   persist(); V.tab = 'home'; V.sel = null; V.q = ''; V.cat = ''; V.g = ''; changed(); window.scrollTo(0, 0);
   toast('Пример начат заново.');
 }
@@ -1467,6 +1798,7 @@ $('#openSet').onclick = settingsSheet;
 (function start() {
   DATA = lsGet(DKEY, null);
   if (!DATA || !DATA.horses || !DATA.groups) { DATA = demoData(); DATA.settings = DEMO_SET(); persist(); }
+  if (!DATA.wells) { DATA.wells = demoWells(); persist(); }
   MODE = 'demo';
   applyData(); render();
   wxLoad(false);
