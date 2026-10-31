@@ -370,7 +370,7 @@ const COLOR_HEX = {'торы': '#7b4a2a', 'қара торы': '#4a2c1a', 'жи�
 const mastTxt = c => c + (MAST_RU[c] ? ' (' + MAST_RU[c] + ')' : '');
 const VAC0 = ['Сибирская язва', 'Грипп лошадей', 'Ринопневмония', 'Мыт', 'Сап (исследование)', 'Дегельминтизация', 'Обработка от клещей'];
 const ST = {in: 'В табуне', sold: 'Продана', meat: 'Забита на мясо', dead: 'Пала', lost: 'Пропала'};
-const EVK = {w: 'Взвешивание', vac: 'Прививка, обработка', move: 'Перевод', foal: 'Приплод', note: 'Заметка', sold: 'Продажа', meat: 'Забой', dead: 'Падёж', lost: 'Пропажа', back: 'Возврат в табун', born: 'Родилась'};
+const EVK = {w: 'Взвешивание', vac: 'Прививка, обработка', move: 'Перевод', foal: 'Приплод', note: 'Заметка', sold: 'Продажа', meat: 'Забой', dead: 'Падёж', lost: 'Пропажа', back: 'Возврат в табун', born: 'Родилась', found: 'Нашлась'};
 
 function cleanEv(e) {
   e = e && typeof e === 'object' ? e : {};
@@ -396,7 +396,7 @@ function packH(h) {
   return o;
 }
 function cleanG(id, x) { x = x || {}; return {id, name: str(x.name, 40).trim() || 'Без названия', stallion: str(x.stallion, 40), place: str(x.place, 60), kind: x.kind === 'other' ? 'other' : 'uyir', ord: Number(x.ord) || 0}; }
-function cleanSet(s) { s = s || {}; return {farm: str(s.farm, 60), masts: Array.isArray(s.masts) && s.masts.length ? s.masts.map(v => str(v, 30)).filter(Boolean).slice(0, 40) : MASTS0.slice(), vacs: Array.isArray(s.vacs) && s.vacs.length ? s.vacs.map(v => str(v, 60)).filter(Boolean).slice(0, 30) : VAC0.slice()}; }
+function cleanSet(s) { s = s || {}; return {farm: str(s.farm, 60), phone: str(s.phone, 30), masts: Array.isArray(s.masts) && s.masts.length ? s.masts.map(v => str(v, 30)).filter(Boolean).slice(0, 40) : MASTS0.slice(), vacs: Array.isArray(s.vacs) && s.vacs.length ? s.vacs.map(v => str(v, 60)).filter(Boolean).slice(0, 30) : VAC0.slice()}; }
 
 /* ---------- состояние ---------- */
 let MODE = 'loading';
@@ -405,6 +405,8 @@ const HM = {}, PHC = {};
 const hz = id => HM[id] || null;
 const grp = id => GS.find(g => g.id === id) || null;
 const alive = h => h.st === 'in';
+const lostOf = () => HS.filter(h => h.st === 'lost').sort((a, b) => (a.stD || '').localeCompare(b.stD || ''));
+const lostWhere = h => { const e = lastEv(h, 'lost'); return e && e.t ? e.t : ''; };
 const hName = h => h ? (h.name ? h.name + (h.tag ? ' · ' + h.tag : '') : (h.tag ? '№ ' + h.tag : 'Без бирки')) : '—';
 const lastEv = (h, k) => { for (let i = h.ev.length - 1; i >= 0; i--) if (h.ev[i].k === k) return h.ev[i]; return null; };
 const weights = h => h.ev.filter(e => e.k === 'w' && e.v > 0);
@@ -437,6 +439,7 @@ function yearStats(y) {
       if (e.k === 'meat') { s.meat++; s.meatKg += e.v || 0; s.meatList.push({h, e}); }
       if (e.k === 'dead') { s.dead++; s.deadList.push({h, e}); }
       if (e.k === 'lost') s.lost++;
+      if (e.k === 'found') s.found = (s.found || 0) + 1;
     });
   });
   return s;
@@ -500,6 +503,8 @@ function demoData() {
   ids.slice(14, 22).forEach(id => { const h = out.horses[id], d = dIn(Y, 1, 2); h.st = 'meat'; h.stD = d; h.ev.push({id: uid('e'), d, k: 'meat', v: 180 + Math.floor(rnd() * 60), t: 'соғым'}); });
   const foals = Object.keys(out.horses).filter(id => out.horses[id].mother && out.horses[id].born >= Y + '-04-01');
   foals.slice(0, 3).forEach(id => { const h = out.horses[id], d = addD(h.born, 20 + Math.floor(rnd() * 60)); h.st = 'dead'; h.stD = d; h.ev.push({id: uid('e'), d, k: 'dead', t: pick(['волки', 'болезнь', 'непогода'])}); });
+  const mares = Object.keys(out.horses).filter(id => out.horses[id].sex === 'f' && out.horses[id].grp === 'g3' && ageMonths(out.horses[id].born, T) > 60);
+  mares.slice(0, 2).forEach((id, i) => { const h = out.horses[id], d = addD(T, -(4 + i * 9)); h.st = 'lost'; h.stD = d; h.ev.push({id: uid('e'), d, k: 'lost', t: i ? 'ушла с жайлау во время бурана' : 'у Южной балки, после дождя'}); });
   return out;
 }
 
@@ -690,6 +695,7 @@ function bindViews(app) {
   const fs = $('#lst', app); if (fs) fs.onchange = () => { V.st = fs.value; V.lim = 80; render(); };
   const sm = $('#lSel', app); if (sm) sm.onclick = () => { V.sel = V.sel ? null : {}; render(); };
   const more = $('#lMore', app); if (more) more.onclick = () => { V.lim += 120; drawList(); };
+  $$('[data-golost]', app).forEach(b => b.onclick = () => { V.tab = 'list'; V.st = 'lost'; V.cat = ''; V.g = ''; V.q = ''; render(); });
   $$('[data-y]', app).forEach(b => b.onclick = () => { V.y += Number(b.dataset.y); render(); });
   $$('[data-csv]', app).forEach(b => b.onclick = () => exportCsv(b.dataset.csv));
 }
@@ -701,6 +707,8 @@ function homeView() {
   const mx = Math.max.apply(null, CAT_ORDER.map(c => byCat[c] || 0).concat([1]));
   let h = `<section class="hero mt8"><span class="big">${live.length}</span><span class="l">${pl(live.length, 'голова', 'головы', 'голов')} в табуне</span></section>`;
   h += '<section class="card mt"><h3>Состав табуна</h3><div class="bars mt8">' + CAT_ORDER.filter(c => byCat[c]).map(c => `<button class="bar" data-go="list" data-cat="${c}"><span class="bl"><b>${esc(CATS[c].kz)}</b><span>${esc(CATS[c].ru)}</span></span><span class="bt"><i style="width:${Math.max(3, Math.round((byCat[c] || 0) / mx * 100))}%"></i></span><span class="bv">${byCat[c]}</span></button>`).join('') + '</div></section>';
+  const lost = lostOf();
+  if (lost.length) h += `<div class="sec-h"><h3>Пропали</h3>${chip('bad', lost.length + ' ' + pl(lost.length, 'лошадь', 'лошади', 'лошадей'))}</div><div class="list">` + lost.slice(0, 5).map(x => `<button class="row" data-h="${esc(x.id)}">${horseAv(x)}<span class="t"><b>${esc(hName(x))}</b><span class="st bad">${esc(lostAgo(x))}</span>${lostWhere(x) ? `<span class="small mut">${esc(lostWhere(x))}</span>` : ''}</span></button>`).join('') + (lost.length > 5 ? `<button class="btn ghost full" data-golost>Все пропавшие (${lost.length})</button>` : '') + '</div>';
   const due = dueList(14), over = due.filter(x => x.nx < T);
   h += `<div class="sec-h"><h3>Скоро нужно сделать</h3>${over.length ? chip('bad', 'просрочено: ' + over.length) : ''}</div>`;
   h += due.length ? '<div class="list">' + due.slice(0, 8).map((x, i) => `<button class="row" data-due="${i}"><span class="ic ${x.nx < T ? 'bad' : 'acc'}">${I.syr}</span><span class="t"><b>${esc(x.name)}</b><span class="st ${x.nx < T ? 'bad' : 'mut'}">${x.nx < T ? 'просрочено с ' + fDs(x.nx) : x.last !== x.nx ? 'с ' + fDs(x.nx) + ' по ' + fDs(x.last) : x.nx === T ? 'сегодня' : fDs(x.nx) + ', через ' + dBetween(T, x.nx) + ' дн.'}</span></span><span class="cnt">${x.ids.length} ${pl(x.ids.length, 'голова', 'головы', 'голов')}</span></button>`).join('') + '</div>' : '<p class="small mut">На ближайшие две недели прививок и обработок не запланировано.</p>';
@@ -715,13 +723,13 @@ function homeView() {
 /* --- список лошадей --- */
 function filtered() {
   const q = norm(V.q).trim();
-  return HS.filter(h => (V.st === 'all' || (V.st === 'in' ? alive(h) : !alive(h))) && (!V.cat || catOf(h) === V.cat) && (!V.g || h.grp === V.g) && (!q || norm(h.tag).indexOf(q) >= 0 || norm(h.name).indexOf(q) >= 0))
+  return HS.filter(h => (V.st === 'all' || (V.st === 'in' ? alive(h) : V.st === 'lost' ? h.st === 'lost' : !alive(h))) && (!V.cat || catOf(h) === V.cat) && (!V.g || h.grp === V.g) && (!q || norm(h.tag).indexOf(q) >= 0 || norm(h.name).indexOf(q) >= 0))
     .sort((a, b) => (grp(a.grp) ? grp(a.grp).ord : 99) - (grp(b.grp) ? grp(b.grp).ord : 99) || CATS[catOf(a)].ord - CATS[catOf(b)].ord || a.tag.localeCompare(b.tag));
 }
 function listView() {
   let h = `<div class="lhead mt8"><label class="srch" for="lq">${I.search}<input id="lq" type="search" placeholder="Бирка или кличка" value="${esc(V.q)}" autocomplete="off"></label><button class="ib" id="lSel" aria-pressed="${!!V.sel}" aria-label="Выбрать несколько">${I.sel}</button></div>`;
   h += `<div class="chips scroll mt8">${[['', 'Все']].concat(CAT_ORDER.filter(c => c !== 'unk').map(c => [c, CATS[c].kz])).map(x => `<button class="fchip" data-fcat="${x[0]}" aria-pressed="${V.cat === x[0]}">${esc(x[1])}</button>`).join('')}</div>`;
-  h += `<div class="row2 mt8"><select id="lg" aria-label="Косяк"><option value="">Все косяки и группы</option>${GS.map(g => `<option value="${esc(g.id)}" ${V.g === g.id ? 'selected' : ''}>${esc(g.name)}</option>`).join('')}</select><select id="lst" aria-label="Статус"><option value="in" ${V.st === 'in' ? 'selected' : ''}>В табуне</option><option value="out" ${V.st === 'out' ? 'selected' : ''}>Выбывшие</option><option value="all" ${V.st === 'all' ? 'selected' : ''}>Все</option></select></div>`;
+  h += `<div class="row2 mt8"><select id="lg" aria-label="Косяк"><option value="">Все косяки и группы</option>${GS.map(g => `<option value="${esc(g.id)}" ${V.g === g.id ? 'selected' : ''}>${esc(g.name)}</option>`).join('')}</select><select id="lst" aria-label="Статус"><option value="in" ${V.st === 'in' ? 'selected' : ''}>В табуне</option><option value="lost" ${V.st === 'lost' ? 'selected' : ''}>Пропавшие</option><option value="out" ${V.st === 'out' ? 'selected' : ''}>Выбывшие</option><option value="all" ${V.st === 'all' ? 'selected' : ''}>Все</option></select></div>`;
   h += '<div id="lbox"></div>';
   setTimeout(drawList, 0);
   return h;
@@ -789,6 +797,8 @@ function exportCsv(kind) {
   }
 }
 
+function lostAgo(h) { if (!h.stD) return 'пропала'; const n = dBetween(h.stD, TODAY()); return n <= 0 ? 'пропала сегодня' : n === 1 ? 'пропала вчера' : 'пропала ' + n + ' ' + pl(n, 'день', 'дня', 'дней') + ' назад, ' + fDs(h.stD); }
+
 /* ---------- карточка лошади ---------- */
 function spark(ws) {
   if (ws.length < 2) return '';
@@ -806,7 +816,8 @@ function horseSheet(id) {
     const c = catOf(h), g = grp(h.grp), mo = hz(h.mother), fa = hz(h.father), T = TODAY(), ws = weights(h), v = vacState(h);
     const kids = HS.filter(x => x.mother === h.id || x.father === h.id).sort((a, b) => b.born.localeCompare(a.born));
     let x = `<div class="sh-head"><div class="hh"><button class="phbtn" id="hPh" aria-label="${h.ph ? 'Фото лошади' : 'Добавить фото'}">${horseAv(h, 'lg')}<span class="camb">${I.cam}</span></button><div class="t"><p class="kicker">${esc(CATS[c].kz + ' · ' + CATS[c].ru)}</p><h2>${esc(h.name || (h.tag ? '№ ' + h.tag : 'Без бирки'))}</h2><p class="small mut">${esc([h.tag && h.name ? 'бирка ' + h.tag : '', h.color, ageTxt(h.born) + (h.approx ? ' (примерно)' : '')].filter(Boolean).join(' · '))}</p></div></div>${closeBtn}</div>`;
-    if (!alive(h)) x += `<div class="banner bad"><p><b>${esc(ST[h.st])}</b>${h.stD ? ' ' + esc(fDy(h.stD)) : ''}.</p><button class="linkbtn" id="hBack">Вернуть в табун</button></div>`;
+    if (h.st === 'lost') x += `<div class="banner bad"><p><b>${esc(lostAgo(h).replace(/^п/, 'П'))}.</b>${lostWhere(h) ? ' Последний раз: ' + esc(lostWhere(h)) + '.' : ''}</p><div class="row2 mt8"><button class="btn small" id="hFound">${I.check}Нашлась</button><button class="btn small ghost" id="hAd">${I.chat}Объявление</button></div><button class="linkbtn mt8" id="hWrite">Не нашлась: списать</button></div>`;
+    else if (!alive(h)) x += `<div class="banner bad"><p><b>${esc(ST[h.st])}</b>${h.stD ? ' ' + esc(fDy(h.stD)) : ''}.</p><button class="linkbtn" id="hBack">Вернуть в табун</button></div>`;
     if (!h.ph && alive(h)) x += `<button class="btn ghost full mb" id="hAddPh">${I.cam}Добавить фото</button>`;
     x += '<section class="card"><dl class="kv">';
     x += `<dt>Косяк</dt><dd>${g ? `<button class="linkbtn" data-g="${esc(g.id)}">${esc(g.name)}</button>` : 'не указан'}</dd>`;
@@ -833,6 +844,9 @@ function horseSheet(id) {
     $('#hEdit').onclick = () => editHorse(h.id);
     $('#hPh').onclick = () => photoMenu(h);
     const ap = $('#hAddPh'); if (ap) ap.onclick = () => pickPhoto(h);
+    const hf = $('#hFound'); if (hf) hf.onclick = () => foundSheet(h.id);
+    const ha = $('#hAd'); if (ha) ha.onclick = () => lostAd(h);
+    const hw = $('#hWrite'); if (hw) armed(hw, 'Списать как павшую?', () => { const n = clone(h); n.st = 'dead'; n.stD = TODAY(); n.ev.push({id: uid('e'), d: TODAY(), k: 'dead', t: 'пропала и не нашлась'}); act(() => API.saveH(n), 'Списана.'); });
     const hb = $('#hBack'); if (hb) armed(hb, 'Нажмите ещё раз', () => { const n = clone(h); n.st = 'in'; n.stD = ''; n.ev.push({id: uid('e'), d: TODAY(), k: 'back'}); act(() => API.saveH(n), 'Лошадь снова в табуне.'); });
     $$('[data-edel]').forEach(b => armed(b, 'Удалить?', () => {
       const n = clone(h), e = n.ev.find(z => z.id === b.dataset.edel); n.ev = n.ev.filter(z => z.id !== b.dataset.edel);
@@ -950,7 +964,7 @@ function evSheet(ids, k, back) {
     if (k === 'sold') x += `<label class="f" for="vV">Цена, ₸<input id="vV" inputmode="numeric" autocomplete="off" value="${esc(F.v)}"></label><label class="f" for="vT">Кому продали<input id="vT" autocomplete="off" value="${esc(F.t)}"></label>`;
     if (k === 'meat') x += `<label class="f" for="vV">Мяса, кг<input id="vV" inputmode="decimal" autocomplete="off" value="${esc(F.v)}"></label><label class="f" for="vT">Заметка<input id="vT" autocomplete="off" value="${esc(F.t)}" placeholder="Например: соғым"></label>`;
     if (k === 'dead') x += `<div class="seg wrap">${['болезнь', 'волки', 'непогода', 'травма', 'другое'].map(r => `<button data-rs="${r}" aria-pressed="${F.reason === r}">${r}</button>`).join('')}</div><label class="f" for="vT">Подробности<input id="vT" autocomplete="off" value="${esc(F.t)}"></label>`;
-    if (k === 'lost' || k === 'note') x += `<label class="f" for="vT">${k === 'note' ? 'Текст' : 'Подробности'}<input id="vT" autocomplete="off" value="${esc(F.t)}"></label>`;
+    if (k === 'lost' || k === 'note') x += `<label class="f" for="vT">${k === 'note' ? 'Текст' : 'Где последний раз видели'}<input id="vT" autocomplete="off" value="${esc(F.t)}"></label>`;
     if (many && k === 'vac') x += `<p class="hint">Запись появится у каждой из ${ids.length} лошадей.</p>`;
     x += `<p class="err" id="vErr"></p><button class="btn" id="vGo">Сохранить</button>${back ? '<button class="btn ghost mt8" id="vBack">Назад</button>' : ''}</div>`;
     openSheet(x, {kind: 'ev'});
@@ -1049,6 +1063,7 @@ function settingsSheet() {
   const F = clone(SET);
   const draw = () => {
     openSheet(head('Табун', 'Настройки') + `<div class="form"><label class="f" for="sF">Название хозяйства<input id="sF" autocomplete="off" value="${esc(F.farm)}" placeholder="Например: КХ «Ақбоз»"></label>
+      <label class="f" for="sPh">Телефон для объявлений<input id="sPh" type="tel" inputmode="tel" autocomplete="off" value="${esc(F.phone)}" placeholder="+7 7__ ___ __ __"></label>
       <p class="small mut">Масти в списке</p><div class="vlist">${F.masts.map((v, i) => `<div class="vi"><span>${esc(mastTxt(v))}</span><button class="ib sm" data-mdel="${i}" aria-label="Убрать">${I.close}</button></div>`).join('')}</div>
       <div class="row2"><input id="sM" autocomplete="off" placeholder="Добавить масть"><button class="btn ghost" id="sMAdd">${I.plus}Добавить</button></div>
       <p class="small mut">Прививки и обработки в списке</p><div class="vlist">${F.vacs.map((v, i) => `<div class="vi"><span>${esc(v)}</span><button class="ib sm" data-vdel="${i}" aria-label="Убрать">${I.close}</button></div>`).join('')}</div>
@@ -1056,7 +1071,7 @@ function settingsSheet() {
       <p class="err" id="sErr"></p><button class="btn" id="sSave">Сохранить</button></div>
       <section class="card mt"><h3>Резервная копия</h3><p class="small">Сохраните весь табун одним файлом на телефон.</p><button class="btn ghost full mt8" id="sBk">${I.save}Сохранить копию</button></section>
       ${MODE === 'demo' ? `<section class="card mt"><h3>Пример</h3><p class="small">Сейчас открыт пример с выдуманными лошадьми. Чтобы вести настоящий учёт, программу подключают к облаку: тогда данные хранятся надёжно и видны на нескольких телефонах.</p><button class="btn ghost full mt8" id="sReset">Начать пример заново</button></section>` : ''}`, {kind: 'set'});
-    const sync = () => { F.farm = $('#sF').value.trim(); };
+    const sync = () => { F.farm = $('#sF').value.trim(); F.phone = $('#sPh').value.trim(); };
     $$('[data-mdel]').forEach(b => b.onclick = () => { sync(); F.masts.splice(Number(b.dataset.mdel), 1); draw(); });
     $('#sMAdd').onclick = () => { sync(); const v = $('#sM').value.trim(); if (v && F.masts.indexOf(v) < 0) F.masts.push(v.slice(0, 30)); draw(); };
     $$('[data-vdel]').forEach(b => b.onclick = () => { sync(); F.vacs.splice(Number(b.dataset.vdel), 1); draw(); });
@@ -1110,8 +1125,49 @@ function photoMenu(h) {
   $('#pmBack').onclick = () => horseSheet(h.id);
 }
 
+/* ---------- пропавшие ---------- */
+function foundSheet(id) {
+  const h = hz(id); if (!h) return;
+  const F = {d: TODAY(), t: '', grp: h.grp};
+  openSheet(head(hName(h), 'Нашлась') + `<div class="form"><label class="f" for="fdD">Когда нашлась<input id="fdD" type="date" value="${F.d}" max="${TODAY()}"></label>
+    <label class="f" for="fdT">Где нашлась<input id="fdT" autocomplete="off" placeholder="Например: у соседей за рекой"></label>
+    <label class="f" for="fdG">Вернуть в косяк<select id="fdG">${GS.map(g => `<option value="${esc(g.id)}" ${g.id === F.grp ? 'selected' : ''}>${esc(g.name)}</option>`).join('')}</select></label>
+    <p class="err" id="fdErr"></p><button class="btn" id="fdGo">${I.check}Вернуть в табун</button><button class="btn ghost mt8" id="fdBack">Назад</button></div>`, {kind: 'found'});
+  $('#fdBack').onclick = () => horseSheet(id);
+  $('#fdGo').onclick = () => {
+    const d = $('#fdD').value; if (!isDate(d)) { $('#fdErr').textContent = 'Укажите дату.'; return; }
+    const n = clone(h), t = $('#fdT').value.trim(), g = $('#fdG').value, days = h.stD ? dBetween(h.stD, d) : 0;
+    n.st = 'in'; n.stD = ''; n.grp = g || n.grp;
+    n.ev.push({id: uid('e'), d, k: 'found', t: (t ? t + ' · ' : '') + 'искали ' + days + ' ' + pl(days, 'день', 'дня', 'дней')});
+    act(() => API.saveH(n), 'Отлично! Лошадь снова в табуне.').then(ok => { if (ok) horseSheet(id); });
+  };
+}
+async function lostAd(h) {
+  const c = catOf(h), g = grp(h.grp);
+  const lines = ['🐎 ПРОПАЛА ЛОШАДЬ / ЖЫЛҚЫ ЖОҒАЛДЫ',
+    CATS[c].kz + ' (' + CATS[c].ru + ')' + (h.born ? ', ' + ageTxt(h.born) : ''),
+    'Масть: ' + mastTxt(h.color),
+    h.tag ? 'Бирка: ' + h.tag : '',
+    h.name ? 'Кличка: ' + h.name : '',
+    h.note ? 'Приметы: ' + h.note : '',
+    'Пропала: ' + (h.stD ? fDf(h.stD) : 'недавно') + (lostWhere(h) ? ', ' + lostWhere(h) : ''),
+    SET.farm ? 'Хозяйство: ' + SET.farm : '',
+    SET.phone ? 'Кто видел — позвоните: ' + SET.phone : 'Кто видел — сообщите, пожалуйста.'];
+  const text = lines.filter(Boolean).join('\n');
+  const src = h.ph ? (PHC[h.ph] || await PHDB.get(h.ph)) : '';
+  try {
+    if (src && window.File && navigator.canShare) {
+      const f = new File([dataToBlob(src)], 'loshad-' + (h.tag || h.id) + '.jpg', {type: 'image/jpeg'});
+      if (navigator.canShare({files: [f]})) { await navigator.share({files: [f], text}); return; }
+    }
+    if (navigator.share) { await navigator.share({text}); return; }
+  } catch (e) { if (e && e.name === 'AbortError') return; }
+  window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank', 'noopener');
+}
+function dataToBlob(d) { const a = String(d).split(','), b = atob(a[1] || ''), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return new Blob([u], {type: 'image/jpeg'}); }
+
 /* ---------- хранение: пример в памяти телефона (облако подключим для настоящего учёта) ---------- */
-const DKEY = 'tabun-demo-v2';
+const DKEY = 'tabun-demo-v3';
 let DATA = null;
 function applyData() {
   Object.keys(HM).forEach(k => delete HM[k]);
@@ -1128,7 +1184,7 @@ const API = {
   async delH(id) { delete DATA.horses[id]; persist(); changed(); },
   async saveG(g) { DATA.groups[g.id] = {name: g.name, stallion: g.stallion, place: g.place, kind: g.kind, ord: g.ord}; persist(); changed(); },
   async delG(id) { delete DATA.groups[id]; persist(); changed(); },
-  async saveSet(s) { DATA.settings = {farm: s.farm, vacs: s.vacs, masts: s.masts}; persist(); changed(); },
+  async saveSet(s) { DATA.settings = {farm: s.farm, phone: s.phone, vacs: s.vacs, masts: s.masts}; persist(); changed(); },
   backup() { return {app: 'tabun', v: 1, at: new Date().toISOString(), horses: DATA.horses, groups: DATA.groups, settings: DATA.settings}; }
 };
 function resetDemo() {
