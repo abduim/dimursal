@@ -835,7 +835,7 @@ function filtered() {
     .sort((a, b) => (grp(a.grp) ? grp(a.grp).ord : 99) - (grp(b.grp) ? grp(b.grp).ord : 99) || CATS[catOf(a)].ord - CATS[catOf(b)].ord || a.tag.localeCompare(b.tag));
 }
 function listView() {
-  let h = `<div class="lhead mt8"><label class="srch" for="lq">${I.search}<input id="lq" type="search" placeholder="Бирка, кличка или чип" value="${esc(V.q)}" autocomplete="off"></label><button class="ib" id="lSel" aria-pressed="${!!V.sel}" aria-label="Выбрать несколько">${I.sel}</button></div>`;
+  let h = `<div class="lhead mt8"><label class="srch" for="lq">${I.search}<input id="lq" type="search" placeholder="Бирка, кличка, чип" value="${esc(V.q)}" autocomplete="off"></label><button class="btn small ${V.sel ? '' : 'ghost '}" id="lSel" aria-pressed="${!!V.sel}">${V.sel ? 'Готово' : I.sel + 'Выбрать'}</button></div>`;
   h += `<div class="chips scroll mt8">${[['', 'Все']].concat(CAT_ORDER.filter(c => c !== 'unk').map(c => [c, CATS[c].kz])).map(x => `<button class="fchip" data-fcat="${x[0]}" aria-pressed="${V.cat === x[0]}">${esc(x[1])}</button>`).join('')}</div>`;
   h += `<div class="row2 mt8"><select id="lg" aria-label="Косяк"><option value="">Все косяки и группы</option>${GS.map(g => `<option value="${esc(g.id)}" ${V.g === g.id ? 'selected' : ''}>${esc(g.name)}</option>`).join('')}</select><select id="lst" aria-label="Статус"><option value="in" ${V.st === 'in' ? 'selected' : ''}>В табуне</option><option value="lost" ${V.st === 'lost' ? 'selected' : ''}>Пропавшие</option><option value="out" ${V.st === 'out' ? 'selected' : ''}>Выбывшие</option><option value="all" ${V.st === 'all' ? 'selected' : ''}>Все</option></select></div>`;
   h += '<div id="lbox"></div>';
