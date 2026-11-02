@@ -106,6 +106,7 @@ input[type="time"],input[type="date"]{-webkit-appearance:none;appearance:none}
 .seg{display:flex;gap:6px}.seg.wrap{flex-wrap:wrap}
 .seg button{min-height:40px;padding:0 12px;border-radius:99px;border:1px solid var(--line);background:var(--surface);font-weight:650;font-size:14px;color:var(--ink)}
 .seg button[aria-pressed="true"]{background:var(--acc);border-color:var(--acc);color:var(--acc-ink)}
+pre.doc{white-space:pre-wrap;word-break:break-word;font:14px/1.45 ui-monospace,Menlo,monospace;background:var(--soft);border-radius:12px;padding:12px;max-height:46vh;overflow:auto;color:var(--ink)}
 .seg.two{display:grid;grid-template-columns:1fr 1fr;background:var(--soft);border-radius:14px;padding:4px;gap:4px}
 .seg.two button{border:0;border-radius:11px;background:transparent;min-height:40px;color:var(--mut)}
 .seg.two button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
@@ -266,7 +267,8 @@ dl.kv .linkbtn{min-height:0;padding:0;text-align:left}
 .he .d{font-size:13px;color:var(--mut);font-weight:650}.he .t{display:grid;min-width:0}.he .t b{font-size:14px}
 .row3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .row3 .btn{padding:0 6px}
-#selbar{position:fixed;z-index:30;left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));bottom:calc(76px + env(safe-area-inset-bottom,0px));max-width:620px;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:8px 8px 8px 14px;display:flex;align-items:center;gap:8px}
+#selbar{position:fixed;z-index:30;left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));bottom:calc(76px + env(safe-area-inset-bottom,0px));max-width:620px;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:8px 8px 8px 14px;display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px}
+#selbar .sbb{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr);gap:6px}#selbar .sbb .btn{min-width:0;justify-content:center}
 #selbar>span{flex:1;font-size:14px;min-width:0}
 #selbar .btn{padding:0 10px}
 @media (prefers-color-scheme:dark){.hi svg path{stroke:#EEE6DA;stroke-opacity:.35;stroke-width:1.2}}
@@ -465,12 +467,12 @@ function cleanH(id, x) {
   x = x && typeof x === 'object' ? x : {};
   const ev = (Array.isArray(x.ev) ? x.ev : []).map(cleanEv).sort((a, b) => a.d.localeCompare(b.d));
   return {id, tag: str(x.tag, 30).trim(), name: str(x.name, 40).trim(), sex: x.sex === 'f' ? 'f' : 'm', cast: !!x.cast, color: str(x.color, 30), born: isDate(x.born) ? x.born : '', approx: !!x.approx,
-    ph: str(x.ph, 60), grp: str(x.grp, 40), mother: str(x.mother, 40), father: str(x.father, 40), st: ST[x.st] ? x.st : 'in', stD: isDate(x.stD) ? x.stD : '', note: str(x.note, 300), tr: str(x.tr, 30).trim(), ev, ts: Number(x.ts) || 0};
+    ph: str(x.ph, 60), grp: str(x.grp, 40), mother: str(x.mother, 40), father: str(x.father, 40), st: ST[x.st] ? x.st : 'in', stD: isDate(x.stD) ? x.stD : '', note: str(x.note, 300), tr: str(x.tr, 30).trim(), chip: str(x.chip, 24).replace(/\s+/g, ''), ev, ts: Number(x.ts) || 0};
 }
 function packH(h) {
   const o = {tag: h.tag, name: h.name, sex: h.sex, color: h.color, born: h.born, grp: h.grp, st: h.st, ev: h.ev.map(cleanEv), ts: h.ts || Date.now()};
   if (h.cast) o.cast = true; if (h.approx) o.approx = true; if (h.mother) o.mother = h.mother; if (h.father) o.father = h.father;
-  if (h.stD) o.stD = h.stD; if (h.note) o.note = h.note; if (h.ph) o.ph = h.ph; if (h.tr) o.tr = h.tr;
+  if (h.stD) o.stD = h.stD; if (h.note) o.note = h.note; if (h.ph) o.ph = h.ph; if (h.tr) o.tr = h.tr; if (h.chip) o.chip = h.chip;
   return o;
 }
 function cleanG(id, x) { x = x || {}; return {id, name: str(x.name, 40).trim() || 'Без названия', stallion: str(x.stallion, 40), place: str(x.place, 60), kind: x.kind === 'other' ? 'other' : 'uyir', ord: Number(x.ord) || 0}; }
@@ -829,11 +831,11 @@ function homeView() {
 /* --- список лошадей --- */
 function filtered() {
   const q = norm(V.q).trim();
-  return HS.filter(h => (V.st === 'all' || (V.st === 'in' ? alive(h) : V.st === 'lost' ? h.st === 'lost' : !alive(h))) && (!V.cat || catOf(h) === V.cat) && (!V.g || h.grp === V.g) && (!q || norm(h.tag).indexOf(q) >= 0 || norm(h.name).indexOf(q) >= 0))
+  return HS.filter(h => (V.st === 'all' || (V.st === 'in' ? alive(h) : V.st === 'lost' ? h.st === 'lost' : !alive(h))) && (!V.cat || catOf(h) === V.cat) && (!V.g || h.grp === V.g) && (!q || norm(h.tag).indexOf(q) >= 0 || norm(h.name).indexOf(q) >= 0 || (q.length >= 3 && norm(h.chip).indexOf(q) >= 0)))
     .sort((a, b) => (grp(a.grp) ? grp(a.grp).ord : 99) - (grp(b.grp) ? grp(b.grp).ord : 99) || CATS[catOf(a)].ord - CATS[catOf(b)].ord || a.tag.localeCompare(b.tag));
 }
 function listView() {
-  let h = `<div class="lhead mt8"><label class="srch" for="lq">${I.search}<input id="lq" type="search" placeholder="Бирка или кличка" value="${esc(V.q)}" autocomplete="off"></label><button class="ib" id="lSel" aria-pressed="${!!V.sel}" aria-label="Выбрать несколько">${I.sel}</button></div>`;
+  let h = `<div class="lhead mt8"><label class="srch" for="lq">${I.search}<input id="lq" type="search" placeholder="Бирка, кличка или чип" value="${esc(V.q)}" autocomplete="off"></label><button class="ib" id="lSel" aria-pressed="${!!V.sel}" aria-label="Выбрать несколько">${I.sel}</button></div>`;
   h += `<div class="chips scroll mt8">${[['', 'Все']].concat(CAT_ORDER.filter(c => c !== 'unk').map(c => [c, CATS[c].kz])).map(x => `<button class="fchip" data-fcat="${x[0]}" aria-pressed="${V.cat === x[0]}">${esc(x[1])}</button>`).join('')}</div>`;
   h += `<div class="row2 mt8"><select id="lg" aria-label="Косяк"><option value="">Все косяки и группы</option>${GS.map(g => `<option value="${esc(g.id)}" ${V.g === g.id ? 'selected' : ''}>${esc(g.name)}</option>`).join('')}</select><select id="lst" aria-label="Статус"><option value="in" ${V.st === 'in' ? 'selected' : ''}>В табуне</option><option value="lost" ${V.st === 'lost' ? 'selected' : ''}>Пропавшие</option><option value="out" ${V.st === 'out' ? 'selected' : ''}>Выбывшие</option><option value="all" ${V.st === 'all' ? 'selected' : ''}>Все</option></select></div>`;
   h += '<div id="lbox"></div>';
@@ -859,9 +861,10 @@ function selBar() {
   const bar = $('#selbar'), n = V.sel ? Object.keys(V.sel).length : 0;
   if (!V.sel || V.tab !== 'list') { bar.hidden = true; return; }
   bar.hidden = false;
-  bar.innerHTML = `<span>Выбрано: <b>${n}</b></span><button class="btn small" id="sbVac" ${n ? '' : 'disabled'}>${I.syr}Прививка</button><button class="btn small ghost" id="sbMove" ${n ? '' : 'disabled'}>${I.move}Перевести</button><button class="ib sm" id="sbX" aria-label="Отменить выбор">${I.close}</button>`;
+  bar.innerHTML = `<span>Выбрано: <b>${n}</b></span><button class="ib sm" id="sbX" aria-label="Отменить выбор">${I.close}</button><div class="sbb"><button class="btn small" id="sbVac" ${n ? '' : 'disabled'}>${I.syr}Прививка</button><button class="btn small ghost" id="sbMove" ${n ? '' : 'disabled'}>${I.move}Перевести</button><button class="btn small ghost" id="sbDoc" ${n ? '' : 'disabled'}>Справка</button></div>`;
   $('#sbVac').onclick = () => evSheet(Object.keys(V.sel), 'vac');
   $('#sbMove').onclick = () => evSheet(Object.keys(V.sel), 'move');
+  $('#sbDoc').onclick = () => docSheet(Object.keys(V.sel));
   $('#sbX').onclick = () => { V.sel = null; render(); };
 }
 
@@ -930,6 +933,7 @@ function horseSheet(id) {
     x += `<dt>Пол</dt><dd>${h.sex === 'f' ? 'кобыла' : h.cast ? 'мерин' : 'жеребец'}</dd>`;
     x += `<dt>Родилась</dt><dd>${h.born ? esc(fDf(h.born)) + (h.approx ? ' (примерно)' : '') : 'неизвестно'}</dd>`;
     x += `<dt>Мать</dt><dd>${mo ? `<button class="linkbtn" data-hh="${esc(mo.id)}">${esc(hName(mo))}</button>` : '—'}</dd>`;
+    x += `<dt>Чип</dt><dd>${h.chip ? esc(h.chip) : '<span class="mut">нет</span>'}</dd>`;
     if (h.tr) x += `<dt>Трекер</dt><dd><button class="linkbtn" data-trk="${esc(h.id)}">${esc(trkLine(h))}</button></dd>`;
     x += `<dt>Отец</dt><dd>${fa ? `<button class="linkbtn" data-hh="${esc(fa.id)}">${esc(hName(fa))}</button>` : '—'}</dd>`;
     x += '</dl>' + (h.note ? `<p class="small mt8">${esc(h.note)}</p>` : '') + '</section>';
@@ -992,12 +996,13 @@ function editHorse(id, pre) {
       <label class="tg"><input type="checkbox" id="eApprox" ${F.approx ? 'checked' : ''}><span>Дата рождения примерная</span></label>
       <label class="f" for="eGrp">Косяк или группа<select id="eGrp"><option value="">— не указан —</option>${GS.map(g => `<option value="${esc(g.id)}" ${g.id === F.grp ? 'selected' : ''}>${esc(g.name)}</option>`).join('')}</select></label>
       <div class="row2"><label class="f" for="eM">Бирка матери<input id="eM" autocomplete="off" inputmode="numeric" value="${esc(F.mTag)}" placeholder="если знаете"></label><label class="f" for="eF">Бирка отца<input id="eF" autocomplete="off" inputmode="numeric" value="${esc(F.fTag)}" placeholder="если знаете"></label></div>
+      <label class="f" for="eChip">Номер чипа (ИСЖ)<input id="eChip" autocomplete="off" autocapitalize="off" inputmode="numeric" value="${esc(F.chip || '')}" placeholder="обычно 15 цифр"></label>
       <label class="f" for="eTr">Номер трекера<input id="eTr" autocomplete="off" autocapitalize="off" value="${esc(F.tr || '')}" placeholder="если есть, например 0-4332284"></label>
       <label class="f" for="eNote">Заметка<input id="eNote" autocomplete="off" value="${esc(F.note)}" placeholder="Например: тавро на левом бедре"></label>
       <p class="err" id="eErr"></p><button class="btn" id="eSave">${old ? 'Сохранить' : 'Добавить'}</button></div>`;
     if (old) x += `<section class="card mt"><h3>Удалить запись</h3><p class="small mut">Только если лошадь добавлена по ошибке. Если её продали или она пала, отметьте это в карточке: так сохранится история.</p><button class="btn ghost danger full mt8" id="eDel">${I.trash}Удалить</button></section>`;
     openSheet(x, {kind: 'eh'});
-    const sync = () => { F.tag = $('#eTag').value.trim(); F.name = $('#eName').value.trim(); F.born = $('#eBorn').value; F.color = mastVal('eColor'); F.approx = $('#eApprox').checked; F.grp = $('#eGrp').value; F.mTag = $('#eM').value.trim(); F.fTag = $('#eF').value.trim(); F.note = $('#eNote').value.trim(); F.tr = $('#eTr').value.trim(); };
+    const sync = () => { F.tag = $('#eTag').value.trim(); F.name = $('#eName').value.trim(); F.born = $('#eBorn').value; F.color = mastVal('eColor'); F.approx = $('#eApprox').checked; F.grp = $('#eGrp').value; F.mTag = $('#eM').value.trim(); F.fTag = $('#eF').value.trim(); F.note = $('#eNote').value.trim(); F.tr = $('#eTr').value.trim(); F.chip = $('#eChip').value.replace(/\s+/g, ''); };
     $$('[data-sx]').forEach(b => b.onclick = () => { sync(); const v = b.dataset.sx; F.sex = v === 'f' ? 'f' : 'm'; F.cast = v === 'c'; draw(); });
     $('#eSave').onclick = () => {
       sync();
@@ -1008,6 +1013,8 @@ function editHorse(id, pre) {
       if (F.mTag && !m) return err('Не нашла кобылу с биркой ' + F.mTag + '.');
       if (F.fTag && !f) return err('Не нашла жеребца с биркой ' + F.fTag + '.');
       if (m && m.sex !== 'f') return err('Мать должна быть кобылой.');
+      const dup = F.chip && HS.find(x => x.id !== F.id && x.chip === F.chip);
+      if (dup) return err('Этот чип уже записан у лошади ' + hName(dup) + '.');
       F.mother = m ? m.id : ''; F.father = f ? f.id : '';
       const n = clone(F); delete n.mTag; delete n.fTag;
       if (!old && !n.ev.length) n.ev = [{id: uid('e'), d: TODAY(), k: 'note', t: 'добавлена в учёт'}];
@@ -1287,6 +1294,33 @@ async function lostAd(h) {
   window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank', 'noopener');
 }
 function dataToBlob(d) { const a = String(d).split(','), b = atob(a[1] || ''), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return new Blob([u], {type: 'image/jpeg'}); }
+
+/* список выбранных лошадей для ветеринарной справки (перевозка, продажа) */
+function docText(L, why) {
+  const sexT = h => h.sex === 'f' ? 'кобыла' : h.cast ? 'мерин' : 'жеребец';
+  const lines = ['Список лошадей для ветсправки' + (why ? ' — ' + why : ''), SET.farm ? 'Хозяйство: ' + SET.farm : '', 'Дата: ' + fDf(TODAY()), ''];
+  L.forEach((h, i) => lines.push((i + 1) + '. ' + (h.name ? h.name + (h.tag ? ' (№ ' + h.tag + ')' : '') : '№ ' + (h.tag || '—')) + ' — ' + sexT(h) + ', ' + mastTxt(h.color) + (h.born ? ', ' + h.born.slice(0, 4) + ' г.р.' : '') + ', чип: ' + (h.chip || 'НЕТ')));
+  lines.push('', 'Всего: ' + L.length + ' ' + pl(L.length, 'голова', 'головы', 'голов'));
+  const no = L.filter(h => !h.chip).length; if (no) lines.push('Без чипа: ' + no);
+  return lines.filter((l, i) => l || i > 2).join('\n');
+}
+function docSheet(ids) {
+  const L = ids.map(hz).filter(Boolean).sort((a, b) => a.tag.localeCompare(b.tag)), no = L.filter(h => !h.chip);
+  let why = 'продажа';
+  const draw = () => {
+    let x = head('Лошади', 'Список для справки');
+    x += '<p class="small mut">Отправьте список ветврачу — по нему он оформит справку в ИСЖ.</p>';
+    x += `<div class="seg mt8" role="group" aria-label="Для чего">${['продажа', 'перевозка', 'забой'].map(w => `<button class="${w === why ? 'on' : ''}" data-why="${w}" aria-pressed="${w === why}">${w[0].toUpperCase() + w.slice(1)}</button>`).join('')}</div>`;
+    if (no.length) x += `<div class="banner warn mt8"><p><b>У ${no.length} ${pl(no.length, 'лошади', 'лошадей', 'лошадей')} нет номера чипа.</b> Для справки лошадь должна быть в ИСЖ — впишите номер в карточку или чипируйте.</p></div>`;
+    x += `<pre class="doc mt8">${esc(docText(L, why))}</pre>`;
+    x += `<button class="btn full mt" id="dWa">Отправить в WhatsApp</button><button class="btn ghost full mt8" id="dCopy">${I.copy}Скопировать</button>`;
+    openSheet(x, {kind: 'doc'});
+    $$('[data-why]').forEach(b => b.onclick = () => { why = b.dataset.why; draw(); });
+    $('#dWa').onclick = () => window.open('https://wa.me/?text=' + encodeURIComponent(docText(L, why)), '_blank');
+    $('#dCopy').onclick = () => copy(docText(L, why), 'Список скопирован');
+  };
+  draw();
+}
 
 /* ---------- погода для пастбища (Open-Meteo, бесплатно, без ключа) ---------- */
 const WXK = 'tabun-wx';
@@ -1946,6 +1980,13 @@ function zoneDraw() {
   };
 }
 
+/* пример: чипы у большинства лошадей, у молодняка ещё нет */
+function demoChip(D) {
+  if (D.chipV === 1) return false;
+  let i = 0;
+  Object.values(D.horses).forEach(h => { i++; if (!h.born || h.born > '2025-06' || i % 9 === 0) return; h.chip = '398' + String(100000000000 + i * 7919 % 900000000000 + i * 104729).slice(0, 12); });
+  D.chipV = 1; return true;
+}
 /* пример: трекеры на жеребцах первых косяков, точки вокруг Шалкара */
 function demoTrk(D) {
   if (D.trkV === 1) return false;
@@ -1988,7 +2029,7 @@ const API = {
   backup() { return {app: 'tabun', v: 1, at: new Date().toISOString(), horses: DATA.horses, groups: DATA.groups, wells: DATA.wells || {}, settings: DATA.settings}; }
 };
 function resetDemo() {
-  DATA = demoData(); DATA.settings = DEMO_SET(); DATA.wells = demoWells(); demoTrk(DATA);
+  DATA = demoData(); DATA.settings = DEMO_SET(); DATA.wells = demoWells(); demoTrk(DATA); demoChip(DATA);
   persist(); V.tab = 'home'; V.sel = null; V.q = ''; V.cat = ''; V.g = ''; changed(); window.scrollTo(0, 0);
   toast('Пример начат заново.');
 }
@@ -2002,6 +2043,7 @@ $('#openSet').onclick = settingsSheet;
   if (!DATA || !DATA.horses || !DATA.groups) { DATA = demoData(); DATA.settings = DEMO_SET(); persist(); }
   if (!DATA.wells) { DATA.wells = demoWells(); persist(); }
   if (demoTrk(DATA)) persist();
+  if (demoChip(DATA)) persist();
   MODE = 'demo';
   applyData(); render();
   wxLoad(false);
