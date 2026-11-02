@@ -353,6 +353,12 @@ dl.kv dd.bad{color:var(--bad);font-weight:700}
 .tabs.five{grid-template-columns:repeat(5,minmax(0,1fr))}
 .tabs button{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media (prefers-color-scheme:dark){.leaflet-tile-pane{filter:brightness(.82) contrast(1.05)}.btn.bad{color:#2A0E0B}}
+#cloud{position:fixed;z-index:60;left:8px;right:8px;top:calc(8px + env(safe-area-inset-top,0px));padding:10px 12px;border-radius:12px;font-size:13px;font-weight:700;text-align:center;box-shadow:0 6px 18px -8px rgba(0,0,0,.4);overflow-wrap:anywhere}#cloud.bad{background:#B3261E;color:#fff}#cloud.warn{background:#8F5300;color:#fff}#cloud[hidden]{display:none}
+#licban{margin:8px 0 12px}
+.tmk span{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:#fff;border:3px solid #2F6A47;box-shadow:0 2px 6px rgba(0,0,0,.35);box-sizing:border-box}.tmk span .hi{width:30px;height:30px;background:none}.tmk span .hi svg{width:24px;height:24px}
+.tmk.bad span{border-color:#B3261E;animation:tpulse 1.4s ease-in-out infinite}.tmk.warn span{border-color:#B86E00}.tmk.mut span{border-color:#6B5F52}
+@keyframes tpulse{50%{box-shadow:0 0 0 8px rgba(179,38,30,.25)}}
+@media (prefers-reduced-motion:reduce){.tmk.bad span{animation:none}}
 </style>
 <header class="top" id="top"><span class="logo"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M29 4 L32.5 11 C37.5 13 41 18.5 41 25.5 L41 44 L25 44 C25 39 23.5 36.5 21 35 C17.5 35.5 13.5 37.5 10 37.5 C6.5 37.5 4.5 34.5 5.5 31.5 C8 25 14 17.5 20.5 12.5 L22.5 4.5 L26 9.5 Z" fill="currentColor" stroke="none"/></svg></span><div class="brand"><b id="farmName">Табун</b><span id="farmSub">учёт табуна</span></div><button class="ib" id="openSet" aria-label="Настройки"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2.2"/><circle cx="10" cy="17" r="2.2"/></svg></button></header>
 <main id="app"></main>
@@ -362,6 +368,7 @@ dl.kv dd.bad{color:var(--bad);font-weight:700}
   <button data-tab="list"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></svg>Лошади</button>
   <button data-tab="groups"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="9" r="3"/><circle cx="16" cy="9" r="3"/><path d="M3 19c.6-3 2.6-4.6 5-4.6s4.4 1.6 5 4.6M11 19c.6-3 2.6-4.6 5-4.6s4.4 1.6 5 4.6"/></svg>Косяки</button>
   <button data-tab="wells"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5c3 4 6 7.3 6 10.7a6 6 0 0 1-12 0c0-3.4 3-6.7 6-10.7z"/></svg>Колодцы</button>
+  <button data-tab="map"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4 3.5 6v14L9 18l6 2 5.5-2V4L15 6z"/><path d="M9 4v14M15 6v14"/></svg>Карта</button>
   <button data-tab="stats"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V11M12 20V5M19 20v-6"/></svg>Итоги</button>
 </nav>
 <div id="sheet" hidden><div class="panel" role="dialog" aria-modal="true" aria-label="Подробности"></div></div>
@@ -457,17 +464,18 @@ function cleanH(id, x) {
   x = x && typeof x === 'object' ? x : {};
   const ev = (Array.isArray(x.ev) ? x.ev : []).map(cleanEv).sort((a, b) => a.d.localeCompare(b.d));
   return {id, tag: str(x.tag, 30).trim(), name: str(x.name, 40).trim(), sex: x.sex === 'f' ? 'f' : 'm', cast: !!x.cast, color: str(x.color, 30), born: isDate(x.born) ? x.born : '', approx: !!x.approx,
-    ph: str(x.ph, 60), grp: str(x.grp, 40), mother: str(x.mother, 40), father: str(x.father, 40), st: ST[x.st] ? x.st : 'in', stD: isDate(x.stD) ? x.stD : '', note: str(x.note, 300), ev, ts: Number(x.ts) || 0};
+    ph: str(x.ph, 60), grp: str(x.grp, 40), mother: str(x.mother, 40), father: str(x.father, 40), st: ST[x.st] ? x.st : 'in', stD: isDate(x.stD) ? x.stD : '', note: str(x.note, 300), tr: str(x.tr, 30).trim(), ev, ts: Number(x.ts) || 0};
 }
 function packH(h) {
   const o = {tag: h.tag, name: h.name, sex: h.sex, color: h.color, born: h.born, grp: h.grp, st: h.st, ev: h.ev.map(cleanEv), ts: h.ts || Date.now()};
   if (h.cast) o.cast = true; if (h.approx) o.approx = true; if (h.mother) o.mother = h.mother; if (h.father) o.father = h.father;
-  if (h.stD) o.stD = h.stD; if (h.note) o.note = h.note; if (h.ph) o.ph = h.ph;
+  if (h.stD) o.stD = h.stD; if (h.note) o.note = h.note; if (h.ph) o.ph = h.ph; if (h.tr) o.tr = h.tr;
   return o;
 }
 function cleanG(id, x) { x = x || {}; return {id, name: str(x.name, 40).trim() || 'Без названия', stallion: str(x.stallion, 40), place: str(x.place, 60), kind: x.kind === 'other' ? 'other' : 'uyir', ord: Number(x.ord) || 0}; }
 function cleanLoc(l) { return l && isFinite(Number(l.lat)) && isFinite(Number(l.lon)) && l.lat !== null ? {name: str(l.name, 60) || 'Пастбище', lat: Number(l.lat), lon: Number(l.lon)} : null; }
-function cleanSet(s) { s = s || {}; return {farm: str(s.farm, 60), phone: str(s.phone, 30), loc: cleanLoc(s.loc), masts: Array.isArray(s.masts) && s.masts.length ? s.masts.map(v => str(v, 30)).filter(Boolean).slice(0, 40) : MASTS0.slice(), vacs: Array.isArray(s.vacs) && s.vacs.length ? s.vacs.map(v => str(v, 60)).filter(Boolean).slice(0, 30) : VAC0.slice()}; }
+function cleanZone(z) { if (!z || !Array.isArray(z.pts)) return null; const pts = z.pts.map(p => ({a: Number(p && p.a), o: Number(p && p.o)})).filter(p => isFinite(p.a) && isFinite(p.o)).slice(0, 100); return pts.length >= 3 ? {id: str(z.id, 40) || uid('z'), name: str(z.name, 40).trim() || 'Пастбище', pts} : null; }
+function cleanSet(s) { s = s || {}; return {farm: str(s.farm, 60), phone: str(s.phone, 30), loc: cleanLoc(s.loc), zones: Array.isArray(s.zones) ? s.zones.map(cleanZone).filter(Boolean).slice(0, 30) : [], masts: Array.isArray(s.masts) && s.masts.length ? s.masts.map(v => str(v, 30)).filter(Boolean).slice(0, 40) : MASTS0.slice(), vacs: Array.isArray(s.vacs) && s.vacs.length ? s.vacs.map(v => str(v, 60)).filter(Boolean).slice(0, 30) : VAC0.slice()}; }
 
 /* ---------- состояние ---------- */
 let MODE = 'loading';
@@ -684,6 +692,7 @@ async function act(f, ok) { try { await f(); if (ok) toast(ok); return true; } c
 function errText(e) {
   const c = String((e && e.code) || '').replace(/^firestore\//, '');
   if (c === 'tag') return 'Лошадь с такой биркой уже есть.';
+  if (c === 'license') return 'Лицензия закончилась: данные можно смотреть, но менять нельзя. Продлите лицензию.';
   if (c === 'permission-denied') return 'Нет доступа. Выйдите и войдите заново.';
   if (c === 'unauthenticated') return 'Вход истёк. Войдите заново.';
   if (c === 'resource-exhausted') return 'Достигнут дневной лимит облака. Попробуйте завтра.';
@@ -753,16 +762,18 @@ async function fileToJpeg(file) {
 const V = {tab: 'home', q: '', cat: '', g: '', st: 'in', lim: 80, sel: null, y: Number(TODAY().slice(0, 4))};
 const tile = (l, v, tone, sub) => `<div class="tile ${tone || ''}"><span class="v">${v}</span><span class="l">${esc(l)}</span>${sub ? `<span class="s">${esc(sub)}</span>` : ''}</div>`;
 function render() {
+  if (typeof proRender === 'function' && proRender()) return;
   const app = $('#app');
   $('#farmName').textContent = SET.farm || 'Табун';
   $('#farmSub').textContent = MODE === 'demo' ? 'пример · учёт табуна' : 'учёт табуна';
   $$('.tabs button').forEach(b => b.setAttribute('aria-current', b.dataset.tab === V.tab ? 'page' : 'false'));
   if (MODE === 'loading') { app.innerHTML = '<div class="busy card mt"><span class="spin" aria-hidden="true"></span><span>Загружаю табун…</span></div>'; return; }
-  app.innerHTML = (MODE === 'demo' ? demoBanner() : '') + (V.tab === 'home' ? homeView() : V.tab === 'list' ? listView() : V.tab === 'groups' ? groupsView() : V.tab === 'wells' ? wellsView() : statsView());
+  app.innerHTML = (MODE === 'demo' ? demoBanner() : '') + (V.tab === 'home' ? homeView() : V.tab === 'list' ? listView() : V.tab === 'groups' ? groupsView() : V.tab === 'wells' ? wellsView() : V.tab === 'map' ? mapView() : statsView());
   bindViews(app);
   fillPh(app);
   selBar();
   if (V.tab === 'wells') drawWellMap();
+  if (V.tab === 'map') drawTrkMap();
 }
 function demoBanner() { return `<div class="banner"><p><b>Это пример</b> с выдуманным табуном на 500 голов. Пробуйте всё что угодно: изменения хранятся только на этом телефоне.</p><button class="linkbtn" data-reset>Начать пример заново</button></div>`; }
 function bindViews(app) {
@@ -785,6 +796,8 @@ function bindViews(app) {
   $$('[data-y]', app).forEach(b => b.onclick = () => { V.y += Number(b.dataset.y); render(); });
   $$('[data-csv]', app).forEach(b => b.onclick = () => exportCsv(b.dataset.csv));
   bindWx(app);
+  $$('[data-gomap]', app).forEach(b => b.onclick = () => { V.tab = 'map'; V.mapFocus = b.dataset.gomap || ''; window.scrollTo(0, 0); render(); });
+  const zb = $('#zEdit', app); if (zb) zb.onclick = zonesSheet;
   $$('[data-w]', app).forEach(b => b.onclick = () => wellSheet(b.dataset.w));
   $$('[data-addw]', app).forEach(b => b.onclick = () => editWell(null));
 }
@@ -794,7 +807,7 @@ function homeView() {
   const live = HS.filter(alive), T = TODAY(), Y = T.slice(0, 4);
   const byCat = {}; live.forEach(h => { const c = catOf(h); byCat[c] = (byCat[c] || 0) + 1; });
   const mx = Math.max.apply(null, CAT_ORDER.map(c => byCat[c] || 0).concat([1]));
-  let h = `<section class="hero mt8"><span class="big">${live.length}</span><span class="l">${pl(live.length, 'голова', 'головы', 'голов')} в табуне</span></section>` + wxCard() + wHomeHtml();
+  let h = `<section class="hero mt8"><span class="big">${live.length}</span><span class="l">${pl(live.length, 'голова', 'головы', 'голов')} в табуне</span></section>` + wxCard() + wHomeHtml() + trkHomeHtml();
   h += '<section class="card mt"><h3>Состав табуна</h3><div class="bars mt8">' + CAT_ORDER.filter(c => byCat[c]).map(c => `<button class="bar" data-go="list" data-cat="${c}"><span class="bl"><b>${esc(CATS[c].kz)}</b><span>${esc(CATS[c].ru)}</span></span><span class="bt"><i style="width:${Math.max(3, Math.round((byCat[c] || 0) / mx * 100))}%"></i></span><span class="bv">${byCat[c]}</span></button>`).join('') + '</div></section>';
   const lost = lostOf();
   if (lost.length) h += `<div class="sec-h"><h3>Пропали</h3>${chip('bad', lost.length + ' ' + pl(lost.length, 'лошадь', 'лошади', 'лошадей'))}</div><div class="list">` + lost.slice(0, 5).map(x => `<button class="row" data-h="${esc(x.id)}">${horseAv(x)}<span class="t"><b>${esc(hName(x))}</b><span class="st bad">${esc(lostAgo(x))}</span>${lostWhere(x) ? `<span class="small mut">${esc(lostWhere(x))}</span>` : ''}</span></button>`).join('') + (lost.length > 5 ? `<button class="btn ghost full" data-golost>Все пропавшие (${lost.length})</button>` : '') + '</div>';
@@ -915,6 +928,7 @@ function horseSheet(id) {
     x += `<dt>Пол</dt><dd>${h.sex === 'f' ? 'кобыла' : h.cast ? 'мерин' : 'жеребец'}</dd>`;
     x += `<dt>Родилась</dt><dd>${h.born ? esc(fDf(h.born)) + (h.approx ? ' (примерно)' : '') : 'неизвестно'}</dd>`;
     x += `<dt>Мать</dt><dd>${mo ? `<button class="linkbtn" data-hh="${esc(mo.id)}">${esc(hName(mo))}</button>` : '—'}</dd>`;
+    if (h.tr) x += `<dt>Трекер</dt><dd><button class="linkbtn" data-trk="${esc(h.id)}">${esc(trkLine(h))}</button></dd>`;
     x += `<dt>Отец</dt><dd>${fa ? `<button class="linkbtn" data-hh="${esc(fa.id)}">${esc(hName(fa))}</button>` : '—'}</dd>`;
     x += '</dl>' + (h.note ? `<p class="small mt8">${esc(h.note)}</p>` : '') + '</section>';
     if (alive(h)) x += `<div class="acts mt">${[['w', I.scale, 'Взвесить'], ['vac', I.syr, 'Прививка'], ['move', I.move, 'Перевести']].concat(h.sex === 'f' && ageMonths(h.born) >= 30 ? [['foal', I.baby, 'Приплод']] : []).map(a => `<button data-ev="${a[0]}">${a[1]}<span>${a[2]}</span></button>`).join('')}</div>`;
@@ -934,6 +948,7 @@ function horseSheet(id) {
     $$('[data-g]').forEach(b => b.onclick = () => groupSheet(b.dataset.g));
     $$('[data-ev]').forEach(b => b.onclick = () => { const k = b.dataset.ev; if (k === 'foal') foalSheet(h.id); else evSheet([h.id], k, () => horseSheet(h.id)); });
     $('#hEdit').onclick = () => editHorse(h.id);
+    $$('[data-trk]').forEach(b => b.onclick = () => { closeSheet(); V.tab = 'map'; V.mapFocus = h.id; window.scrollTo(0, 0); render(); });
     $$('[data-pedset]').forEach(b => b.onclick = () => editHorse(h.id));
     $('#hPh').onclick = () => photoMenu(h);
     const ap = $('#hAddPh'); if (ap) ap.onclick = () => pickPhoto(h);
@@ -975,11 +990,12 @@ function editHorse(id, pre) {
       <label class="tg"><input type="checkbox" id="eApprox" ${F.approx ? 'checked' : ''}><span>Дата рождения примерная</span></label>
       <label class="f" for="eGrp">Косяк или группа<select id="eGrp"><option value="">— не указан —</option>${GS.map(g => `<option value="${esc(g.id)}" ${g.id === F.grp ? 'selected' : ''}>${esc(g.name)}</option>`).join('')}</select></label>
       <div class="row2"><label class="f" for="eM">Бирка матери<input id="eM" autocomplete="off" inputmode="numeric" value="${esc(F.mTag)}" placeholder="если знаете"></label><label class="f" for="eF">Бирка отца<input id="eF" autocomplete="off" inputmode="numeric" value="${esc(F.fTag)}" placeholder="если знаете"></label></div>
+      <label class="f" for="eTr">Номер трекера<input id="eTr" autocomplete="off" autocapitalize="off" value="${esc(F.tr || '')}" placeholder="если есть, например 0-4332284"></label>
       <label class="f" for="eNote">Заметка<input id="eNote" autocomplete="off" value="${esc(F.note)}" placeholder="Например: тавро на левом бедре"></label>
       <p class="err" id="eErr"></p><button class="btn" id="eSave">${old ? 'Сохранить' : 'Добавить'}</button></div>`;
     if (old) x += `<section class="card mt"><h3>Удалить запись</h3><p class="small mut">Только если лошадь добавлена по ошибке. Если её продали или она пала, отметьте это в карточке: так сохранится история.</p><button class="btn ghost danger full mt8" id="eDel">${I.trash}Удалить</button></section>`;
     openSheet(x, {kind: 'eh'});
-    const sync = () => { F.tag = $('#eTag').value.trim(); F.name = $('#eName').value.trim(); F.born = $('#eBorn').value; F.color = mastVal('eColor'); F.approx = $('#eApprox').checked; F.grp = $('#eGrp').value; F.mTag = $('#eM').value.trim(); F.fTag = $('#eF').value.trim(); F.note = $('#eNote').value.trim(); };
+    const sync = () => { F.tag = $('#eTag').value.trim(); F.name = $('#eName').value.trim(); F.born = $('#eBorn').value; F.color = mastVal('eColor'); F.approx = $('#eApprox').checked; F.grp = $('#eGrp').value; F.mTag = $('#eM').value.trim(); F.fTag = $('#eF').value.trim(); F.note = $('#eNote').value.trim(); F.tr = $('#eTr').value.trim(); };
     $$('[data-sx]').forEach(b => b.onclick = () => { sync(); const v = b.dataset.sx; F.sex = v === 'f' ? 'f' : 'm'; F.cast = v === 'c'; draw(); });
     $('#eSave').onclick = () => {
       sync();
@@ -1171,6 +1187,7 @@ function settingsSheet() {
       <p class="err" id="sErr"></p><button class="btn" id="sSave">Сохранить</button></div>
       <section class="card mt"><h3>Погода</h3><p class="small">${SET.loc ? 'Прогноз для: <b>' + esc(SET.loc.name) + '</b>' : 'Место не указано.'}</p><button class="btn ghost full mt8" id="sLoc">${WXI.pin}${SET.loc ? 'Изменить место' : 'Указать место'}</button></section>
       <section class="card mt"><h3>Резервная копия</h3><p class="small">Сохраните весь табун одним файлом на телефон.</p><button class="btn ghost full mt8" id="sBk">${I.save}Сохранить копию</button></section>
+      ${typeof proSettingsHtml === 'function' ? proSettingsHtml() : ''}
       ${MODE === 'demo' ? `<section class="card mt"><h3>Пример</h3><p class="small">Сейчас открыт пример с выдуманными лошадьми. Чтобы вести настоящий учёт, программу подключают к облаку: тогда данные хранятся надёжно и видны на нескольких телефонах.</p><button class="btn ghost full mt8" id="sReset">Начать пример заново</button></section>` : ''}`, {kind: 'set'});
     const sync = () => { F.farm = $('#sF').value.trim(); F.phone = $('#sPh').value.trim(); };
     $$('[data-mdel]').forEach(b => b.onclick = () => { sync(); F.masts.splice(Number(b.dataset.mdel), 1); draw(); });
@@ -1180,6 +1197,7 @@ function settingsSheet() {
     $('#sSave').onclick = () => { sync(); if (!F.vacs.length) { $('#sErr').textContent = 'Оставьте хотя бы одну прививку в списке.'; return; } act(() => API.saveSet(F), 'Сохранено.').then(ok => { if (ok) closeSheet(); }); };
     $('#sLoc').onclick = locSheet;
     $('#sBk').onclick = () => saveFile('tabun-kopiya-' + TODAY() + '.json', JSON.stringify(API.backup()));
+    if (typeof proSettingsBind === 'function') proSettingsBind();
     const r = $('#sReset'); if (r) armed(r, 'Нажмите ещё раз', () => { closeSheet(); resetDemo(); });
   };
   draw();
@@ -1194,7 +1212,7 @@ function mastVal(id) { const s = $('#' + id); if (!s) return ''; if (s.value ===
 document.addEventListener('change', e => { const t = e.target; if (t && t.matches && t.matches('select[data-mast]')) { const o = $('#' + t.id + 'O'); if (o) { o.hidden = t.value !== '__other'; if (!o.hidden) o.focus(); } } });
 
 /* ---------- фото лошади ---------- */
-const PHDB = (() => {
+const PHDB = window.PHDB_IMPL || (() => {
   let dbp = null;
   const open = () => dbp || (dbp = new Promise((res, rej) => { try { const r = indexedDB.open('tabun-photos', 1); r.onupgradeneeded = () => r.result.createObjectStore('p'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); } catch (e) { rej(e); } }));
   const tx = (mode, f) => open().then(db => new Promise((res, rej) => { const t = db.transaction('p', mode), st = t.objectStore('p'); let out; const q = f(st); if (q) q.onsuccess = () => { out = q.result; }; t.oncomplete = () => res(out); t.onerror = () => rej(t.error); }));
@@ -1765,6 +1783,139 @@ function demoWells() {
   };
 }
 
+/* ---------- трекеры: карта косяков, зоны пастбищ, «нет сигнала» ---------- */
+let POS = {};            /* номер трекера → {lat, lon, at, batt} — приходит от сервера трекеров */
+const SILENT_H = 24;     /* сколько часов без сигнала — уже тревога */
+const trkKey = s => String(s || '').trim().toUpperCase();
+function inPoly(lat, lon, pts) {
+  let ins = false;
+  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+    const a = pts[i], b = pts[j];
+    if (((a.a > lat) !== (b.a > lat)) && (lon < (b.o - a.o) * (lat - a.a) / (b.a - a.a) + a.o)) ins = !ins;
+  }
+  return ins;
+}
+/* состояние трекера лошади */
+function trk(h) {
+  if (!h || !h.tr) return null;
+  const p = POS[trkKey(h.tr)];
+  if (!p) return {h, p: null, tone: 'mut', t: 'данных ещё нет'};
+  const ageH = (Date.now() - p.at) / 36e5, z = (SET.zones || []).find(z => inPoly(p.lat, p.lon, z.pts));
+  const out = (SET.zones || []).length > 0 && !z;
+  const ago = agoTxt(p.at);
+  if (ageH > SILENT_H) return {h, p, z, out, silent: true, tone: 'warn', t: 'нет сигнала ' + ago.replace(' назад', '')};
+  if (out) return {h, p, z, out, tone: 'bad', t: 'вне пастбища · ' + ago};
+  return {h, p, z, out, tone: 'good', t: ago + (z ? ' · ' + z.name : '')};
+}
+function agoTxt(t) { const m = Math.max(0, Math.round((Date.now() - t) / 60000)); return m < 1 ? 'только что' : m < 60 ? m + ' мин назад' : m < 60 * 48 ? Math.floor(m / 60) + ' ч назад' : Math.floor(m / 1440) + ' дн. назад'; }
+function trkLine(h) { const s = trk(h); return h.tr + (s ? ' · ' + s.t : ''); }
+const trkList = () => HS.filter(h => alive(h) || h.st === 'lost').filter(h => h.tr).map(trk);
+
+/* главная: тревоги по трекерам */
+function trkHomeHtml() {
+  const L = trkList().filter(s => s.tone === 'bad' || s.tone === 'warn');
+  if (!L.length) return '';
+  return `<div class="sec-h"><h3>Трекеры</h3>${chip(L.some(s => s.tone === 'bad') ? 'bad' : 'warn', L.length + ' ' + pl(L.length, 'тревога', 'тревоги', 'тревог'))}</div><div class="list">` +
+    L.map(s => `<button class="row" data-gomap="${esc(s.h.id)}">${horseAv(s.h)}<span class="t"><b>${esc(hName(s.h))}</b><span class="st ${s.tone}">${esc(s.t)}</span><span class="small mut">${esc(grp(s.h.grp) ? grp(s.h.grp).name : '')}</span></span></button>`).join('') + '</div>';
+}
+
+/* вкладка «Карта» */
+function mapView() {
+  const L = trkList(), out = L.filter(s => s.tone === 'bad').length, sil = L.filter(s => s.silent).length;
+  let h = `<div class="sec-h" style="margin-top:8px"><h3>Карта косяков</h3><button class="linkbtn" id="zEdit">${I.flag}Пастбища</button></div>`;
+  h += `<div class="tiles">${tile('С трекером', L.length, '', 'лошадей')}${tile('Вне пастбища', out, out ? 'bad' : 'good', out ? 'проверьте' : 'все на месте')}${tile('Нет сигнала', sil, sil ? 'warn' : '', 'больше суток')}</div>`;
+  h += '<div class="wmap mt" id="tmap"><p class="wmap-ph">Загружаю карту…</p></div>';
+  if (!L.length) h += `<section class="card mt"><h3>Трекеров пока нет</h3><p class="small mt8">Откройте лошадь, на которой стоит трекер (обычно айғыр косяка), нажмите «Изменить данные» и впишите номер трекера. Когда трекер пришлёт точку, косяк появится на карте.</p></section>`;
+  else h += '<div class="list mt">' + L.sort((a, b) => ({bad: 0, warn: 1, mut: 2, good: 3})[a.tone] - ({bad: 0, warn: 1, mut: 2, good: 3})[b.tone]).map(s => `<button class="row" data-h="${esc(s.h.id)}">${horseAv(s.h)}<span class="t"><b>${esc(hName(s.h))}</b><span class="st ${s.tone === 'good' ? 'mut' : s.tone}">${esc(s.t)}</span><span class="small mut">${esc((grp(s.h.grp) ? grp(s.h.grp).name + ' · ' : '') + 'трекер ')}<span style="white-space:nowrap">${esc(s.h.tr)}</span></span></span>${s.p && s.p.batt != null ? `<span class="cnt small">${s.p.batt}%</span>` : ''}</button>`).join('') + '</div>';
+  if (!(SET.zones || []).length) h += `<p class="small mut mt8">Нарисуйте границы пастбищ (кнопка «Пастбища» вверху): программа предупредит, если косяк ушёл за них.</p>`;
+  if (MODE === 'demo') h += '<p class="small mut mt8">В примере точки выдуманные. Настоящие придут от спутниковых трекеров.</p>';
+  return h;
+}
+let TMAP = null, TMAPEL = null, TLAYER = null;
+const tIcon = (LF, h, tone) => LF.divIcon({className: 'tmk ' + tone, html: '<span>' + horseIco(h.color, '') + '</span>', iconSize: [38, 38], iconAnchor: [19, 19]});
+async function drawTrkMap() {
+  const slot = $('#tmap'); if (!slot) return;
+  let LF; try { LF = await loadLeaflet(); } catch (e) { if (document.body.contains(slot)) slot.innerHTML = '<p class="wmap-ph">Карта появится, когда будет интернет.</p>'; return; }
+  if (!document.body.contains(slot)) return;
+  if (!TMAPEL) { TMAPEL = document.createElement('div'); TMAPEL.className = 'wmapin'; }
+  slot.innerHTML = ''; slot.appendChild(TMAPEL);
+  let fit = false;
+  if (!TMAP) { TMAP = lfMap(LF, TMAPEL); TLAYER = LF.layerGroup().addTo(TMAP); fit = true; }
+  TMAP.invalidateSize(); TLAYER.clearLayers();
+  const pts = [];
+  (SET.zones || []).forEach(z => { const ll = z.pts.map(p => [p.a, p.o]); LF.polygon(ll, {color: '#2F6A47', weight: 2, fillOpacity: .12}).bindTooltip(esc(z.name), {sticky: true}).addTo(TLAYER); ll.forEach(p => pts.push(p)); });
+  let focus = null;
+  trkList().forEach(s => {
+    if (!s.p) return;
+    const m = LF.marker([s.p.lat, s.p.lon], {icon: tIcon(LF, s.h, s.tone), title: hName(s.h)});
+    m.bindTooltip(esc(s.h.name || s.h.tag || ''), {permanent: true, direction: 'bottom', offset: [0, 16], className: 'wtip'});
+    m.on('click', () => horseSheet(s.h.id));
+    TLAYER.addLayer(m); pts.push([s.p.lat, s.p.lon]);
+    if (V.mapFocus === s.h.id) focus = [s.p.lat, s.p.lon];
+  });
+  if (focus) { TMAP.setView(focus, 12); V.mapFocus = ''; }
+  else if (fit) {
+    if (pts.length > 1) TMAP.fitBounds(LF.latLngBounds(pts).pad(0.15), {maxZoom: 12});
+    else if (pts.length) TMAP.setView(pts[0], 11);
+    else TMAP.setView(SET.loc ? [SET.loc.lat, SET.loc.lon] : [47.8333, 59.6], 9);
+  }
+}
+
+/* пастбища (геозоны) */
+function zonesSheet() {
+  const Z = (SET.zones || []).slice();
+  let x = head('Карта', 'Пастбища');
+  x += '<p class="small mut">Обведите на карте места, где пасутся косяки. Если трекер покажет косяк за этими границами, программа поднимет тревогу.</p>';
+  x += Z.length ? '<div class="list mt8">' + Z.map(z => `<div class="row static"><span class="ic">${I.flag}</span><span class="t"><b>${esc(z.name)}</b><span class="st mut">${z.pts.length} ${pl(z.pts.length, 'точка', 'точки', 'точек')}</span></span><button class="ib sm" data-zdel="${esc(z.id)}" aria-label="Удалить пастбище">${I.trash}</button></div>`).join('') + '</div>' : '<p class="mut mt8">Пастбищ пока нет.</p>';
+  x += `<button class="btn full mt" id="zNew">${I.plus}Нарисовать пастбище</button>`;
+  openSheet(x, {kind: 'zones'});
+  $('#zNew').onclick = zoneDraw;
+  $$('[data-zdel]').forEach(b => armed(b, 'Удалить?', () => { const s = clone(SET); s.zones = Z.filter(z => z.id !== b.dataset.zdel); act(() => API.saveSet(s), 'Пастбище удалено.').then(ok => { if (ok) zonesSheet(); }); }));
+}
+let ZMAP = null;
+function zoneDraw() {
+  const P = [], F = {name: ''};
+  openSheet(head('Пастбища', 'Новое пастбище') + `<p class="small mut">Нажимайте на карту по краю пастбища, точка за точкой. Хватит 4–8 точек.</p>
+    <div class="pmap mt8" id="zmap"><p class="wmap-ph">Загружаю карту…</p></div>
+    <div class="row2 mt8"><button class="btn ghost" id="zUndo">Убрать точку</button><span class="small mut center" id="zCnt">Точек: 0</span></div>
+    <div class="form mt8"><label class="f" for="zN">Название<input id="zN" autocomplete="off" placeholder="Например: Жайлау у реки"></label><p class="err" id="zErr"></p><button class="btn" id="zSave">Сохранить пастбище</button><button class="btn ghost" id="zBack">Назад</button></div>`, {kind: 'zdraw'});
+  let poly = null, LFr = null;
+  const redraw = () => { $('#zCnt').textContent = 'Точек: ' + P.length; if (!LFr || !ZMAP) return; if (poly) poly.remove(); poly = P.length ? (P.length > 2 ? LFr.polygon(P, {color: '#2F6A47', weight: 2, fillOpacity: .15}) : LFr.polyline(P, {color: '#2F6A47', weight: 2})).addTo(ZMAP) : null; };
+  loadLeaflet().then(LF => {
+    LFr = LF; const el = $('#zmap'); if (!el) return; el.innerHTML = '';
+    if (ZMAP) { try { ZMAP.remove(); } catch (e) {} ZMAP = null; }
+    ZMAP = lfMap(LF, el);
+    const pos = Object.values(POS)[0];
+    ZMAP.setView(pos ? [pos.lat, pos.lon] : SET.loc ? [SET.loc.lat, SET.loc.lon] : [47.8333, 59.6], pos ? 11 : 9);
+    (SET.zones || []).forEach(z => LF.polygon(z.pts.map(p => [p.a, p.o]), {color: '#888', weight: 1, fillOpacity: .06}).addTo(ZMAP));
+    ZMAP.on('click', e => { P.push([Math.round(e.latlng.lat * 1e5) / 1e5, Math.round(e.latlng.lng * 1e5) / 1e5]); redraw(); });
+    setTimeout(() => { if (ZMAP) ZMAP.invalidateSize(); }, 250);
+  }).catch(() => { const el = $('#zmap'); if (el) el.innerHTML = '<p class="wmap-ph">Карта появится, когда будет интернет.</p>'; });
+  $('#zUndo').onclick = () => { P.pop(); redraw(); };
+  $('#zBack').onclick = zonesSheet;
+  $('#zSave').onclick = () => {
+    if (P.length < 3) { $('#zErr').textContent = 'Поставьте хотя бы 3 точки на карте.'; return; }
+    const s = clone(SET); s.zones = (s.zones || []).concat([{id: uid('z'), name: $('#zN').value.trim() || 'Пастбище ' + ((s.zones || []).length + 1), pts: P.map(p => ({a: p[0], o: p[1]}))}]);
+    act(() => API.saveSet(s), 'Пастбище сохранено.').then(ok => { if (ok) zonesSheet(); });
+  };
+}
+
+/* пример: трекеры на жеребцах первых косяков, точки вокруг Шалкара */
+function demoTrk(D) {
+  if (D.trkV === 1) return false;
+  const st = ['g1', 'g2', 'g3', 'g4', 'g5', 'g6'].map(g => D.groups[g] && D.groups[g].stallion).filter(Boolean);
+  st.forEach((id, i) => { if (D.horses[id]) D.horses[id].tr = '0-43310' + (50 + i); });
+  D.settings = D.settings || {};
+  D.settings.zones = [{id: 'z1', name: 'Жайлау и қыстау', pts: [{a: 48.08, o: 59.32}, {a: 48.1, o: 59.78}, {a: 47.93, o: 60.02}, {a: 47.66, o: 59.9}, {a: 47.64, o: 59.4}, {a: 47.82, o: 59.24}]}];
+  D.trkV = 1; return true;
+}
+function demoPos() {
+  const now = Date.now(), base = [[47.95, 59.45], [47.72, 59.76], [48.21, 59.12], [47.87, 59.9], [47.7, 59.5], [48.0, 59.66]];
+  const o = {};
+  HS.filter(h => h.tr).forEach((h, i) => { const b = base[i % base.length], j = (i * 37 % 10) / 400; o[trkKey(h.tr)] = {lat: b[0] + j, lon: b[1] - j, at: now - (i === 4 ? 31 * 36e5 : (8 + i * 23) * 60000), batt: [87, 74, 66, 91, 12, 58][i % 6]}; });
+  return o;
+}
+
 /* ---------- хранение: пример в памяти телефона (облако подключим для настоящего учёта) ---------- */
 const DKEY = 'tabun-demo-v4';
 let DATA = null;
@@ -1775,6 +1926,7 @@ function applyData() {
   GS = Object.keys(DATA.groups).map(id => cleanG(id, DATA.groups[id])).sort((a, b) => a.ord - b.ord || a.name.localeCompare(b.name, 'ru'));
   SET = cleanSet(DATA.settings);
   derive();
+  POS = demoPos();
 }
 function persist() { if (!lsSet(DKEY, DATA)) toast('Память телефона заполнена: изменения могут не сохраниться.', true); }
 function changed() { applyData(); render(); if (SHEET && SHEET.redraw) SHEET.redraw(); }
@@ -1786,23 +1938,24 @@ const API = {
   async delG(id) { delete DATA.groups[id]; persist(); changed(); },
   async saveW(w) { DATA.wells = DATA.wells || {}; DATA.wells[w.id] = packW(w); persist(); changed(); },
   async delW(id) { if (DATA.wells) delete DATA.wells[id]; persist(); changed(); },
-  async saveSet(s) { DATA.settings = {farm: s.farm, phone: s.phone, vacs: s.vacs, masts: s.masts, loc: s.loc || null}; persist(); changed(); },
+  async saveSet(s) { DATA.settings = {farm: s.farm, phone: s.phone, vacs: s.vacs, masts: s.masts, loc: s.loc || null, zones: s.zones || []}; persist(); changed(); },
   backup() { return {app: 'tabun', v: 1, at: new Date().toISOString(), horses: DATA.horses, groups: DATA.groups, wells: DATA.wells || {}, settings: DATA.settings}; }
 };
 function resetDemo() {
-  DATA = demoData(); DATA.settings = DEMO_SET(); DATA.wells = demoWells();
+  DATA = demoData(); DATA.settings = DEMO_SET(); DATA.wells = demoWells(); demoTrk(DATA);
   persist(); V.tab = 'home'; V.sel = null; V.q = ''; V.cat = ''; V.g = ''; changed(); window.scrollTo(0, 0);
   toast('Пример начат заново.');
 }
 const DEMO_SET = () => ({farm: 'Пример: КХ «Ақбоз»', loc: {name: 'Шалкар', lat: 47.8333, lon: 59.6}});
 /* ---------- запуск ---------- */
-if (!WELLS_ON) { const wb = $('.tabs [data-tab="wells"]'); if (wb) wb.remove(); $('.tabs').classList.remove('five'); }
+if (!WELLS_ON) { const wb = $('.tabs [data-tab="wells"]'); if (wb) wb.remove(); }
 $$('.tabs button').forEach(b => b.onclick = () => { V.tab = b.dataset.tab; if (V.tab !== 'list') V.sel = null; window.scrollTo(0, 0); render(); });
 $('#openSet').onclick = settingsSheet;
 (function start() {
   DATA = lsGet(DKEY, null);
   if (!DATA || !DATA.horses || !DATA.groups) { DATA = demoData(); DATA.settings = DEMO_SET(); persist(); }
   if (!DATA.wells) { DATA.wells = demoWells(); persist(); }
+  if (demoTrk(DATA)) persist();
   MODE = 'demo';
   applyData(); render();
   wxLoad(false);
