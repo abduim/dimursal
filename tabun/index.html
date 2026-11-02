@@ -1865,7 +1865,7 @@ function shDay(d) { return new Date(Date.now() - d * 864e5).toISOString().slice(
 function grassSentinel(LF) {
   if (SLAYER || SHBAD || !TMAP) return;
   const L = LF.tileLayer.wms(SH_URL, {layers: SH_LAYER, format: 'image/png', transparent: true, tileSize: 512, minZoom: 9, maxZoom: 18, opacity: .85, crossOrigin: true,
-    time: shDay(60) + '/' + shDay(0), maxcc: 40, priority: 'leastCC', showlogo: false, EVALSCRIPT: btoa(SH_EVAL), attribution: 'трава вблизи: <a href="https://dataspace.copernicus.eu" target="_blank" rel="noopener">Copernicus Sentinel-2</a>'});
+    time: shDay(60) + '/' + shDay(0), maxcc: 40, priority: 'leastCC', showlogo: false, preset: 'CUSTOM', evalscript: btoa(SH_EVAL), attribution: 'трава вблизи: <a href="https://dataspace.copernicus.eu" target="_blank" rel="noopener">Copernicus Sentinel-2</a>'});
   let err = 0, ok = false;
   L.on('tileload', () => { ok = true; });
   L.on('tileerror', () => { if (!ok && ++err >= 4) { SHBAD = true; if (TMAP && SLAYER === L) { TMAP.removeLayer(L); SLAYER = null; } } });
