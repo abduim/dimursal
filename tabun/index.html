@@ -1828,7 +1828,7 @@ function mapView() {
   h += `<div class="tiles">${tile('С трекером', L.length, '', 'лошадей')}${tile('Вне пастбища', out, out ? 'bad' : 'good', out ? 'проверьте' : 'все на месте')}${tile('Нет сигнала', sil, sil ? 'warn' : '', 'больше суток')}</div>`;
   h += `<button class="btn small ${GRASS ? '' : 'ghost '}full mt" id="gTog" aria-pressed="${GRASS}">${GRASS ? 'Скрыть траву' : 'Показать траву со спутника'}</button>`;
   h += '<div class="wmap mt8" id="tmap"><p class="wmap-ph">Загружаю карту…</p></div>';
-  if (GRASS) h += `<div class="glg mt8"><div class="glbar"></div><div class="row2 small"><span>сухо, голая земля</span><span>густая трава</span></div><p class="small mut mt8" id="gNote">Снимок спутников NASA: одна клетка — 250 м, обновляется раз в 1–2 недели. Зимой под снегом травы не видно — смотрите весной и летом.</p></div>`;
+  if (GRASS) h += `<div class="glg mt8"><div class="glbar"></div><div class="row2 small"><span>сухо, голая земля</span><span>густая трава</span></div><p class="small mut mt8" id="gNote">Издалека — снимок NASA (250 м). Приблизьте карту — появится снимок Sentinel-2 с точностью 10 м, самый чистый от облаков за последние 2 месяца. Зимой под снегом травы не видно — смотрите весной и летом.</p></div>`;
   if (!L.length) h += `<section class="card mt"><h3>Трекеров пока нет</h3><p class="small mt8">Откройте лошадь, на которой стоит трекер (обычно айғыр косяка), нажмите «Изменить данные» и впишите номер трекера. Когда трекер пришлёт точку, косяк появится на карте.</p></section>`;
   else h += '<div class="list mt">' + L.sort((a, b) => ({bad: 0, warn: 1, mut: 2, good: 3})[a.tone] - ({bad: 0, warn: 1, mut: 2, good: 3})[b.tone]).map(s => `<button class="row" data-h="${esc(s.h.id)}">${horseAv(s.h)}<span class="t"><b>${esc(hName(s.h))}</b><span class="st ${s.tone === 'good' ? 'mut' : s.tone}">${esc(s.t)}</span><span class="small mut">${esc((grp(s.h.grp) ? grp(s.h.grp).name + ' · ' : '') + 'трекер ')}<span style="white-space:nowrap">${esc(s.h.tr)}</span></span></span>${s.p && s.p.batt != null ? `<span class="cnt small">${s.p.batt}%</span>` : s.p && s.p.low ? '<span class="cnt small" style="color:var(--warn,#B86E00)">батарея</span>' : ''}</button>`).join('') + '</div>';
   if (!(SET.zones || []).length) h += `<p class="small mut mt8">Нарисуйте границы пастбищ (кнопка «Пастбища» вверху): программа предупредит, если косяк ушёл за них.</p>`;
@@ -1845,16 +1845,32 @@ function grassLayer(LF) {
   let err = 0;
   L.on('tileload', () => { GOK = true; });
   L.on('tileerror', () => {
-    if (GOK || ++err < 3) return;
-    L.off(); if (TMAP) TMAP.removeLayer(L); GLAYER = null; GTRY++;
+    if (GOK || ++err < 3 || GLAYER !== L) return;
+    if (TMAP) TMAP.removeLayer(L); GLAYER = null; GTRY++;
     if (GRASS && TMAP) { GLAYER = grassLayer(LF); if (GLAYER) GLAYER.addTo(TMAP); else { const n = $('#gNote'); if (n) n.textContent = 'Снимок травы сейчас недоступен. Попробуйте позже.'; } }
   });
   return L;
 }
+/* вблизи — Sentinel-2 10 м через Copernicus (Sentinel Hub WMS, бесплатно до 30 000 запросов в месяц) */
+const SH_ID = 'e872e978-b1c9-4985-b1be-6122dda8a4a0', SH_URL = 'https://sh.dataspace.copernicus.eu/ogc/wms/' + SH_ID;
+let SLAYER = null, SHBAD = false;
+const SH_LAYER = 'VEGETATION_INDEX'; /* слой «Vegetation Index - NDVI» в конфигурации Tabun */
+function shDay(d) { return new Date(Date.now() - d * 864e5).toISOString().slice(0, 10); }
+function grassSentinel(LF) {
+  if (SLAYER || SHBAD || !TMAP) return;
+  const L = LF.tileLayer.wms(SH_URL, {layers: SH_LAYER, format: 'image/png', transparent: true, tileSize: 512, minZoom: 9, maxZoom: 18, opacity: .85, crossOrigin: true,
+    time: shDay(60) + '/' + shDay(0), maxcc: 40, priority: 'leastCC', showlogo: false, attribution: 'трава вблизи: <a href="https://dataspace.copernicus.eu" target="_blank" rel="noopener">Copernicus Sentinel-2</a>'});
+  let err = 0, ok = false;
+  L.on('tileload', () => { ok = true; });
+  L.on('tileerror', () => { if (!ok && ++err >= 4) { SHBAD = true; if (TMAP && SLAYER === L) { TMAP.removeLayer(L); SLAYER = null; } } });
+  SLAYER = L; L.addTo(TMAP);
+}
 function grassSync(LF) {
   if (!TMAP) return;
   if (GRASS && !GLAYER && GRASS_L[GTRY]) { GLAYER = grassLayer(LF); if (GLAYER) GLAYER.addTo(TMAP); }
+  if (GRASS) grassSentinel(LF);
   if (!GRASS && GLAYER) { TMAP.removeLayer(GLAYER); GLAYER = null; }
+  if (!GRASS && SLAYER) { TMAP.removeLayer(SLAYER); SLAYER = null; }
 }
 const tIcon = (LF, h, tone) => LF.divIcon({className: 'tmk ' + tone, html: '<span>' + horseIco(h.color, '') + '</span>', iconSize: [38, 38], iconAnchor: [19, 19]});
 async function drawTrkMap() {
