@@ -1821,7 +1821,7 @@ function demoWells() {
 
 /* ---------- трекеры: карта косяков, зоны пастбищ, «нет сигнала» ---------- */
 let POS = {};            /* номер трекера → {lat, lon, at, batt} — приходит от сервера трекеров */
-const SILENT_H = 24;     /* сколько часов без сигнала — уже тревога */
+const SILENT_H = 72;     /* SmartOne шлёт точку раз в 12–48 ч — тревога только после 3 суток тишины */
 const trkKey = s => String(s || '').trim().toUpperCase();
 function inPoly(lat, lon, pts) {
   let ins = false;
@@ -1859,7 +1859,7 @@ function trkHomeHtml() {
 function mapView() {
   const L = trkList(), out = L.filter(s => s.tone === 'bad').length, sil = L.filter(s => s.silent).length;
   let h = `<div class="sec-h" style="margin-top:8px"><h3>Карта косяков</h3><button class="linkbtn" id="zEdit">${I.flag}Пастбища</button></div>`;
-  h += `<div class="tiles">${tile('С трекером', L.length, '', 'лошадей')}${tile('Вне пастбища', out, out ? 'bad' : 'good', out ? 'проверьте' : 'все на месте')}${tile('Нет сигнала', sil, sil ? 'warn' : '', 'больше суток')}</div>`;
+  h += `<div class="tiles">${tile('С трекером', L.length, '', 'лошадей')}${tile('Вне пастбища', out, out ? 'bad' : 'good', out ? 'проверьте' : 'все на месте')}${tile('Нет сигнала', sil, sil ? 'warn' : '', 'больше 3 суток')}</div>`;
   h += `<button class="btn small ${GRASS ? '' : 'ghost '}full mt" id="gTog" aria-pressed="${GRASS}">${GRASS ? 'Скрыть траву' : 'Показать траву со спутника'}</button>`;
   h += '<div class="wmap mt8" id="tmap"><p class="wmap-ph">Загружаю карту…</p></div>';
   if (GRASS) h += `<div class="glg mt8"><div class="glbar"></div><div class="row2 small"><span>сухо, голая земля</span><span>густая трава</span></div><p class="small mut mt8" id="gNote">Издалека — снимок NASA (250 м). Приблизьте карту — появится снимок Sentinel-2 с точностью 10 м, самый чистый от облаков за последние 2 месяца. Зимой под снегом травы не видно — смотрите весной и летом.</p></div>`;
@@ -1999,7 +1999,7 @@ function demoTrk(D) {
 function demoPos() {
   const now = Date.now(), base = [[47.95, 59.45], [47.72, 59.76], [48.21, 59.12], [47.87, 59.9], [47.7, 59.5], [48.0, 59.66]];
   const o = {};
-  HS.filter(h => h.tr).forEach((h, i) => { const b = base[i % base.length], j = (i * 37 % 10) / 400; o[trkKey(h.tr)] = {lat: b[0] + j, lon: b[1] - j, at: now - (i === 4 ? 31 * 36e5 : (8 + i * 23) * 60000), batt: [87, 74, 66, 91, 12, 58][i % 6]}; });
+  HS.filter(h => h.tr).forEach((h, i) => { const b = base[i % base.length], j = (i * 37 % 10) / 400; o[trkKey(h.tr)] = {lat: b[0] + j, lon: b[1] - j, at: now - (i === 4 ? 80 * 36e5 : (8 + i * 23) * 60000), batt: [87, 74, 66, 91, 12, 58][i % 6]}; });
   return o;
 }
 
