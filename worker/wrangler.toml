@@ -1,0 +1,7 @@
+# Табун — приёмник спутниковых трекеров (Cloudflare Worker «tabun»).
+# Cloudflare сам собирает и выкладывает этот код при каждом изменении папки worker/.
+# Секреты SA и KEY хранятся только в Cloudflare, сюда их не вписывать.
+name = "tabun"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+workers_dev = true
