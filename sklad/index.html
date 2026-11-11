@@ -838,7 +838,11 @@ function backupCounts(b) {
 }
 async function importDocs(b, prog) {
   const jobs = [];
-  Object.keys(b.products).forEach(k => jobs.push(() => w(() => DB.doc('products/' + k).set(b.products[k]))));
+  /* товар, чей штрихкод уже есть в складе под другой карточкой, не дублируем — оставляем ту, что есть */
+  const have = {}; PR.forEach(p => codesOf(p).forEach(c => { have[c] = p.id; }));
+  let skip = 0;
+  Object.keys(b.products).forEach(k => { const c = codesOf(b.products[k]), o = c.map(x => have[x]).find(x => x && x !== k); if (o) { skip++; return; } jobs.push(() => w(() => DB.doc('products/' + k).set(b.products[k]))); });
+  importDocs.skipped = skip;
   Object.keys(b.days).forEach(k => { if (b.days[k].length) jobs.push(() => addToDay('days', k, b.days[k])); });
   Object.keys(b.moves).forEach(k => { if (b.moves[k].length) jobs.push(() => addToDay('moves', k, b.moves[k])); });
   Object.keys(b.expenses).forEach(k => jobs.push(() => w(() => DB.doc('expenses/' + k).set(b.expenses[k]))));
@@ -2770,7 +2774,7 @@ function restoreFlow() {
       <p class="err" id="rsErr"></p><div class="row2 mt"><button class="btn" id="rsGo">Загрузить</button><button class="btn ghost" data-close>Отмена</button></div>`, {kind: 'restore'});
     $('#rsGo').onclick = async () => {
       const g = $('#rsGo'); g.disabled = true; g.textContent = 'Загружаю…';
-      if (await act(() => importDocs(b, (i, n) => { g.textContent = 'Загружаю… ' + i + ' из ' + n; }), 'Копия загружена.')) closeSheet();
+      if (await act(() => importDocs(b, (i, n) => { g.textContent = 'Загружаю… ' + i + ' из ' + n; }), 'Копия загружена.')) { closeSheet(); if (importDocs.skipped) toast('Пропущено ' + importDocs.skipped + ' товаров: такие штрихкоды уже есть в складе.'); }
       else { g.disabled = false; g.textContent = 'Загрузить'; }
     };
   });
