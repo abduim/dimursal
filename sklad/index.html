@@ -390,6 +390,7 @@ body.has-cartbar #toast{bottom:calc(144px + env(safe-area-inset-bottom,0px))}
 details.more-f{border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:0 14px}
 details.more-f>summary{min-height:50px;display:flex;align-items:center;justify-content:space-between;gap:10px;font-weight:700;font-size:15px;cursor:pointer;list-style:none}
 details.more-f>summary::-webkit-details-marker{display:none}
+details.more-f>summary>span:first-child{flex:1}
 details.more-f>summary::after{content:"";width:9px;height:9px;border-right:2px solid var(--mut);border-bottom:2px solid var(--mut);transform:rotate(45deg);margin:-4px 4px 0 0;flex:none}
 details.more-f[open]>summary::after{transform:rotate(-135deg);margin-top:4px}
 details.more-f[open]{padding-bottom:14px}
@@ -1589,6 +1590,7 @@ VIEWS.goods = () => {
     <div class="tile"><span class="v">${bigMoney(s.retail)}</span><span class="l">выручка, если продать всё</span></div>
   </div>
   <div class="row2 mt"><button class="btn soft" id="gIn">${I.truck}Пришёл товар</button><button class="btn soft" id="gRev">${I.recount}Ревизия</button></div>
+  ${(() => { const n = checkCount(); return n ? `<button class="btn ghost full mt8" id="gChk">Проверить товары · ${fmtN(n)} ${plural(n, 'вопрос', 'вопроса', 'вопросов')}</button>` : ''; })()}
   <div class="kbar mt"><label class="srch">${I.search}<input id="gq" type="search" placeholder="Название или штрихкод" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" value="${esc(GQ)}" aria-label="Поиск по товарам"></label><button class="scanbtn" id="gscan" aria-label="Найти по штрихкоду">${I.scan}</button></div>
   <div class="chips scrollx mt8" role="group" aria-label="Показать">${f.map(x => `<button data-gf="${esc(x[0])}" aria-pressed="${GF === x[0]}">${esc(x[1])}<span class="c">${x[2]}</span></button>`).join('')}</div>
   <div class="sortrow"><span class="mut small" id="gcount"></span><select id="gsort" aria-label="Порядок">${[['name', 'По названию'], ['stock', 'Сначала мало'], ['sold', 'Продаются лучше'], ['fresh', 'Новые сверху'], ['value', 'Дороже на складе']].map(o => `<option value="${o[0]}"${GSORT === o[0] ? ' selected' : ''}>${o[1]}</option>`).join('')}</select></div>
@@ -1601,6 +1603,7 @@ BIND.goods = () => {
   $('#gAdd').onclick = () => editSheet(null, {});
   $('#gIn').onclick = () => receiveSheet();
   $('#gRev').onclick = revisionSheet;
+  const gc = $('#gChk'); if (gc) gc.onclick = () => checkSheet();
   const q = $('#gq');
   q.oninput = () => { GQ = q.value; GN = 60; gList(); };
   q.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); const v = q.value.trim(); if (looksLikeCode(v)) { const p = byCode(v); q.blur(); if (p) productSheet(p.id); else unknownCode(v, 'goods'); } else q.blur(); } };
@@ -2050,6 +2053,36 @@ function revisionSheet() {
     };
   };
   draw();
+}
+
+/* ---------- проверка товаров: ошибки в ценах, остатках и штрихкодах ---------- */
+function checkGroups() {
+  const by = {}; PR.forEach(p => codesOf(p).forEach(c => { (by[c] = by[c] || []).push(p); }));
+  const dup = new Set(); Object.keys(by).forEach(c => { if (by[c].length > 1) by[c].forEach(p => dup.add(p.id)); });
+  const G = [
+    {k: 'sell0', t: 'Нет цены продажи', h: 'На кассе такой товар продастся за 0 ₸.', f: p => !p.sell},
+    {k: 'loss', t: 'Продаётся в ноль или в минус', h: 'Закупочная цена не меньше цены продажи.', f: p => p.sell > 0 && p.buy > 0 && p.buy >= p.sell, s: p => 'продажа ' + money(p.sell) + ', закупка ' + money(p.buy)},
+    {k: 'low', t: 'Слишком низкая закупочная цена', h: 'Закупка меньше 15% от цены продажи — возможно, потеряна цифра.', f: p => p.sell > 0 && p.buy > 0 && p.buy < p.sell * 0.15, s: p => 'продажа ' + money(p.sell) + ', закупка ' + money(p.buy)},
+    {k: 'neg', t: 'Остаток меньше нуля', h: 'Продали больше, чем записано. Пересчитайте товар на полке.', f: p => stockOf(p) < 0, s: p => 'остаток ' + stockOf(p)},
+    {k: 'dup', t: 'Одинаковый штрихкод у разных товаров', h: 'При сканировании откроется только один из них. Дайте каждому свой код или ищите по названию.', f: p => dup.has(p.id), s: p => 'код ' + p.code, sort: (a, b) => a.code.localeCompare(b.code)},
+    {k: 'buy0', t: 'Нет закупочной цены', h: 'Без неё прибыль по товару считается неверно.', f: p => !p.buy && p.sell > 0},
+    {k: 'nocode', t: 'Нет штрихкода', h: 'Такой товар не найти сканером.', f: p => !codesOf(p).length},
+    {k: 'nocat', t: 'Нет категории', h: '', f: p => !p.cat}
+  ];
+  G.forEach(g => { g.L = PR.filter(g.f); if (g.sort) g.L.sort(g.sort); });
+  return G.filter(g => g.L.length);
+}
+function checkCount() { const s = new Set(); checkGroups().forEach(g => g.L.forEach(p => s.add(p.id))); return s.size; }
+let CHK_OPEN = '';
+function checkSheet() {
+  const G = checkGroups();
+  const rows = g => g.L.slice(0, 200).map(p => `<li><button class="prow" data-chk="${esc(p.id)}">${thumb(p)}<span class="pr-t"><b>${esc(p.name)}</b><span>${esc(g.s ? g.s(p) : money(p.sell) + ' · ' + (p.cat || 'Без категории'))}</span></span></button></li>`).join('') + (g.L.length > 200 ? `<li class="empty">и ещё ${g.L.length - 200}</li>` : '');
+  openSheet(`<div class="sh-head"><div class="t"><p class="kicker">Товары</p><h2>Проверка товаров</h2></div>${closeBtn}</div>
+    ${G.length ? `<p class="small">Нажмите на товар, исправьте и сохраните — он сам уйдёт из списка.</p>` + G.map(g => `<details class="more-f mt8" data-g="${g.k}"${CHK_OPEN === g.k ? ' open' : ''}><summary><span>${esc(g.t)}</span><span class="mut">${fmtN(g.L.length)}</span></summary>${g.h ? `<p class="small mut">${esc(g.h)}</p>` : ''}<ul class="plist mt8">${rows(g)}</ul></details>`).join('') : '<p>Всё в порядке: ошибок в товарах не найдено.</p>'}`, {kind: 'check'});
+  const sh = $('#sheet');
+  $$('details[data-g]', sh).forEach(d => d.ontoggle = () => { if (d.open) { CHK_OPEN = d.dataset.g; $$('details[data-g]', sh).forEach(x => { if (x !== d) x.open = false; }); } });
+  $$('[data-chk]', sh).forEach(b => b.onclick = () => editSheet(b.dataset.chk, null, {then: () => checkSheet()}));
+  fixImgs(sh);
 }
 
 /* ---------- Закуп ---------- */
