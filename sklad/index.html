@@ -681,7 +681,7 @@ function pubItems() {
 }
 function schedulePub() {
   if (MODE !== 'db' || !DB || !DB.fs || typeof navigator !== 'undefined' && navigator.onLine === false) return;
-  if (!COLS.every(c => got[c] && !cached[c])) return;
+  if (!COLS.every(c => got[c])) return;
   clearTimeout(PUB_T); PUB_T = setTimeout(pubSync, 8000);
 }
 async function pubSync() {
