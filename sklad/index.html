@@ -640,7 +640,7 @@ function connect(db, mode) {
     if (DB !== db) return;
     try { f(s); } catch (e) { console.error(e); }
     got[c] = 1; cached[c] = !!(s.metadata && s.metadata.fromCache);
-    derive(); changed();
+    derive(); changed(); schedulePub();
   }, dbErr));
   on('products', s => { PR = s.docs.filter(x => okId(x.id)).map(x => Object.assign({id: x.id}, cleanP(x.data()))).sort(byName); });
   on('days', s => { const a = []; s.docs.forEach(x => { if (!isDate(x.id)) return; const it = (x.data() || {}).items; if (Array.isArray(it)) it.forEach(i => { if (i && typeof i === 'object' && i.id) a.push(cleanL(i, x.id)); }); }); LINES = a; });
@@ -673,6 +673,25 @@ function derive() {
   const mByDay = {};
   MOVES.forEach(m => { (mByDay[m.d] = mByDay[m.d] || []).push(m); });
   D = {sold, s30, last, byDay, checks, retBy, stock, mByDay, t, d30, d60};
+}
+/* ---------- витрина для покупательниц: товары в наличии без закупочных цен, в общий документ pub/catalog ---------- */
+let PUB_LAST = null, PUB_T = 0, PUB_BUSY = false;
+function pubItems() {
+  return PR.filter(p => p.sell > 0 && stockOf(p) > 0).map(p => ({id: p.id, name: p.name, cat: p.cat || 'Другое', price: p.sell, src: p.img || ''})).sort((a, b) => a.name.localeCompare(b.name, 'ru'));
+}
+function schedulePub() {
+  if (MODE !== 'db' || !DB || !DB.fs || typeof navigator !== 'undefined' && navigator.onLine === false) return;
+  if (!COLS.every(c => got[c] && !cached[c])) return;
+  clearTimeout(PUB_T); PUB_T = setTimeout(pubSync, 8000);
+}
+async function pubSync() {
+  if (PUB_BUSY || MODE !== 'db' || !DB || !DB.fs) return;
+  PUB_BUSY = true;
+  try {
+    const j = JSON.stringify(pubItems());
+    if (PUB_LAST === null) { try { const s = await DB.doc('pub/catalog').get(); const d = s.exists && s.data(); PUB_LAST = d && typeof d.items === 'string' ? d.items : ''; } catch (e) { PUB_LAST = ''; } }
+    if (j !== PUB_LAST) { await DB.doc('pub/catalog').set({items: j, at: Date.now()}); PUB_LAST = j; }
+  } catch (e) { /* нет прав или связи — попробуем при следующем изменении */ } finally { PUB_BUSY = false; }
 }
 const stockOf = p => D && D.stock[p.id] != null ? D.stock[p.id] : p.qty;
 const minOf = p => p.min != null ? p.min : SET.low;
@@ -2753,6 +2772,7 @@ function settingsSheet() {
       <section class="card"><h3>Кто работает на этом телефоне</h3><div class="catpick">${['Акнур', 'Рахман'].map(n => `<button data-who="${n}" aria-pressed="${!F.own && F.who === n}">${n}</button>`).join('')}<button data-who="__own" aria-pressed="${F.own}">Другое имя</button><button data-who="" aria-pressed="${!F.own && !F.who}">Не указывать</button></div>${F.own ? `<input id="stWho" class="mt8" autocomplete="off" placeholder="Имя" value="${esc(F.who)}" aria-label="Имя продавца">` : ''}<p class="hint mt8">Имя появится в чеках, чтобы было видно, кто продал.</p></section>
       <section class="card mt"><h3>Для обоих телефонов</h3><div class="form"><div class="row2"><label class="f" for="stMk">Наценка для новых, %<input id="stMk" inputmode="numeric" autocomplete="off" value="${esc(F.markup)}"></label><label class="f" for="stLow">«Мало», если ≤ шт<input id="stLow" inputmode="numeric" autocomplete="off" value="${esc(F.low)}"></label></div><p class="err" id="stErr"></p><button class="btn" id="stSave">Сохранить</button></div></section>
       <section class="card mt"><h3>Резервная копия</h3><p class="small">Раз в неделю сохраняйте копию на телефон. Если что-то случится, её можно загрузить обратно.</p>${lsGet('dimursal-lastbk', '') && MODE === 'db' ? `<p class="hint mt8">Последняя копия с этого телефона: ${esc(fDm(lsGet('dimursal-lastbk', '')))}.</p>` : ''}<div class="form mt8">${DL ? `<button class="btn" id="stBk">${I.save}Сохранить копию</button>` : ''}<button class="btn ghost" id="stRs">${I.upload}Загрузить копию</button>${DL ? `<button class="btn ghost" id="stCsv">${I.save}Товары и остатки для Excel</button>` : ''}</div></section>
+      ${!MC && MODE === 'db' && DB && DB.fs ? `<section class="card mt"><h3>Витрина для покупательниц</h3><p class="small">Показывает товары, которые есть в наличии, с ценами продажи. Закупочные цены и остатки покупательницы не видят. Обновляется сама через несколько секунд после продажи или прихода товара.</p><a class="btn ghost mt8 full" href="../vitrina/" target="_blank" rel="noopener">Открыть витрину</a></section>` : ''}
       ${MC && MODE === 'db' ? `<section class="card mt"><h3>Витрина для покупательниц</h3><p class="small">Обновляется сама каждое утро в 8:32. Если поменяли товары или цены, можно обновить сразу: это займёт несколько минут и потратит немного лимита Claude.</p><button class="btn ghost mt8 full" id="stVit">${I.recount}Обновить витрину сейчас</button><p class="hint mt8" id="stVitMsg"></p></section>` : ''}
       ${MODE === 'db' && FBUSER ? `<section class="card mt"><h3>Вход</h3><p class="small">Вы вошли как ${esc(FBUSER.email || '')}.</p><button class="btn ghost mt8 full" id="stOut">Выйти на этом телефоне</button></section>` : ''}
       <section class="card mt"><h3>Пример</h3><p class="small">${MODE === 'demo' ? 'Сейчас открыт пример с выдуманными товарами.' : 'Посмотрите, как выглядят касса, итоги и закуп на выдуманных товарах. Ваша база при этом не меняется.'}</p><button class="btn ghost mt8 full" id="stDemo">${MODE === 'demo' ? 'Выйти из примера' : I.spark + 'Посмотреть на примере'}</button></section>

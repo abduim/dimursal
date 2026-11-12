@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#FFF0F4">
+<meta name="author" content="Рахман, Шалкар">
+<title>Dimursal витрина</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@600;700&family=Nunito:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Стиль «Нежный»: розовый градиент, белые карточки с мягкой тенью, круглые кнопки; один светлый вид для всех */
+:root{
+  --pink:#D9487A; --pink-soft:#FFE3EC; --blush:#FFF0F4; --ink:#3B2430; --mut:#8A6474; --line:#F6D9E3; --card:#FFFFFF;
+  --wa:#1FA463; --wa-ink:#FFFFFF; --ok:#1E8E55; --scrim:rgba(59,36,48,.42);
+  --head:Comfortaa, "Arial Rounded MT Bold", "Trebuchet MS", sans-serif;
+  --body:Nunito, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;background:#FFE3EC}
+body{min-height:100vh;background:linear-gradient(180deg,#FFE3EC 0%,#FFF4F7 340px,#FFFFFF 900px);background-color:#FFFFFF;color:var(--ink);font:16px/1.5 var(--body);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-top:0;padding-bottom:calc(112px + env(safe-area-inset-bottom,0px))}
+body.noscroll{overflow:hidden}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--pink);outline-offset:2px}
+svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.wrap{max-width:680px;margin:0 auto}
+.top{display:flex;align-items:center;gap:10px;padding-top:16px;padding-bottom:4px}
+.logo{font:700 30px/1 var(--head);color:var(--pink);letter-spacing:-.01em}
+.lang{margin-left:auto;display:flex;background:var(--card);border-radius:99px;padding:3px;gap:2px;box-shadow:0 4px 14px -10px rgba(217,72,122,.6)}
+.lang button{border:0;background:transparent;min-height:36px;min-width:48px;border-radius:99px;font-weight:800;font-size:14px;color:var(--mut)}
+.lang button[aria-pressed="true"]{background:var(--pink);color:#fff}
+.hero{margin-top:14px;background:var(--card);border-radius:28px;padding:22px 20px 20px;display:grid;gap:12px;box-shadow:0 14px 34px -18px rgba(217,72,122,.55)}
+.kick{font-size:13px;font-weight:800;color:var(--pink);letter-spacing:.04em}
+.hero h1{font:700 27px/1.22 var(--head);margin:0;text-wrap:balance}
+.facts{display:grid;gap:6px;font-size:15px;color:var(--mut)}
+.facts span{display:flex;align-items:center;gap:8px}
+.facts .i{color:var(--pink);width:18px;height:18px}
+.cta{display:grid;grid-template-columns:minmax(0,1fr) 50px;gap:10px}
+.cta .btn.wa{padding:0 14px}
+.btn.ig{width:50px;padding:0}
+.btn.ig .i{width:22px;height:22px}
+@media (min-width:600px){.cta{grid-template-columns:auto auto;justify-content:start}.cta .btn.wa{padding:0 22px}}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:50px;padding:0 20px;border-radius:99px;border:0;background:var(--pink);color:#fff;font-weight:800;font-size:16px;text-decoration:none;text-align:center;line-height:1.2}
+.btn.wa{background:var(--wa);color:var(--wa-ink)}
+.btn.soft{background:var(--pink-soft);color:var(--pink)}
+.btn.small{min-height:40px;font-size:14px;padding:0 14px}
+.btn svg.wa-i{width:20px;height:20px;fill:currentColor}
+.pays{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.pays b{font-size:13px;color:var(--mut);margin-right:2px}
+.pays span{font-size:13px;font-weight:800;padding:5px 11px;border-radius:99px;background:var(--blush);color:var(--ink)}
+.bar{display:grid;gap:10px;margin-top:20px}
+.srch{position:relative;display:block}
+.srch .i{position:absolute;left:16px;top:50%;margin-top:-10px;color:#B48B9C}
+.srch input{width:100%;min-height:52px;border:0;border-radius:99px;background:var(--card);padding:10px 16px 10px 46px;font-size:17px;-webkit-appearance:none;appearance:none;box-shadow:0 6px 18px -12px rgba(217,72,122,.7)}
+.srch input::placeholder{color:#B48B9C}
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin-left:-16px;margin-right:-16px;padding:4px 16px 6px}
+.chips::-webkit-scrollbar{display:none}
+.chips button{flex:none;min-height:40px;padding:0 16px;border-radius:99px;border:0;background:var(--card);font-size:15px;font-weight:700;color:var(--mut);white-space:nowrap;box-shadow:0 4px 12px -10px rgba(217,72,122,.7)}
+.chips button[aria-pressed="true"]{background:var(--pink);color:#fff}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:10px}
+@media (min-width:600px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.card{background:var(--card);border-radius:24px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 10px 24px -16px rgba(217,72,122,.6)}
+.ph{position:relative;padding-top:100%;background:var(--blush)}
+.ph img,.ph svg{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;max-width:none}
+.ph .st{position:absolute;left:9px;top:9px;font-size:12px;font-weight:800;padding:3px 10px;border-radius:99px;background:#fff;color:var(--ok)}
+.ph .st.wait{color:var(--mut)}
+.cb{padding:10px 12px 12px;display:grid;gap:8px;flex:1;align-content:start}
+.cb .nm{font-size:14px;line-height:1.3;font-weight:700;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.cb .row{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:auto}
+.price{font-weight:800;font-size:16px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.add{width:40px;height:40px;border-radius:50%;border:0;background:var(--pink);color:#fff;display:grid;place-items:center;padding:0;flex:none;box-shadow:0 6px 14px -8px rgba(217,72,122,.9)}
+.add .i{width:20px;height:20px;stroke-width:2.6}
+.stp{display:flex;align-items:center;justify-content:space-between;background:var(--pink-soft);border-radius:99px;flex:none}
+.cb .row.in{display:grid;gap:6px;justify-content:stretch}
+.stp button{width:34px;height:38px;border:0;background:none;display:grid;place-items:center;padding:0;color:var(--pink)}
+.stp button .i{width:16px;height:16px;stroke-width:2.6}
+.stp b{min-width:20px;text-align:center;font-size:15px;font-weight:800}
+.empty{margin-top:18px;background:var(--card);border-radius:24px;padding:22px 18px;display:grid;gap:12px;text-align:center;justify-items:center;box-shadow:0 10px 24px -16px rgba(217,72,122,.6)}
+.empty h2{font:700 22px/1.2 var(--head);margin:0}
+.empty p{margin:0;color:var(--mut)}
+.linkb{border:0;background:none;color:var(--pink);font-weight:800;font-size:15px;padding:8px 4px;min-height:40px;text-decoration:underline;text-underline-offset:3px}
+.demo{margin-top:16px;font-size:14px;background:var(--pink-soft);color:var(--ink);border-radius:18px;padding:12px 14px;display:grid;gap:4px}
+.foot{margin-top:30px;background:var(--card);border-radius:24px;padding:18px;display:grid;gap:10px;font-size:15px;box-shadow:0 10px 24px -18px rgba(217,72,122,.5)}
+.foot .ln{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.foot .i{color:var(--pink)}
+.foot .upd{font-size:13px;color:var(--mut)}
+.copy{border:0;background:var(--pink-soft);color:var(--pink);border-radius:99px;min-height:34px;padding:0 12px;font-size:13px;font-weight:800}
+#bag{position:fixed;left:0;right:0;bottom:0;z-index:20;padding-top:12px;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:linear-gradient(to top,rgba(255,255,255,.96) 65%,rgba(255,255,255,0))}
+#bag button{max-width:680px;margin:0 auto;width:100%;display:flex;align-items:center;gap:10px;min-height:58px;border-radius:99px;border:0;background:var(--pink);color:#fff;padding:0 22px;font-weight:800;font-size:16px;box-shadow:0 12px 26px -10px rgba(217,72,122,.85)}
+#bag button b{margin-left:auto;font-size:18px;font-variant-numeric:tabular-nums}
+#sheet{position:fixed;top:0;right:0;bottom:0;left:0;z-index:30;background:var(--scrim);display:flex;align-items:flex-end;justify-content:center}
+.panel{width:100%;max-width:640px;max-height:90%;overflow:auto;background:#FFF7FA;border-radius:28px 28px 0 0;padding-top:18px;padding-bottom:calc(22px + env(safe-area-inset-bottom,0px));padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px))}
+.sh{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:6px}
+.sh h2{font:700 24px/1.2 var(--head);margin:0}
+.x{width:42px;height:42px;border-radius:50%;border:0;background:#fff;display:grid;place-items:center;padding:0;box-shadow:0 4px 12px -8px rgba(217,72,122,.8)}
+.li{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+.li .t{flex:1;min-width:0}
+.li .t b{display:block;font-size:15px;overflow-wrap:anywhere;line-height:1.3}
+.li .t span{font-size:13px;color:var(--mut)}
+.tot{display:flex;justify-content:space-between;align-items:baseline;padding:16px 0;font-weight:800}
+.tot b{font:700 26px/1 var(--head);font-variant-numeric:tabular-nums}
+.sendnote{font-size:13px;color:var(--mut);margin:10px 0 0}
+#toast{position:fixed;z-index:50;left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));bottom:calc(88px + env(safe-area-inset-bottom,0px));max-width:600px;margin:0 auto;background:var(--ink);color:#fff;padding:12px 18px;border-radius:99px;font-weight:700;text-align:center}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header class="top"><span class="logo">dimursal</span><div class="lang" role="group" aria-label="Тіл / Язык"><button data-lang="kz">Қаз</button><button data-lang="ru">Рус</button></div></header>
+  <main id="app"></main>
+</div>
+<div id="bag" hidden><button id="bagBtn"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1.2 11.2a1 1 0 0 1-1 .8H7.2a1 1 0 0 1-1-.8z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></svg><span id="bagT"></span><b id="bagS"></b></button></div>
+<div id="sheet" hidden><div class="panel" role="dialog" aria-modal="true" aria-labelledby="shT"></div></div>
+<div id="toast" role="status" hidden></div>
+
+<script>
+'use strict';
+const SHOP = {wa: '77781831124', phone: '+7 778 183 11 24', addr: 'Карагулин, 74м', ig: 'dimursal_shalkar'};
+const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => Array.prototype.slice.call(r.querySelectorAll(s));
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+const fmt = n => Math.round(n || 0).toLocaleString('ru-RU') + ' ₸';
+const norm = s => String(s || '').toLowerCase().replace(/ё/g, 'е');
+const ls = {get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }};
+const CATS = ["База под макияж", "Вокруг глаз", "Воск для шугаринга", "Гель для душа", "Гидрофилка и щербет", "Дезодорант", "Для бровей", "Для визажиста", "Для волос", "Для губ", "Для дома", "Для зубов", "Для лица", "Для себя", "Для тела", "Для шугаринга", "Карандаши", "Кисточки", "Клей для ресниц", "Консилер", "Контуринг для лица", "Косметички", "Крем для рук и ног", "Кремы", "Кушон", "Маска для лица", "Маска для ног", "Мист для лица", "Наборы", "Парфюм", "Пилинг для лица", "Пилинг и скраб", "Подводка", "Помада", "Пробники", "Пудра", "Ресницы", "Румяна", "Спонж", "SPF-крем", "Сыворотка", "Тени для глаз", "Тональный крем", "Тонер", "Тушь", "Умывалка", "Фиксатор для макияжа", "Хайлайтер", "Шампуни", "Шкатулки", "Энзимная пудра", "Другое"];
+const CATKZ = {};
+const SHAPE = c => /Помада|губ|Карандаш|Подводка|Тушь/.test(c) ? 'lip' : /Парфюм/.test(c) ? 'perf' : /Сыворот|Тонер|Мист|Клей/.test(c) ? 'drop' : /Шампун|Гель|Умывал|Гидрофил|волос|Дезодор/.test(c) ? 'pump' : /рук|тела|зубов|Пилинг|SPF|шугар|Воск/.test(c) ? 'tube' : 'jar';
+function pl(n, a, b, c) { n = Math.abs(n) % 100; const k = n % 10; return n > 10 && n < 20 ? c : k === 1 ? a : k >= 2 && k <= 4 ? b : c; }
+const T = {
+  ru: {kick: 'Магазин косметики в Шалкаре', title: 'Нежный уход для вашей кожи', addr: 'Шалкар, ' + SHOP.addr, hours: 'Работаем с 10:00 до 18:00', deliv: 'Доставка в любой город', wa: 'Написать в WhatsApp', pay: 'Оплата:', inst: 'есть', wait: 'под заказ', search: 'Найти товар', all: 'Все', none: 'Ничего не нашлось. Напишите нам в WhatsApp, найдём для вас.', soonH: 'Каталог скоро появится', soon: 'Мы добавляем товары. А пока напишите нам в WhatsApp: расскажем, что есть, и подберём уход.', show: 'Посмотреть, как будет выглядеть каталог', demo: 'Это пример: товары и цены выдуманы.', demoBack: 'Вернуться', bag: n => 'Заказ: ' + n + ' ' + pl(n, 'товар', 'товара', 'товаров'), bagH: 'Ваш заказ', total: 'Итого', send: 'Отправить заказ в WhatsApp', clear: 'Очистить', sendnote: 'Откроется WhatsApp с готовым сообщением. Доставку и оплату обсудим там.', hello: 'Здравствуйте! Хочу заказать с витрины Dimursal:', pcs: 'шт', updated: 'Цены обновлены', copy: 'Скопировать', copied: 'Номер скопирован', added: 'Добавлено в заказ', hi: 'Здравствуйте! '},
+  kz: {kick: 'Шалқардағы косметика дүкені', title: 'Теріңізге нәзік күтім', addr: 'Шалқар, ' + SHOP.addr, hours: 'Жұмыс уақыты: 10:00–18:00', deliv: 'Кез келген қалаға жеткізу', wa: 'WhatsApp-қа жазу', pay: 'Төлем:', inst: 'бар', wait: 'тапсырыспен', search: 'Тауар іздеу', all: 'Барлығы', none: 'Ештеңе табылмады. WhatsApp-қа жазыңыз, сізге іздеп табамыз.', soonH: 'Каталог жақында шығады', soon: 'Тауарларды қосып жатырмыз. Әзірге WhatsApp-қа жазыңыз: не бар екенін айтып, күтім таңдап береміз.', show: 'Каталог қалай көрінетінін қарау', demo: 'Бұл мысал: тауарлар мен бағалар ойдан алынған.', demoBack: 'Қайту', bag: n => 'Тапсырыс: ' + n + ' тауар', bagH: 'Сіздің тапсырысыңыз', total: 'Жиыны', send: 'Тапсырысты WhatsApp-қа жіберу', clear: 'Тазалау', sendnote: 'WhatsApp дайын хатпен ашылады. Жеткізу мен төлемді сонда келісеміз.', hello: 'Сәлеметсіз бе! Dimursal витринасынан тапсырыс бергім келеді:', pcs: 'дана', updated: 'Бағалар жаңартылды', copy: 'Көшіру', copied: 'Нөмір көшірілді', added: 'Тапсырысқа қосылды', hi: 'Сәлеметсіз бе! '}
+};
+const MG = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+const MKZ = ['қаңтар', 'ақпан', 'наурыз', 'сәуір', 'мамыр', 'маусым', 'шілде', 'тамыз', 'қыркүйек', 'қазан', 'қараша', 'желтоқсан'];
+const I = {
+  pin: '<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></svg>',
+  clock: '<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>',
+  truck: '<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6.5h11v10H3zM14 10h4l3 3.5v3h-7"/><circle cx="7" cy="18" r="1.8"/><circle cx="17.5" cy="18" r="1.8"/></svg>',
+  wa: '<svg class="wa-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.2 13.9c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .1-1.7-.1a14 14 0 0 1-6.6-5.8c-.5-.8-1-1.9-1-2.9s.6-1.6.8-1.8c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .6l-.4.6-.4.4c-.1.2-.3.3-.1.6.2.3.8 1.3 1.6 2.1 1.1 1 2 1.3 2.3 1.4.3.2.5.1.6 0l.9-1c.2-.3.4-.2.6-.1l1.9.9c.3.1.4.2.5.3.1.2.1.7-.1 1.4z"/></svg>',
+  ig: '<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r=".9"/></svg>',
+  phone: '<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg>',
+  search: '<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>',
+  plus: '<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
+  minus: '<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg>',
+  close: '<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>'
+};
+const P = {a: '#F3A6C0', b: '#D9487A', c: '#FFFFFF', d: '#7A3150'};
+function art(type) {
+  const sh = '<ellipse cx="50" cy="91" rx="24" ry="3.5" fill="' + P.d + '" opacity=".15"/>';
+  const g = {
+    jar: '<rect x="26" y="52" width="48" height="36" rx="9" fill="' + P.a + '"/><rect x="23" y="40" width="54" height="15" rx="5" fill="' + P.b + '"/><rect x="33" y="62" width="34" height="14" rx="3" fill="' + P.c + '" opacity=".85"/><rect x="30" y="55" width="5" height="28" rx="2.5" fill="#fff" opacity=".35"/>',
+    drop: '<rect x="34" y="44" width="32" height="44" rx="8" fill="' + P.a + '"/><rect x="40" y="32" width="20" height="14" rx="3" fill="' + P.b + '"/><path d="M50 10c-6 0-8 6-8 12v10h16V22c0-6-2-12-8-12z" fill="' + P.d + '"/><rect x="39" y="57" width="22" height="16" rx="2" fill="' + P.c + '" opacity=".85"/><rect x="37" y="48" width="4" height="34" rx="2" fill="#fff" opacity=".35"/>',
+    pump: '<rect x="30" y="38" width="40" height="50" rx="10" fill="' + P.a + '"/><rect x="43" y="26" width="14" height="14" rx="2" fill="' + P.b + '"/><path d="M46 26V18h20v6h-4v-3H50v5z" fill="' + P.b + '"/><rect x="36" y="54" width="28" height="20" rx="3" fill="' + P.c + '" opacity=".85"/><rect x="34" y="42" width="5" height="40" rx="2.5" fill="#fff" opacity=".35"/>',
+    lip: '<rect x="38" y="52" width="24" height="36" rx="3" fill="' + P.b + '"/><rect x="40" y="38" width="20" height="16" rx="2" fill="' + P.c + '"/><path d="M42 38V22l16-8v24z" fill="' + P.a + '"/><rect x="41" y="56" width="4" height="28" rx="2" fill="#fff" opacity=".3"/>',
+    perf: '<rect x="26" y="40" width="48" height="48" rx="8" fill="' + P.a + '" opacity=".9"/><rect x="42" y="30" width="16" height="12" fill="' + P.c + '"/><rect x="36" y="14" width="28" height="18" rx="4" fill="' + P.b + '"/><rect x="36" y="56" width="28" height="16" rx="2" fill="' + P.c + '" opacity=".8"/><rect x="31" y="45" width="5" height="38" rx="2.5" fill="#fff" opacity=".35"/>',
+    tube: '<path d="M32 22h36l-6 56H38z" fill="' + P.a + '"/><rect x="38" y="76" width="24" height="12" rx="3" fill="' + P.b + '"/><rect x="31" y="18" width="38" height="6" rx="2" fill="' + P.d + '" opacity=".6"/><rect x="40" y="40" width="20" height="16" rx="2" fill="' + P.c + '" opacity=".85"/>'
+  }[type] || '';
+  return '<svg viewBox="0 0 100 100" aria-hidden="true">' + sh + g + '</svg>';
+}
+let V = {updated: '', items: []}, LOADING = true, FAIL = false, SHOWN = 40;
+let REAL = [];
+const FS = 'https://firestore.googleapis.com/v1/projects/dimursal-sklad1/databases/(default)/documents/';
+const KEY = 'AIzaSyD4ENinTr_kn0gAGA5M-XbrQC58a8mG_So';
+async function loadCatalog() {
+  try {
+    const r = await fetch(FS + 'pub/catalog?key=' + KEY, {cache: 'no-store'});
+    if (!r.ok) throw new Error(r.status);
+    const f = (await r.json()).fields || {};
+    const l = JSON.parse((f.items && f.items.stringValue) || '[]');
+    REAL = l.filter(x => x && x.id && x.name && x.price > 0).map(x => ({id: x.id, name: x.name, cat: x.cat || 'Другое', price: x.price, stock: true, src: x.src || ''}));
+    const at = f.at && (f.at.integerValue || f.at.doubleValue); if (at) { const d = new Date(Number(at)); V.updated = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+    ls.set('dv-cache', {u: V.updated, l: REAL});
+  } catch (e) {
+    const c = ls.get('dv-cache', null);
+    if (c && Array.isArray(c.l) && c.l.length) { REAL = c.l; V.updated = c.u || ''; } else FAIL = true;
+  }
+  LOADING = false;
+  Object.keys(BAG).forEach(k => { if (!REAL.some(x => x.id === k) || !(BAG[k] > 0)) delete BAG[k]; });
+  render();
+}
+/* фото товара берём со склада по запросу, только когда карточка видна на экране */
+const PH = {};
+function photo(src) {
+  if (!PH[src]) PH[src] = fetch(FS + 'photos/' + encodeURIComponent(src) + '?key=' + KEY).then(r => r.ok ? r.json() : null).then(j => { const d = j && j.fields && j.fields.d && j.fields.d.stringValue; return d && d.indexOf('data:image/') === 0 ? d : ''; }).catch(() => '');
+  return PH[src];
+}
+const IO = 'IntersectionObserver' in window ? new IntersectionObserver(es => es.forEach(e => { if (!e.isIntersecting) return; IO.unobserve(e.target); showPh(e.target); }), {rootMargin: '300px'}) : null;
+function showPh(el) { photo(el.dataset.src).then(d => { if (d) { const i = new Image(); i.alt = ''; i.src = d; el.insertBefore(i, el.querySelector('.st')); } }); }
+const EXAMPLE = [['Крем для лица увлажняющий 50 мл', 'Уход за лицом', 3900, 1], ['Сыворотка с витамином C 30 мл', 'Уход за лицом', 5200, 1], ['Мицеллярная вода 400 мл', 'Уход за лицом', 2600, 1], ['Помада матовая', 'Макияж', 2300, 1], ['Тушь для ресниц объёмная', 'Макияж', 2900, 0], ['Шампунь для сухих волос 400 мл', 'Волосы', 3100, 1], ['Крем для рук 75 мл', 'Тело', 1100, 1], ['Парфюмерная вода 50 мл', 'Парфюм', 10500, 1]]
+  .map((x, i) => ({id: 'ex' + i, name: x[0], cat: x[1], price: x[2], stock: !!x[3], img: ''}));
+let DEMO = false;
+const items = () => DEMO ? EXAMPLE : REAL;
+let LANG = ls.get('dv-lang', 'ru') === 'kz' ? 'kz' : 'ru', Q = '', CAT = '';
+let BAG = ls.get('dv-bag', {}); if (!BAG || typeof BAG !== 'object') BAG = {};
+let SAVED = BAG;
+const t = k => T[LANG][k];
+const catName = c => LANG === 'kz' ? (CATKZ[c] || c) : c;
+const waUrl = text => 'https://wa.me/' + SHOP.wa + (text ? '?text=' + encodeURIComponent(text) : '');
+function upd() { if (!V.updated || !/^\d{4}-\d{2}-\d{2}$/.test(V.updated)) return ''; const p = V.updated.split('-').map(Number); return p[2] + ' ' + (LANG === 'kz' ? MKZ[p[1] - 1] : MG[p[1] - 1]); }
+function toast(s) { const el = $('#toast'); el.textContent = s; el.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => { el.hidden = true; }, 2200); }
+function saveBag() { if (!DEMO) ls.set('dv-bag', BAG); }
+function bagList() { return Object.keys(BAG).map(id => ({it: items().find(x => x.id === id), n: BAG[id]})).filter(x => x.it); }
+function bagText() {
+  const l = bagList(), s = l.reduce((a, x) => a + x.n * x.it.price, 0);
+  return [t('hello')].concat(l.map((x, i) => (i + 1) + '. ' + x.it.name + ' — ' + x.n + ' ' + t('pcs') + ' × ' + fmt(x.it.price))).concat([t('total') + ': ' + fmt(s)]).join('\n');
+}
+function setDemo(on) { DEMO = on; if (on) { SAVED = BAG; BAG = {}; } else BAG = SAVED || {}; Q = ''; CAT = ''; render(); window.scrollTo(0, 0); }
+function render() {
+  document.documentElement.lang = LANG === 'kz' ? 'kk' : 'ru';
+  $$('.lang button').forEach(b => b.setAttribute('aria-pressed', b.dataset.lang === LANG));
+  const IT = items();
+  const cats = CATS.filter(c => IT.some(x => (x.cat || 'Другое') === c)).concat(Array.from(new Set(IT.map(x => x.cat || 'Другое'))).filter(c => !CATS.includes(c)));
+  if (CAT && !cats.includes(CAT)) CAT = '';
+  $('#app').innerHTML = `<section class="hero"><span class="kick">${esc(t('kick'))}</span><h1>${esc(t('title'))}</h1>
+      <div class="facts"><span>${I.pin}${esc(t('addr'))}</span><span>${I.clock}${esc(t('hours'))}</span><span>${I.truck}${esc(t('deliv'))}</span></div>
+      <div class="cta"><a class="btn wa" href="${esc(waUrl(t('hi')))}" target="_blank" rel="noopener">${I.wa}${esc(t('wa'))}</a><a class="btn soft ig" href="https://www.instagram.com/${SHOP.ig}/" target="_blank" rel="noopener" aria-label="Instagram" title="Instagram">${I.ig}</a></div>
+      <div class="pays"><b>${esc(t('pay'))}</b><span>Kaspi</span><span>${LANG === 'kz' ? 'Kaspi бөліп төлеу' : 'Kaspi Рассрочка'}</span><span>Kaspi Red</span><span>Halyk</span></div>
+    </section>
+    ${DEMO ? `<div class="demo"><span>${esc(t('demo'))}</span><button class="linkb" id="dmBack" style="justify-self:start;padding-left:0">${esc(t('demoBack'))}</button></div>` : ''}
+    ${IT.length && !LOADING ? `<div class="bar"><label class="srch">${I.search}<input id="q" type="search" autocomplete="off" placeholder="${esc(t('search'))}" aria-label="${esc(t('search'))}" value="${esc(Q)}"></label>
+      ${cats.length > 1 ? `<div class="chips" role="group"><button data-c="" aria-pressed="${!CAT}">${esc(t('all'))}</button>${cats.map(c => `<button data-c="${esc(c)}" aria-pressed="${CAT === c}">${esc(catName(c))}</button>`).join('')}</div>` : ''}</div>
+      <div class="grid" id="grid"></div>`
+      : LOADING ? `<section class="empty"><h2>${LANG === 'kz' ? 'Жүктелуде…' : 'Загружаю товары…'}</h2></section>`
+      : FAIL ? `<section class="empty"><h2>${LANG === 'kz' ? 'Тауарлар жүктелмеді' : 'Не удалось загрузить товары'}</h2><p>${LANG === 'kz' ? 'Интернетті тексеріп, бетті жаңартыңыз. Немесе бізге жазыңыз.' : 'Проверьте интернет и обновите страницу. Или напишите нам.'}</p><a class="btn wa" href="${esc(waUrl(t('hi')))}" target="_blank" rel="noopener">${I.wa}${esc(t('wa'))}</a></section>`
+      : `<section class="empty"><h2>${esc(t('soonH'))}</h2><p>${esc(t('soon'))}</p><a class="btn wa" href="${esc(waUrl(t('hi')))}" target="_blank" rel="noopener">${I.wa}${esc(t('wa'))}</a><button class="linkb" id="dmShow">${esc(t('show'))}</button></section>`}
+    <footer class="foot"><div class="ln">${I.pin}<span>${esc(t('addr'))}</span></div><div class="ln">${I.phone}<span>WhatsApp: ${SHOP.phone}</span><button class="copy" id="cp">${esc(t('copy'))}</button></div><div class="ln">${I.ig}<a href="https://www.instagram.com/${SHOP.ig}/" target="_blank" rel="noopener">@${SHOP.ig}</a></div>${upd() && REAL.length && !DEMO ? `<div class="upd">${esc(t('updated'))}: ${esc(upd())}</div>` : ''}</footer>`;
+  const q = $('#q'); if (q) q.oninput = () => { Q = q.value; SHOWN = 40; grid(); };
+  $$('[data-c]').forEach(b => b.onclick = () => { CAT = b.dataset.c; SHOWN = 40; $$('[data-c]').forEach(x => x.setAttribute('aria-pressed', x === b)); grid(); });
+  $('#cp').onclick = async () => { try { await navigator.clipboard.writeText(SHOP.phone); toast(t('copied')); } catch (e) { toast(SHOP.phone); } };
+  const ds = $('#dmShow'); if (ds) ds.onclick = () => setDemo(true);
+  const db = $('#dmBack'); if (db) db.onclick = () => setDemo(false);
+  grid(); bagUI();
+}
+function grid() {
+  const g = $('#grid'); if (!g) return;
+  const qq = norm(Q).trim(), words = qq ? qq.split(/\s+/) : [];
+  const l = items().filter(x => (!CAT || (x.cat || 'Другое') === CAT) && words.every(w => norm(x.name).includes(w) || norm(catName(x.cat)).includes(w)))
+    .sort((a, b) => (b.stock ? 1 : 0) - (a.stock ? 1 : 0) || a.name.localeCompare(b.name, 'ru'));
+  if (!l.length) { g.innerHTML = `<p style="grid-column:1/-1;color:var(--mut)">${esc(t('none'))}</p>`; return; }
+  const all = l.length; l.splice(SHOWN);
+  g.innerHTML = l.map(x => { const n = BAG[x.id] || 0; return `<article class="card"><div class="ph"${x.src && !x.img ? ` data-src="${esc(x.src)}"` : ''}>${art(SHAPE(x.cat || ''))}${x.img ? `<img src="${esc(x.img)}" alt="" loading="lazy">` : ''}<span class="st${x.stock ? '' : ' wait'}">${esc(x.stock ? t('inst') : t('wait'))}</span></div>
+    <div class="cb"><span class="nm">${esc(x.name)}</span><div class="row${n ? ' in' : ''}"><span class="price">${fmt(x.price)}</span>${n ? `<span class="stp"><button data-d="-1" data-id="${esc(x.id)}" aria-label="−">${I.minus}</button><b>${n}</b><button data-d="1" data-id="${esc(x.id)}" aria-label="+">${I.plus}</button></span>` : `<button class="add" data-d="1" data-id="${esc(x.id)}" aria-label="${esc(x.name)}">${I.plus}</button>`}</div></div></article>`; }).join('');
+  if (all > SHOWN) g.insertAdjacentHTML('beforeend', `<div style="grid-column:1/-1;text-align:center;margin-top:6px"><button class="btn soft" id="more">${LANG === 'kz' ? 'Тағы көрсету' : 'Показать ещё'} (${all - SHOWN})</button></div>`);
+  const mo = $('#more'); if (mo) mo.onclick = () => { SHOWN += 40; grid(); };
+  $$('[data-src]', g).forEach(el => { if (IO) IO.observe(el); else showPh(el); });
+  $$('img', g).forEach(i => { if (i.complete && !i.naturalWidth) i.remove(); else i.addEventListener('error', () => i.remove()); });
+  $$('[data-d]', g).forEach(b => b.onclick = () => { const id = b.dataset.id, was = BAG[id] || 0; BAG[id] = Math.max(0, was + Number(b.dataset.d)); if (!BAG[id]) delete BAG[id]; saveBag(); grid(); bagUI(); if (!was) toast(t('added')); });
+}
+function bagUI() {
+  const l = bagList(), n = l.reduce((a, x) => a + x.n, 0), s = l.reduce((a, x) => a + x.n * x.it.price, 0);
+  $('#bag').hidden = !n || !$('#sheet').hidden;
+  if (n) { $('#bagT').textContent = t('bag')(n); $('#bagS').textContent = fmt(s); }
+}
+function bagSheet() {
+  const l = bagList(); if (!l.length) { closeSheet(); return; }
+  const s = l.reduce((a, x) => a + x.n * x.it.price, 0);
+  $('#sheet .panel').innerHTML = `<div class="sh"><h2 id="shT">${esc(t('bagH'))}</h2><button class="x" id="shX" aria-label="×">${I.close}</button></div>
+    ${l.map(x => `<div class="li"><span class="t"><b>${esc(x.it.name)}</b><span>${fmt(x.it.price)}</span></span><span class="stp"><button data-bd="-1" data-id="${esc(x.it.id)}" aria-label="−">${I.minus}</button><b>${x.n}</b><button data-bd="1" data-id="${esc(x.it.id)}" aria-label="+">${I.plus}</button></span></div>`).join('')}
+    <div class="tot"><span>${esc(t('total'))}</span><b>${fmt(s)}</b></div>
+    <a class="btn wa" style="width:100%" href="${esc(waUrl(bagText()))}" target="_blank" rel="noopener">${I.wa}${esc(t('send'))}</a>
+    <p class="sendnote">${esc(t('sendnote'))}</p><button class="btn soft small" id="bgClr" style="margin-top:12px">${esc(t('clear'))}</button>`;
+  $('#sheet').hidden = false; $('#toast').hidden = true; document.body.classList.add('noscroll'); bagUI();
+  $('#shX').onclick = closeSheet;
+  $('#bgClr').onclick = () => { BAG = {}; saveBag(); closeSheet(); grid(); };
+  $$('[data-bd]').forEach(b => b.onclick = () => { const id = b.dataset.id; BAG[id] = Math.max(0, (BAG[id] || 0) + Number(b.dataset.bd)); if (!BAG[id]) delete BAG[id]; saveBag(); grid(); bagSheet(); });
+}
+function closeSheet() { $('#sheet').hidden = true; document.body.classList.remove('noscroll'); bagUI(); }
+$('#sheet').addEventListener('click', e => { if (e.target.id === 'sheet') closeSheet(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#sheet').hidden) closeSheet(); });
+$('#bagBtn').onclick = bagSheet;
+$$('.lang button').forEach(b => b.onclick = () => { LANG = b.dataset.lang; ls.set('dv-lang', LANG); render(); });
+render();
+loadCatalog();
+</script>
+
+</body>
+</html>
