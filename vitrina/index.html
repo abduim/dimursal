@@ -105,13 +105,34 @@ svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stro
 .sendnote{font-size:13px;color:var(--mut);margin:10px 0 0}
 #toast{position:fixed;z-index:50;left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));bottom:calc(88px + env(safe-area-inset-bottom,0px));max-width:600px;margin:0 auto;background:var(--ink);color:#fff;padding:12px 18px;border-radius:99px;font-weight:700;text-align:center}
 [hidden]{display:none!important}
+.ph .br{position:absolute;left:8px;right:8px;bottom:2%;text-align:center;font:700 14px/1.15 var(--head);color:var(--pink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ph .st.hit{color:#C2410C}.ph .st.nw{color:var(--pink)}
+.card [data-open]{cursor:pointer}
+.sec{margin-top:18px}.sec h2{font:700 20px/1.2 var(--head);margin:0 0 8px}
+.hs{display:grid;grid-auto-flow:column;grid-auto-columns:calc(50% - 6px);gap:12px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:2px 16px 10px;scroll-snap-type:x mandatory}
+.hs::-webkit-scrollbar{display:none}.hs .card{scroll-snap-align:start}
+@media (min-width:600px){.hs{grid-auto-columns:calc(33.3% - 8px)}}
+.chips.sub button{min-height:36px;font-size:14px;background:var(--blush)}
+.chips.sub button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.pbig{position:relative;padding-top:100%;border-radius:22px;overflow:hidden;background:var(--blush);margin:4px 0 14px}
+.pbig img,.pbig svg{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover}
+.pbig .br{position:absolute;left:12px;right:12px;bottom:3%;text-align:center;font:700 24px/1.15 var(--head);color:var(--pink)}
+.pd-nm{font:700 21px/1.25 var(--head);margin:0}
+.pd-pr{display:flex;align-items:center;gap:10px;margin:10px 0}
+.pd-pr b{font:700 26px/1 var(--head);font-variant-numeric:tabular-nums}
+.pd-pr span{font-size:13px;font-weight:800;padding:4px 10px;border-radius:99px;background:#E9F7EF;color:var(--ok)}
+.pd-ds{white-space:pre-line;margin:6px 0 14px;color:var(--ink)}
+.pd-act{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}
+.pd-act .btn{padding:0 14px;font-size:15px;white-space:nowrap}
+.pd-act .stp{min-height:50px;padding:0 6px}.pd-act .stp b{min-width:34px;font-size:17px}
+.btn.share{background:#fff;color:var(--pink);box-shadow:0 4px 12px -8px rgba(217,72,122,.8)}
 </style>
 </head>
 <body>
 
 
 <div class="wrap">
-  <header class="top"><span class="logo">dimursal</span><div class="lang" role="group" aria-label="Тіл / Язык"><button data-lang="kz">Қаз</button><button data-lang="ru">Рус</button></div></header>
+  <header class="top"><span class="logo">Dimursal</span><div class="lang" role="group" aria-label="Тіл / Язык"><button data-lang="kz">Қаз</button><button data-lang="ru">Рус</button></div></header>
   <main id="app"></main>
 </div>
 <div id="bag" hidden><button id="bagBtn"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1.2 11.2a1 1 0 0 1-1 .8H7.2a1 1 0 0 1-1-.8z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></svg><span id="bagT"></span><b id="bagS"></b></button></div>
@@ -128,6 +149,19 @@ const norm = s => String(s || '').toLowerCase().replace(/ё/g, 'е');
 const ls = {get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }};
 const CATS = ["База под макияж", "Вокруг глаз", "Воск для шугаринга", "Гель для душа", "Гидрофилка и щербет", "Дезодорант", "Для бровей", "Для визажиста", "Для волос", "Для губ", "Для дома", "Для зубов", "Для лица", "Для себя", "Для тела", "Для шугаринга", "Карандаши", "Кисточки", "Клей для ресниц", "Консилер", "Контуринг для лица", "Косметички", "Крем для рук и ног", "Кремы", "Кушон", "Маска для лица", "Маска для ног", "Мист для лица", "Наборы", "Парфюм", "Пилинг для лица", "Пилинг и скраб", "Подводка", "Помада", "Пробники", "Пудра", "Ресницы", "Румяна", "Спонж", "SPF-крем", "Сыворотка", "Тени для глаз", "Тональный крем", "Тонер", "Тушь", "Умывалка", "Фиксатор для макияжа", "Хайлайтер", "Шампуни", "Шкатулки", "Энзимная пудра", "Другое"];
 const CATKZ = {};
+const GROUPS = [
+  {k: 'face', ru: 'Уход за лицом', kz: 'Бет күтімі', e: '🧴', c: ['Вокруг глаз', 'Гидрофилка и щербет', 'Для лица', 'Кремы', 'Маска для лица', 'Мист для лица', 'Пилинг для лица', 'SPF-крем', 'Сыворотка', 'Тонер', 'Умывалка', 'Энзимная пудра', 'Пробники']},
+  {k: 'makeup', ru: 'Макияж', kz: 'Макияж', e: '💄', c: ['База под макияж', 'Тональный крем', 'Кушон', 'Консилер', 'Пудра', 'Румяна', 'Хайлайтер', 'Контуринг для лица', 'Тени для глаз', 'Подводка', 'Тушь', 'Ресницы', 'Клей для ресниц', 'Карандаши', 'Для бровей', 'Помада', 'Для губ', 'Фиксатор для макияжа']},
+  {k: 'hair', ru: 'Волосы', kz: 'Шаш күтімі', e: '💇‍♀️', c: ['Шампуни', 'Для волос']},
+  {k: 'body', ru: 'Тело', kz: 'Дене күтімі', e: '🛁', c: ['Гель для душа', 'Для тела', 'Пилинг и скраб', 'Крем для рук и ног', 'Маска для ног', 'Дезодорант', 'Для зубов', 'Для себя', 'Воск для шугаринга', 'Для шугаринга']},
+  {k: 'gift', ru: 'Парфюм и подарки', kz: 'Парфюм мен сыйлықтар', e: '🎁', c: ['Парфюм', 'Наборы', 'Шкатулки']},
+  {k: 'acc', ru: 'Аксессуары', kz: 'Аксессуарлар', e: '👜', c: ['Кисточки', 'Спонж', 'Косметички', 'Для визажиста', 'Для дома', 'Другое']}
+];
+const grpOf = c => (GROUPS.find(g => g.c.includes(c)) || GROUPS[GROUPS.length - 1]).k;
+const brand = n => { const w = String(n || '').trim().split(/\s+/)[0] || ''; return /^[A-Za-z][A-Za-z0-9'’:.&+-]{1,}$/.test(w) ? w.replace(/[:.]+$/, '') : ''; };
+const T2 = {ru: {hits: '🔥 Хиты', news: '✨ Новинки', hit: 'хит', nw: 'новинка', addO: 'Добавить в заказ', share: 'Поделиться', sim: 'Похожие товары', lcop: 'Ссылка скопирована', inst2: 'есть в наличии'},
+  kz: {hits: '🔥 Хиттер', news: '✨ Жаңа тауарлар', hit: 'хит', nw: 'жаңа', addO: 'Тапсырысқа қосу', share: 'Бөлісу', sim: 'Ұқсас тауарлар', lcop: 'Сілтеме көшірілді', inst2: 'қоймада бар'}};
+const t2 = k => T2[LANG][k];
 const SHAPE = c => /Помада|губ|Карандаш|Подводка|Тушь/.test(c) ? 'lip' : /Парфюм/.test(c) ? 'perf' : /Сыворот|Тонер|Мист|Клей/.test(c) ? 'drop' : /Шампун|Гель|Умывал|Гидрофил|волос|Дезодор/.test(c) ? 'pump' : /рук|тела|зубов|Пилинг|SPF|шугар|Воск/.test(c) ? 'tube' : 'jar';
 function pl(n, a, b, c) { n = Math.abs(n) % 100; const k = n % 10; return n > 10 && n < 20 ? c : k === 1 ? a : k >= 2 && k <= 4 ? b : c; }
 const T = {
@@ -161,7 +195,7 @@ function art(type) {
   }[type] || '';
   return '<svg viewBox="0 0 100 100" aria-hidden="true">' + sh + g + '</svg>';
 }
-let V = {updated: '', items: []}, LOADING = true, FAIL = false, SHOWN = 40;
+let V = {updated: '', items: []}, LOADING = true, FAIL = false, SHOWN = 40, GRP = '';
 let REAL = [];
 const FS = 'https://firestore.googleapis.com/v1/projects/dimursal-sklad1/databases/(default)/documents/';
 const KEY = 'AIzaSyD4ENinTr_kn0gAGA5M-XbrQC58a8mG_So';
@@ -171,7 +205,7 @@ async function loadCatalog() {
     if (!r.ok) throw new Error(r.status);
     const f = (await r.json()).fields || {};
     const l = JSON.parse((f.items && f.items.stringValue) || '[]');
-    REAL = l.filter(x => x && x.id && x.name && x.price > 0).map(x => ({id: x.id, name: x.name, cat: x.cat || 'Другое', price: x.price, stock: true, src: x.src || ''}));
+    REAL = l.filter(x => x && x.id && x.name && x.price > 0).map(x => ({id: x.id, name: x.name, cat: x.cat || 'Другое', price: x.price, stock: true, src: x.src || '', desc: x.desc || '', hit: !!x.hit, nw: !!x.nw, ts: x.ts || 0}));
     const at = f.at && (f.at.integerValue || f.at.doubleValue); if (at) { const d = new Date(Number(at)); V.updated = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
     ls.set('dv-cache', {u: V.updated, l: REAL});
   } catch (e) {
@@ -181,6 +215,7 @@ async function loadCatalog() {
   LOADING = false;
   Object.keys(BAG).forEach(k => { if (!REAL.some(x => x.id === k) || !(BAG[k] > 0)) delete BAG[k]; });
   render();
+  const m = /^#p=(.+)$/.exec(location.hash); if (m && REAL.some(x => x.id === decodeURIComponent(m[1]))) pSheet(decodeURIComponent(m[1]));
 }
 /* фото товара берём со склада по запросу, только когда карточка видна на экране */
 const PH = {};
@@ -213,7 +248,9 @@ function render() {
   document.documentElement.lang = LANG === 'kz' ? 'kk' : 'ru';
   $$('.lang button').forEach(b => b.setAttribute('aria-pressed', b.dataset.lang === LANG));
   const IT = items();
-  const cats = CATS.filter(c => IT.some(x => (x.cat || 'Другое') === c)).concat(Array.from(new Set(IT.map(x => x.cat || 'Другое'))).filter(c => !CATS.includes(c)));
+  const grps = GROUPS.filter(g => IT.some(x => grpOf(x.cat) === g.k));
+  if (GRP && !grps.some(g => g.k === GRP)) { GRP = ''; CAT = ''; }
+  const cats = GRP ? CATS.concat(Array.from(new Set(IT.map(x => x.cat)))).filter((c, i, a) => a.indexOf(c) === i && grpOf(c) === GRP && IT.some(x => x.cat === c)) : [];
   if (CAT && !cats.includes(CAT)) CAT = '';
   $('#app').innerHTML = `<section class="hero"><span class="kick">${esc(t('kick'))}</span><h1>${esc(t('title'))}</h1>
       <div class="facts"><span>${I.pin}${esc(t('addr'))}</span><span>${I.clock}${esc(t('hours'))}</span><span>${I.truck}${esc(t('deliv'))}</span></div>
@@ -222,33 +259,78 @@ function render() {
     </section>
     ${DEMO ? `<div class="demo"><span>${esc(t('demo'))}</span><button class="linkb" id="dmBack" style="justify-self:start;padding-left:0">${esc(t('demoBack'))}</button></div>` : ''}
     ${IT.length && !LOADING ? `<div class="bar"><label class="srch">${I.search}<input id="q" type="search" autocomplete="off" placeholder="${esc(t('search'))}" aria-label="${esc(t('search'))}" value="${esc(Q)}"></label>
-      ${cats.length > 1 ? `<div class="chips" role="group"><button data-c="" aria-pressed="${!CAT}">${esc(t('all'))}</button>${cats.map(c => `<button data-c="${esc(c)}" aria-pressed="${CAT === c}">${esc(catName(c))}</button>`).join('')}</div>` : ''}</div>
-      <div class="grid" id="grid"></div>`
+      ${grps.length > 1 ? `<div class="chips" role="group"><button data-g="" aria-pressed="${!GRP}">${esc(t('all'))}</button>${grps.map(g => `<button data-g="${g.k}" aria-pressed="${GRP === g.k}">${g.e} ${esc(g[LANG])}</button>`).join('')}</div>` : ''}
+      ${cats.length > 1 ? `<div class="chips sub" role="group"><button data-c="" aria-pressed="${!CAT}">${esc(t('all'))}</button>${cats.map(c => `<button data-c="${esc(c)}" aria-pressed="${CAT === c}">${esc(catName(c))}</button>`).join('')}</div>` : ''}</div>
+      <div id="secs"></div><div class="grid" id="grid"></div>`
       : LOADING ? `<section class="empty"><h2>${LANG === 'kz' ? 'Жүктелуде…' : 'Загружаю товары…'}</h2></section>`
       : FAIL ? `<section class="empty"><h2>${LANG === 'kz' ? 'Тауарлар жүктелмеді' : 'Не удалось загрузить товары'}</h2><p>${LANG === 'kz' ? 'Интернетті тексеріп, бетті жаңартыңыз. Немесе бізге жазыңыз.' : 'Проверьте интернет и обновите страницу. Или напишите нам.'}</p><a class="btn wa" href="${esc(waUrl(t('hi')))}" target="_blank" rel="noopener">${I.wa}${esc(t('wa'))}</a></section>`
       : `<section class="empty"><h2>${esc(t('soonH'))}</h2><p>${esc(t('soon'))}</p><a class="btn wa" href="${esc(waUrl(t('hi')))}" target="_blank" rel="noopener">${I.wa}${esc(t('wa'))}</a><button class="linkb" id="dmShow">${esc(t('show'))}</button></section>`}
     <footer class="foot"><div class="ln">${I.pin}<span>${esc(t('addr'))}</span></div><div class="ln">${I.phone}<span>WhatsApp: ${SHOP.phone}</span><button class="copy" id="cp">${esc(t('copy'))}</button></div><div class="ln">${I.ig}<a href="https://www.instagram.com/${SHOP.ig}/" target="_blank" rel="noopener">@${SHOP.ig}</a></div>${upd() && REAL.length && !DEMO ? `<div class="upd">${esc(t('updated'))}: ${esc(upd())}</div>` : ''}</footer>`;
   const q = $('#q'); if (q) q.oninput = () => { Q = q.value; SHOWN = 40; grid(); };
   $$('[data-c]').forEach(b => b.onclick = () => { CAT = b.dataset.c; SHOWN = 40; $$('[data-c]').forEach(x => x.setAttribute('aria-pressed', x === b)); grid(); });
+  $$('[data-g]').forEach(b => b.onclick = () => { GRP = b.dataset.g; CAT = ''; SHOWN = 40; render(); });
   $('#cp').onclick = async () => { try { await navigator.clipboard.writeText(SHOP.phone); toast(t('copied')); } catch (e) { toast(SHOP.phone); } };
   const ds = $('#dmShow'); if (ds) ds.onclick = () => setDemo(true);
   const db = $('#dmBack'); if (db) db.onclick = () => setDemo(false);
+  $$('.chips').forEach(c => { const b = $('[aria-pressed="true"]', c); if (b && b.offsetLeft > c.clientWidth - 60) c.scrollLeft = b.offsetLeft - 16; });
   grid(); bagUI();
 }
+function cardHtml(x) {
+  const n = BAG[x.id] || 0, b = brand(x.name);
+  const st = x.hit ? `<span class="st hit">🔥 ${esc(t2('hit'))}</span>` : x.nw ? `<span class="st nw">✨ ${esc(t2('nw'))}</span>` : `<span class="st">${esc(t('inst'))}</span>`;
+  return `<article class="card"><div class="ph" data-open="${esc(x.id)}"${x.src ? ` data-src="${esc(x.src)}"` : ''}>${art(SHAPE(x.cat || ''))}${b && !x.src ? `<span class="br">${esc(b)}</span>` : ''}${st}</div>
+    <div class="cb"><span class="nm" data-open="${esc(x.id)}">${esc(x.name)}</span><div class="row${n ? ' in' : ''}"><span class="price">${fmt(x.price)}</span>${n ? `<span class="stp"><button data-d="-1" data-id="${esc(x.id)}" aria-label="−">${I.minus}</button><b>${n}</b><button data-d="1" data-id="${esc(x.id)}" aria-label="+">${I.plus}</button></span>` : `<button class="add" data-d="1" data-id="${esc(x.id)}" aria-label="${esc(x.name)}">${I.plus}</button>`}</div></div></article>`;
+}
+function photos(root) { $$('[data-src]', root).forEach(el => { if (el.dataset.done) return; el.dataset.done = 1; if (IO) IO.observe(el); else showPh(el); }); }
+function secs() {
+  const el = $('#secs'); if (!el) return;
+  if (GRP || CAT || norm(Q).trim() || DEMO) { el.innerHTML = ''; return; }
+  const IT = items(), H = IT.filter(x => x.hit), N = IT.filter(x => x.nw).sort((a, b) => (b.ts || 0) - (a.ts || 0));
+  el.innerHTML = [[t2('hits'), H], [t2('news'), N]].filter(r => r[1].length).map(r => `<section class="sec"><h2>${esc(r[0])}</h2><div class="hs">${r[1].slice(0, 20).map(cardHtml).join('')}</div></section>`).join('');
+  photos(el);
+}
 function grid() {
+  secs();
   const g = $('#grid'); if (!g) return;
   const qq = norm(Q).trim(), words = qq ? qq.split(/\s+/) : [];
-  const l = items().filter(x => (!CAT || (x.cat || 'Другое') === CAT) && words.every(w => norm(x.name).includes(w) || norm(catName(x.cat)).includes(w)))
-    .sort((a, b) => (b.stock ? 1 : 0) - (a.stock ? 1 : 0) || a.name.localeCompare(b.name, 'ru'));
+  const l = items().filter(x => (!GRP || grpOf(x.cat) === GRP) && (!CAT || (x.cat || 'Другое') === CAT) && words.every(w => norm(x.name).includes(w) || norm(catName(x.cat)).includes(w)))
+    .sort((a, b) => (b.src ? 1 : 0) - (a.src ? 1 : 0) || a.name.localeCompare(b.name, 'ru'));
   if (!l.length) { g.innerHTML = `<p style="grid-column:1/-1;color:var(--mut)">${esc(t('none'))}</p>`; return; }
   const all = l.length; l.splice(SHOWN);
-  g.innerHTML = l.map(x => { const n = BAG[x.id] || 0; return `<article class="card"><div class="ph"${x.src && !x.img ? ` data-src="${esc(x.src)}"` : ''}>${art(SHAPE(x.cat || ''))}${x.img ? `<img src="${esc(x.img)}" alt="" loading="lazy">` : ''}<span class="st${x.stock ? '' : ' wait'}">${esc(x.stock ? t('inst') : t('wait'))}</span></div>
-    <div class="cb"><span class="nm">${esc(x.name)}</span><div class="row${n ? ' in' : ''}"><span class="price">${fmt(x.price)}</span>${n ? `<span class="stp"><button data-d="-1" data-id="${esc(x.id)}" aria-label="−">${I.minus}</button><b>${n}</b><button data-d="1" data-id="${esc(x.id)}" aria-label="+">${I.plus}</button></span>` : `<button class="add" data-d="1" data-id="${esc(x.id)}" aria-label="${esc(x.name)}">${I.plus}</button>`}</div></div></article>`; }).join('');
+  g.innerHTML = l.map(cardHtml).join('');
   if (all > SHOWN) g.insertAdjacentHTML('beforeend', `<div style="grid-column:1/-1;text-align:center;margin-top:6px"><button class="btn soft" id="more">${LANG === 'kz' ? 'Тағы көрсету' : 'Показать ещё'} (${all - SHOWN})</button></div>`);
   const mo = $('#more'); if (mo) mo.onclick = () => { SHOWN += 40; grid(); };
-  $$('[data-src]', g).forEach(el => { if (IO) IO.observe(el); else showPh(el); });
-  $$('img', g).forEach(i => { if (i.complete && !i.naturalWidth) i.remove(); else i.addEventListener('error', () => i.remove()); });
-  $$('[data-d]', g).forEach(b => b.onclick = () => { const id = b.dataset.id, was = BAG[id] || 0; BAG[id] = Math.max(0, was + Number(b.dataset.d)); if (!BAG[id]) delete BAG[id]; saveBag(); grid(); bagUI(); if (!was) toast(t('added')); });
+  photos(g);
+}
+function bump(id, d) { const was = BAG[id] || 0; BAG[id] = Math.max(0, was + d); if (!BAG[id]) delete BAG[id]; saveBag(); if (!was && d > 0) toast(t('added')); }
+$('#app').addEventListener('click', e => {
+  const b = e.target.closest('[data-d]'); if (b) { bump(b.dataset.id, Number(b.dataset.d)); grid(); bagUI(); return; }
+  const o = e.target.closest('[data-open]'); if (o) pSheet(o.dataset.open);
+});
+function pSheet(id) {
+  const x = items().find(y => y.id === id); if (!x) return;
+  const n = BAG[x.id] || 0, b = brand(x.name), sim = items().filter(y => y.id !== x.id && y.cat === x.cat).sort((a, c) => (c.src ? 1 : 0) - (a.src ? 1 : 0)).slice(0, 10);
+  $('#sheet .panel').innerHTML = `<div class="sh"><span></span><button class="x" id="shX" aria-label="×">${I.close}</button></div>
+    <div class="pbig"${x.src ? ` data-src="${esc(x.src)}"` : ''}>${art(SHAPE(x.cat || ''))}${b && !x.src ? `<span class="br">${esc(b)}</span>` : ''}</div>
+    <h2 class="pd-nm" id="shT">${esc(x.name)}</h2>
+    <div class="pd-pr"><b>${fmt(x.price)}</b><span>${esc(t2('inst2'))}</span>${x.hit ? `<span style="background:#FFF1E6;color:#C2410C">🔥 ${esc(t2('hit'))}</span>` : ''}${x.nw ? `<span style="background:var(--pink-soft);color:var(--pink)">✨ ${esc(t2('nw'))}</span>` : ''}</div>
+    ${x.desc ? `<p class="pd-ds">${esc(x.desc)}</p>` : ''}
+    <div class="pd-act">${n ? `<span class="stp"><button data-pd="-1" aria-label="−">${I.minus}</button><b>${n}</b><button data-pd="1" aria-label="+">${I.plus}</button></span>` : `<button class="btn" data-pd="1">${I.plus}${esc(t2('addO'))}</button>`}<button class="btn share" id="pdSh">${esc(t2('share'))}</button></div>
+    ${n ? `<button class="btn wa" style="width:100%;margin-top:10px" id="pdBag">${esc(t('bag')(Object.values(BAG).reduce((a, v) => a + v, 0)))}</button>` : ''}
+    ${sim.length ? `<section class="sec"><h2>${esc(t2('sim'))}</h2><div class="hs">${sim.map(y => `<article class="card"><div class="ph" data-po="${esc(y.id)}"${y.src ? ` data-src="${esc(y.src)}"` : ''}>${art(SHAPE(y.cat || ''))}${brand(y.name) && !y.src ? `<span class="br">${esc(brand(y.name))}</span>` : ''}</div><div class="cb" data-po="${esc(y.id)}"><span class="nm">${esc(y.name)}</span><span class="price">${fmt(y.price)}</span></div></article>`).join('')}</div></section>` : ''}`;
+  const sh = $('#sheet'); sh.hidden = false; $('#toast').hidden = true; document.body.classList.add('noscroll'); bagUI();
+  $('.panel', sh).scrollTop = 0;
+  try { history.replaceState(null, '', '#p=' + encodeURIComponent(x.id)); } catch (e) {}
+  photos(sh);
+  $('#shX').onclick = closeSheet;
+  $$('[data-pd]', sh).forEach(bt => bt.onclick = () => { bump(x.id, Number(bt.dataset.pd)); grid(); pSheet(x.id); });
+  $$('[data-po]', sh).forEach(bt => bt.onclick = () => pSheet(bt.dataset.po));
+  const pb = $('#pdBag'); if (pb) pb.onclick = bagSheet;
+  $('#pdSh').onclick = async () => {
+    const url = location.href.split('#')[0] + '#p=' + encodeURIComponent(x.id), text = x.name + ' — ' + fmt(x.price) + ' · Dimursal';
+    try { if (navigator.share) { await navigator.share({title: x.name, text, url}); return; } } catch (e) { if (e && e.name === 'AbortError') return; }
+    try { await navigator.clipboard.writeText(text + '\n' + url); toast(t2('lcop')); } catch (e) { toast(url); }
+  };
 }
 function bagUI() {
   const l = bagList(), n = l.reduce((a, x) => a + x.n, 0), s = l.reduce((a, x) => a + x.n * x.it.price, 0);
@@ -266,9 +348,9 @@ function bagSheet() {
   $('#sheet').hidden = false; $('#toast').hidden = true; document.body.classList.add('noscroll'); bagUI();
   $('#shX').onclick = closeSheet;
   $('#bgClr').onclick = () => { BAG = {}; saveBag(); closeSheet(); grid(); };
-  $$('[data-bd]').forEach(b => b.onclick = () => { const id = b.dataset.id; BAG[id] = Math.max(0, (BAG[id] || 0) + Number(b.dataset.bd)); if (!BAG[id]) delete BAG[id]; saveBag(); grid(); bagSheet(); });
+  $$('[data-bd]').forEach(b => b.onclick = () => { bump(b.dataset.id, Number(b.dataset.bd)); grid(); bagSheet(); });
 }
-function closeSheet() { $('#sheet').hidden = true; document.body.classList.remove('noscroll'); bagUI(); }
+function closeSheet() { if (/^#p=/.test(location.hash)) { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {} } $('#sheet').hidden = true; document.body.classList.remove('noscroll'); bagUI(); }
 $('#sheet').addEventListener('click', e => { if (e.target.id === 'sheet') closeSheet(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#sheet').hidden) closeSheet(); });
 $('#bagBtn').onclick = bagSheet;

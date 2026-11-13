@@ -541,11 +541,11 @@ function cleanP(p) {
   p = p || {};
   const min = p.min === '' || p.min == null ? null : Math.max(0, Math.round(nn(p.min)));
   return {name: str(p.name, 140).trim() || 'Без названия', buy: Math.max(0, nn(p.buy)), sell: Math.max(0, nn(p.sell)), qty: Math.round(nn(p.qty)),
-    code: str(p.code, 160).trim(), cat: str(p.cat, 40).trim(), min, exp: isYM(p.exp) ? p.exp : '', sup: str(p.sup, 80), img: imgOk(p.img) ? p.img : '', note: str(p.note, 400), ts: nn(p.ts), sp: cleanSp(p.sp)};
+    code: str(p.code, 160).trim(), cat: str(p.cat, 40).trim(), min, exp: isYM(p.exp) ? p.exp : '', sup: str(p.sup, 80), img: imgOk(p.img) ? p.img : '', note: str(p.note, 400), ts: nn(p.ts), sp: cleanSp(p.sp), desc: str(p.desc, 800).trim(), hit: !!p.hit, nw: !!p.nw};
 }
 function packP(p) {
   const c = cleanP(p), o = {name: c.name, buy: c.buy, sell: c.sell, qty: c.qty, code: c.code};
-  if (c.cat) o.cat = c.cat; if (c.min != null) o.min = c.min; if (c.exp) o.exp = c.exp; if (c.sup) o.sup = c.sup; if (c.img) o.img = c.img; if (c.note) o.note = c.note; if (c.ts) o.ts = c.ts; if (Object.keys(c.sp).length) o.sp = c.sp;
+  if (c.cat) o.cat = c.cat; if (c.min != null) o.min = c.min; if (c.exp) o.exp = c.exp; if (c.sup) o.sup = c.sup; if (c.img) o.img = c.img; if (c.note) o.note = c.note; if (c.ts) o.ts = c.ts; if (c.desc) o.desc = c.desc; if (c.hit) o.hit = true; if (c.nw) o.nw = true; if (Object.keys(c.sp).length) o.sp = c.sp;
   return o;
 }
 function cleanL(i, d) {
@@ -677,7 +677,7 @@ function derive() {
 /* ---------- витрина для покупательниц: товары в наличии без закупочных цен, в общий документ pub/catalog ---------- */
 let PUB_LAST = null, PUB_T = 0, PUB_BUSY = false;
 function pubItems() {
-  return PR.filter(p => p.sell > 0 && stockOf(p) > 0).map(p => ({id: p.id, name: p.name, cat: p.cat || 'Другое', price: p.sell, src: p.img || ''})).sort((a, b) => a.name.localeCompare(b.name, 'ru'));
+  return PR.filter(p => p.sell > 0 && stockOf(p) > 0).map(p => Object.assign({id: p.id, name: p.name, cat: p.cat || 'Другое', price: p.sell, src: p.img || ''}, p.desc ? {desc: p.desc} : {}, p.hit ? {hit: 1} : {}, p.nw ? {nw: 1} : {}, p.ts ? {ts: p.ts} : {}))).sort((a, b) => a.name.localeCompare(b.name, 'ru'));
 }
 function schedulePub() {
   if (MODE !== 'db' || !DB || !DB.fs || typeof navigator !== 'undefined' && navigator.onLine === false) return;
@@ -1782,8 +1782,8 @@ function pickProduct(title, cb) {
 function editSheet(id, pre, opts) {
   opts = opts || {};
   const p = id ? prod(id) : null;
-  const E = Object.assign({name: '', cat: '', code: '', buy: '', sell: '', qty: '', min: '', exp: '', sup: '', note: '', img: ''},
-    p ? {name: p.name, cat: p.cat, code: p.code, buy: p.buy ? String(p.buy) : '', sell: String(p.sell), min: p.min != null ? String(p.min) : '', exp: p.exp, sup: p.sup, note: p.note, img: p.img} : {}, pre || {});
+  const E = Object.assign({name: '', cat: '', code: '', buy: '', sell: '', qty: '', min: '', exp: '', sup: '', note: '', img: '', desc: '', hit: false, nw: false},
+    p ? {name: p.name, cat: p.cat, code: p.code, buy: p.buy ? String(p.buy) : '', sell: String(p.sell), min: p.min != null ? String(p.min) : '', exp: p.exp, sup: p.sup, note: p.note, img: p.img, desc: p.desc || '', hit: !!p.hit, nw: !!p.nw} : {}, pre || {});
   E.newImg = ''; E.busyImg = false; E.busyAi = false; E.sugg = null; E.dupOk = false; E.err = ''; E.saved = false;
   E.own = !!(E.cat && !CATS.includes(E.cat));
   E.more = !!(E.min || E.exp || E.sup || E.note);
@@ -1809,6 +1809,11 @@ function editSheet(id, pre, opts) {
         <p class="hint" id="eMargin">${esc(marginHint())}</p>
         <div id="eMkBox"></div>
         ${!id ? `<label class="f" for="eQty">Сколько штук сейчас на полке<input id="eQty" inputmode="numeric" autocomplete="off" placeholder="0" value="${esc(E.qty)}"></label>` : ''}
+        <details class="more-f" id="eVit"${E.desc || E.hit || E.nw ? ' open' : ''}><summary>Для витрины: хит, новинка, описание</summary><div class="form">
+          <div class="catpick"><button type="button" data-vt="hit" aria-pressed="${E.hit}">🔥 Хит</button><button type="button" data-vt="nw" aria-pressed="${E.nw}">✨ Новинка</button></div>
+          <label class="f" for="eDesc">Описание для покупательниц<textarea id="eDesc" rows="4" placeholder="Например: для сухой кожи, увлажняет и успокаивает. Наносить утром и вечером.">${esc(E.desc)}</textarea></label>
+          <p class="hint">Покупательницы увидят это на витрине, когда откроют товар.</p>
+        </div></details>
         <details class="more-f" id="eMore"${E.more ? ' open' : ''}><summary>Срок годности, порог «мало», поставщик</summary><div class="form">
           <label class="f" for="eExp">Срок годности до (месяц и год)<input id="eExp" type="month" value="${esc(E.exp)}"></label>
           <label class="f" for="eMin">«Мало», если осталось не больше<input id="eMin" inputmode="numeric" autocomplete="off" placeholder="${SET.low} шт, как у всех" value="${esc(E.min)}"></label>
@@ -1822,7 +1827,8 @@ function editSheet(id, pre, opts) {
     fixImgs($('#sheet'));
     bindBack(() => productSheet(id));
     const bindIn = (sel, key, after) => { const el = $(sel); if (el) el.oninput = () => { E[key] = el.value; if (after) after(); }; };
-    bindIn('#eName', 'name'); bindIn('#eCode', 'code'); bindIn('#eQty', 'qty'); bindIn('#eMin', 'min'); bindIn('#eNote', 'note'); bindIn('#eOwn', 'cat');
+    bindIn('#eName', 'name'); bindIn('#eCode', 'code'); bindIn('#eQty', 'qty'); bindIn('#eMin', 'min'); bindIn('#eNote', 'note'); bindIn('#eOwn', 'cat'); bindIn('#eDesc', 'desc');
+    $$('[data-vt]', $('#sheet')).forEach(bt => bt.onclick = () => { E[bt.dataset.vt] = !E[bt.dataset.vt]; bt.setAttribute('aria-pressed', E[bt.dataset.vt]); });
     const mkBox = () => {
       const bb = posInt(E.buy), sp = isFinite(bb) && bb ? roundPrice(bb * (1 + SET.markup / 100)) : 0, box = $('#eMkBox');
       $('#eMargin').textContent = marginHint();
@@ -1872,7 +1878,7 @@ function editSheet(id, pre, opts) {
     const code = E.code.trim();
     for (const c of codesOf({code})) { const dup = PR.find(x => x.id !== id && codesOf(x).includes(c)); if (dup) return fail('Штрихкод ' + c + ' уже есть у товара «' + dup.name + '».'); }
     if (!id && !E.dupOk && PR.some(x => norm(x.name) === norm(name))) { E.dupOk = true; return fail('Товар с таким названием уже есть. Если это другой товар, нажмите «Добавить товар» ещё раз.'); }
-    const body = {name, cat: E.cat.trim(), code, buy, sell, min, exp: E.exp, sup: E.sup, note: E.note.trim(), img: E.img};
+    const body = {name, cat: E.cat.trim(), code, buy, sell, min, exp: E.exp, sup: E.sup, note: E.note.trim(), img: E.img, desc: E.desc.trim(), hit: E.hit, nw: E.nw};
     const btn = $('#eSave'); btn.disabled = true; btn.innerHTML = '<span class="spin" aria-hidden="true"></span>Сохраняю…';
     try {
       let nid = id;
