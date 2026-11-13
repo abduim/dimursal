@@ -160,8 +160,8 @@ const GROUPS = [
 ];
 const grpOf = c => (GROUPS.find(g => g.c.includes(c)) || GROUPS[GROUPS.length - 1]).k;
 const brand = n => { const w = String(n || '').trim().split(/\s+/)[0] || ''; return /^[A-Za-z][A-Za-z0-9'’:.&+-]{1,}$/.test(w) ? w.replace(/[:.]+$/, '') : ''; };
-const T2 = {ru: {hits: '🔥 Хиты', news: '✨ Новинки', hit: 'хит', nw: 'новинка', addO: 'Добавить в заказ', share: 'Поделиться', sim: 'Похожие товары', lcop: 'Ссылка скопирована', inst2: 'есть в наличии'},
-  kz: {hits: '🔥 Хиттер', news: '✨ Жаңа тауарлар', hit: 'хит', nw: 'жаңа', addO: 'Тапсырысқа қосу', share: 'Бөлісу', sim: 'Ұқсас тауарлар', lcop: 'Сілтеме көшірілді', inst2: 'қоймада бар'}};
+const T2 = {ru: {hits: '🔥 Хиты', news: '✨ Новинки', allg: 'Все товары', hit: 'хит', nw: 'новинка', addO: 'Добавить в заказ', share: 'Поделиться', sim: 'Похожие товары', lcop: 'Ссылка скопирована', inst2: 'есть в наличии'},
+  kz: {hits: '🔥 Хиттер', news: '✨ Жаңа тауарлар', allg: 'Барлық тауарлар', hit: 'хит', nw: 'жаңа', addO: 'Тапсырысқа қосу', share: 'Бөлісу', sim: 'Ұқсас тауарлар', lcop: 'Сілтеме көшірілді', inst2: 'қоймада бар'}};
 const t2 = k => T2[LANG][k];
 const SHAPE = c => /Помада|губ|Карандаш|Подводка|Тушь/.test(c) ? 'lip' : /Парфюм/.test(c) ? 'perf' : /Сыворот|Тонер|Мист|Клей/.test(c) ? 'drop' : /Шампун|Гель|Умывал|Гидрофил|волос|Дезодор/.test(c) ? 'pump' : /рук|тела|зубов|Пилинг|SPF|шугар|Воск/.test(c) ? 'tube' : 'jar';
 function pl(n, a, b, c) { n = Math.abs(n) % 100; const k = n % 10; return n > 10 && n < 20 ? c : k === 1 ? a : k >= 2 && k <= 4 ? b : c; }
@@ -293,14 +293,15 @@ function secs() {
   const el = $('#secs'); if (!el) return;
   if (GRP || CAT || norm(Q).trim() || DEMO) { el.innerHTML = ''; return; }
   const IT = items(), H = IT.filter(x => x.hit), N = IT.filter(x => x.nw).sort((a, b) => (b.ts || 0) - (a.ts || 0));
-  el.innerHTML = [[t2('hits'), H], [t2('news'), N]].filter(r => r[1].length).map(r => `<section class="sec"><h2>${esc(r[0])}</h2><div class="hs">${r[1].slice(0, 20).map(cardHtml).join('')}</div></section>`).join('');
+  el.innerHTML = [[t2('hits'), H], [t2('news'), N]].filter(r => r[1].length).map(r => `<section class="sec"><h2>${esc(r[0])}</h2><div class="hs">${r[1].slice(0, 20).map(cardHtml).join('')}</div></section>`).join('') + (H.length || N.length ? `<section class="sec" style="margin-bottom:-4px"><h2>${esc(t2('allg'))}</h2></section>` : '');
   photos(el);
 }
 function grid() {
   secs();
   const g = $('#grid'); if (!g) return;
   const qq = norm(Q).trim(), words = qq ? qq.split(/\s+/) : [];
-  const l = items().filter(x => (!GRP || grpOf(x.cat) === GRP) && (!CAT || (x.cat || 'Другое') === CAT) && words.every(w => norm(x.name).includes(w) || norm(catName(x.cat)).includes(w)))
+  const top = !(GRP || CAT || norm(Q).trim() || DEMO);
+  const l = items().filter(x => !(top && (x.hit || x.nw)) && (!GRP || grpOf(x.cat) === GRP) && (!CAT || (x.cat || 'Другое') === CAT) && words.every(w => norm(x.name).includes(w) || norm(catName(x.cat)).includes(w)))
     .sort((a, b) => (b.stock ? 1 : 0) - (a.stock ? 1 : 0) || (b.src ? 1 : 0) - (a.src ? 1 : 0) || a.name.localeCompare(b.name, 'ru'));
   if (!l.length) { g.innerHTML = `<p style="grid-column:1/-1;color:var(--mut)">${esc(t('none'))}</p>`; return; }
   const all = l.length; l.splice(SHOWN);
