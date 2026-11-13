@@ -677,7 +677,7 @@ function derive() {
 /* ---------- витрина для покупательниц: товары в наличии без закупочных цен, в общий документ pub/catalog ---------- */
 let PUB_LAST = null, PUB_T = 0, PUB_BUSY = false;
 function pubItems() {
-  return PR.filter(p => p.sell > 0 && stockOf(p) > 0).map(p => Object.assign({id: p.id, name: p.name, cat: p.cat || 'Другое', price: p.sell, src: p.img || ''}, p.desc ? {desc: p.desc} : {}, p.hit ? {hit: 1} : {}, p.nw ? {nw: 1} : {}, p.ts ? {ts: p.ts} : {}))).sort((a, b) => a.name.localeCompare(b.name, 'ru'));
+  return PR.filter(p => p.sell > 0 && stockOf(p) > 0).map(p => Object.assign({id: p.id, name: p.name, cat: p.cat || 'Другое', price: p.sell, src: p.img || ''}, p.desc ? {desc: p.desc} : {}, p.hit ? {hit: 1} : {}, p.nw ? {nw: 1} : {}, p.ts ? {ts: p.ts} : {})).sort((a, b) => a.name.localeCompare(b.name, 'ru'));
 }
 function schedulePub() {
   if (MODE !== 'db' || !DB || !DB.fs || typeof navigator !== 'undefined' && navigator.onLine === false) return;
