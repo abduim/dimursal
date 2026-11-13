@@ -205,7 +205,7 @@ async function loadCatalog() {
     if (!r.ok) throw new Error(r.status);
     const f = (await r.json()).fields || {};
     const l = JSON.parse((f.items && f.items.stringValue) || '[]');
-    REAL = l.filter(x => x && x.id && x.name && x.price > 0).map(x => ({id: x.id, name: x.name, cat: x.cat || 'Другое', price: x.price, stock: true, src: x.src || '', desc: x.desc || '', hit: !!x.hit, nw: !!x.nw, ts: x.ts || 0}));
+    REAL = l.filter(x => x && x.id && x.name && x.price > 0).map(x => ({id: x.id, name: x.name, cat: x.cat || 'Другое', price: x.price, stock: !x.out, src: x.src || '', desc: x.desc || '', hit: !!x.hit, nw: !!x.nw, ts: x.ts || 0}));
     const at = f.at && (f.at.integerValue || f.at.doubleValue); if (at) { const d = new Date(Number(at)); V.updated = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
     ls.set('dv-cache', {u: V.updated, l: REAL});
   } catch (e) {
@@ -277,7 +277,7 @@ function render() {
 }
 function cardHtml(x) {
   const n = BAG[x.id] || 0, b = brand(x.name);
-  const st = x.hit ? `<span class="st hit">🔥 ${esc(t2('hit'))}</span>` : x.nw ? `<span class="st nw">✨ ${esc(t2('nw'))}</span>` : `<span class="st">${esc(t('inst'))}</span>`;
+  const st = x.hit ? `<span class="st hit">🔥 ${esc(t2('hit'))}</span>` : x.nw ? `<span class="st nw">✨ ${esc(t2('nw'))}</span>` : `<span class="st${x.stock ? '' : ' wait'}">${esc(x.stock ? t('inst') : t('wait'))}</span>`;
   return `<article class="card"><div class="ph" data-open="${esc(x.id)}"${x.src ? ` data-src="${esc(x.src)}"` : ''}>${art(SHAPE(x.cat || ''))}${b && !x.src ? `<span class="br">${esc(b)}</span>` : ''}${st}</div>
     <div class="cb"><span class="nm" data-open="${esc(x.id)}">${esc(x.name)}</span><div class="row${n ? ' in' : ''}"><span class="price">${fmt(x.price)}</span>${n ? `<span class="stp"><button data-d="-1" data-id="${esc(x.id)}" aria-label="−">${I.minus}</button><b>${n}</b><button data-d="1" data-id="${esc(x.id)}" aria-label="+">${I.plus}</button></span>` : `<button class="add" data-d="1" data-id="${esc(x.id)}" aria-label="${esc(x.name)}">${I.plus}</button>`}</div></div></article>`;
 }
@@ -294,7 +294,7 @@ function grid() {
   const g = $('#grid'); if (!g) return;
   const qq = norm(Q).trim(), words = qq ? qq.split(/\s+/) : [];
   const l = items().filter(x => (!GRP || grpOf(x.cat) === GRP) && (!CAT || (x.cat || 'Другое') === CAT) && words.every(w => norm(x.name).includes(w) || norm(catName(x.cat)).includes(w)))
-    .sort((a, b) => (b.src ? 1 : 0) - (a.src ? 1 : 0) || a.name.localeCompare(b.name, 'ru'));
+    .sort((a, b) => (b.stock ? 1 : 0) - (a.stock ? 1 : 0) || (b.src ? 1 : 0) - (a.src ? 1 : 0) || a.name.localeCompare(b.name, 'ru'));
   if (!l.length) { g.innerHTML = `<p style="grid-column:1/-1;color:var(--mut)">${esc(t('none'))}</p>`; return; }
   const all = l.length; l.splice(SHOWN);
   g.innerHTML = l.map(cardHtml).join('');
@@ -313,7 +313,7 @@ function pSheet(id) {
   $('#sheet .panel').innerHTML = `<div class="sh"><span></span><button class="x" id="shX" aria-label="×">${I.close}</button></div>
     <div class="pbig"${x.src ? ` data-src="${esc(x.src)}"` : ''}>${art(SHAPE(x.cat || ''))}${b && !x.src ? `<span class="br">${esc(b)}</span>` : ''}</div>
     <h2 class="pd-nm" id="shT">${esc(x.name)}</h2>
-    <div class="pd-pr"><b>${fmt(x.price)}</b><span>${esc(t2('inst2'))}</span>${x.hit ? `<span style="background:#FFF1E6;color:#C2410C">🔥 ${esc(t2('hit'))}</span>` : ''}${x.nw ? `<span style="background:var(--pink-soft);color:var(--pink)">✨ ${esc(t2('nw'))}</span>` : ''}</div>
+    <div class="pd-pr"><b>${fmt(x.price)}</b>${x.stock ? `<span>${esc(t2('inst2'))}</span>` : `<span style="background:var(--blush);color:var(--mut)">${esc(t('wait'))}</span>`}${x.hit ? `<span style="background:#FFF1E6;color:#C2410C">🔥 ${esc(t2('hit'))}</span>` : ''}${x.nw ? `<span style="background:var(--pink-soft);color:var(--pink)">✨ ${esc(t2('nw'))}</span>` : ''}</div>
     ${x.desc ? `<p class="pd-ds">${esc(x.desc)}</p>` : ''}
     <div class="pd-act">${n ? `<span class="stp"><button data-pd="-1" aria-label="−">${I.minus}</button><b>${n}</b><button data-pd="1" aria-label="+">${I.plus}</button></span>` : `<button class="btn" data-pd="1">${I.plus}${esc(t2('addO'))}</button>`}<button class="btn share" id="pdSh">${esc(t2('share'))}</button></div>
     ${n ? `<button class="btn wa" style="width:100%;margin-top:10px" id="pdBag">${esc(t('bag')(Object.values(BAG).reduce((a, v) => a + v, 0)))}</button>` : ''}
