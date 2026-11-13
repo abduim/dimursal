@@ -2538,7 +2538,7 @@ function fsDB(fs) {
     fs: true,
     collection(c) {
       return {onSnapshot(next, err) {
-        return fs.collection(c).onSnapshot(s => next({docs: s.docs.map(wrapSnap), size: s.size, empty: s.empty, metadata: s.metadata, docChanges: () => []}), e => { if (err) err(fbErr(e)); });
+        return fs.collection(c).onSnapshot({includeMetadataChanges: true}, s => next({docs: s.docs.map(wrapSnap), size: s.size, empty: s.empty, metadata: s.metadata, docChanges: () => []}), e => { if (err) err(fbErr(e)); });
       }};
     },
     doc(p) {
