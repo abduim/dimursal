@@ -205,7 +205,7 @@ async function loadCatalog() {
     if (!r.ok) throw new Error(r.status);
     const f = (await r.json()).fields || {};
     const l = JSON.parse((f.items && f.items.stringValue) || '[]');
-    REAL = l.filter(x => x && x.id && x.name && x.price > 0).map(x => ({id: x.id, name: x.name, cat: x.cat || 'Другое', price: x.price, stock: !x.out, src: x.src || '', desc: x.desc || '', hit: !!x.hit, nw: !!x.nw, ts: x.ts || 0}));
+    REAL = l.filter(x => x && x.id && x.name && x.price > 0).map(x => ({id: x.id, name: x.name, cat: x.cat || 'Другое', price: x.price, stock: true, src: x.src || '', desc: x.desc || '', hit: !!x.hit, nw: !!x.nw, ts: x.ts || 0}));
     const at = f.at && (f.at.integerValue || f.at.doubleValue); if (at) { const d = new Date(Number(at)); V.updated = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
     ls.set('dv-cache', {u: V.updated, l: REAL});
   } catch (e) {
