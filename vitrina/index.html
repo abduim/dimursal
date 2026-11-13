@@ -48,9 +48,11 @@ svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stro
 .btn.soft{background:var(--pink-soft);color:var(--pink)}
 .btn.small{min-height:40px;font-size:14px;padding:0 14px}
 .btn svg.wa-i{width:20px;height:20px;fill:currentColor}
-.pays{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
-.pays b{font-size:13px;color:var(--mut);margin-right:2px}
-.pays span{font-size:13px;font-weight:800;padding:5px 11px;border-radius:99px;background:var(--blush);color:var(--ink)}
+.payw{display:grid;gap:8px}.payw>b{font-size:13px;color:var(--mut)}
+.payg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+@media (min-width:520px){.payg{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.pay{display:flex;align-items:center;gap:9px;min-height:46px;padding:6px 12px 6px 6px;border-radius:16px;background:var(--blush);font-size:14px;font-weight:800;line-height:1.15}
+.pay svg{flex:none;width:34px;height:34px;padding:7px;border-radius:11px;background:var(--pc);color:#fff;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .bar{display:grid;gap:10px;margin-top:20px}
 .srch{position:relative;display:block}
 .srch .i{position:absolute;left:16px;top:50%;margin-top:-10px;color:#B48B9C}
@@ -182,6 +184,12 @@ const I = {
   minus: '<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg>',
   close: '<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>'
 };
+const PI = {
+  card: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10.5h18M7 15h4"/></svg>',
+  inst: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 9.5h17M8 3v4M16 3v4M8 13.5h2M11 13.5h2M14 13.5h2M8 16.5h2"/></svg>',
+  red: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5 14.4 9h5.6l-4.5 3.6 1.7 5.9L12 15l-5.2 3.5 1.7-5.9L4 9h5.6z"/></svg>',
+  cash: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="6.5" width="19" height="11" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6 9.5v5M18 9.5v5"/></svg>'
+};
 const P = {a: '#F3A6C0', b: '#D9487A', c: '#FFFFFF', d: '#7A3150'};
 function art(type) {
   const sh = '<ellipse cx="50" cy="91" rx="24" ry="3.5" fill="' + P.d + '" opacity=".15"/>';
@@ -255,7 +263,7 @@ function render() {
   $('#app').innerHTML = `<section class="hero"><span class="kick">${esc(t('kick'))}</span><h1>${esc(t('title'))}</h1>
       <div class="facts"><span>${I.pin}${esc(t('addr'))}</span><span>${I.clock}${esc(t('hours'))}</span><span>${I.truck}${esc(t('deliv'))}</span></div>
       <div class="cta"><a class="btn wa" href="${esc(waUrl(t('hi')))}" target="_blank" rel="noopener">${I.wa}${esc(t('wa'))}</a><a class="btn soft ig" href="https://www.instagram.com/${SHOP.ig}/" target="_blank" rel="noopener" aria-label="Instagram" title="Instagram">${I.ig}</a></div>
-      <div class="pays"><b>${esc(t('pay'))}</b><span>Kaspi</span><span>${LANG === 'kz' ? 'Kaspi бөліп төлеу' : 'Kaspi Рассрочка'}</span><span>Kaspi Red</span><span>Halyk</span></div>
+      <div class="payw"><b>${esc(t('pay'))}</b><div class="payg">${[['card', 'Kaspi', '#E4312B'], ['inst', LANG === 'kz' ? 'Kaspi бөліп төлеу' : 'Kaspi Рассрочка', '#E4312B'], ['red', 'Kaspi Red', '#C81E1E'], ['card', 'Halyk', '#0F8A5F'], ['cash', LANG === 'kz' ? 'Қолма-қол' : 'Наличные', '#7A5A2E']].map(p => `<span class="pay" style="--pc:${p[2]}">${PI[p[0]]}<span>${esc(p[1])}</span></span>`).join('')}</div></div>
     </section>
     ${DEMO ? `<div class="demo"><span>${esc(t('demo'))}</span><button class="linkb" id="dmBack" style="justify-self:start;padding-left:0">${esc(t('demoBack'))}</button></div>` : ''}
     ${IT.length && !LOADING ? `<div class="bar"><label class="srch">${I.search}<input id="q" type="search" autocomplete="off" placeholder="${esc(t('search'))}" aria-label="${esc(t('search'))}" value="${esc(Q)}"></label>
