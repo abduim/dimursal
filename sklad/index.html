@@ -357,7 +357,7 @@ button.li{width:100%;background:none;border-left:0;border-right:0;border-bottom:
 #done{position:fixed;top:0;right:0;bottom:0;left:0;z-index:40;background:var(--scrim);display:flex;align-items:center;justify-content:center;padding-top:calc(16px + env(safe-area-inset-top,0px));padding-bottom:calc(16px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .dn{width:100%;max-width:420px;background:var(--paper);border-radius:22px;padding:24px 18px 18px;display:grid;gap:10px;text-align:center;animation:pop .28s ease-out}
 @keyframes pop{from{transform:scale(.94);opacity:.4}to{transform:none;opacity:1}}
-.dn .ok{width:72px;height:72px;border-radius:50%;background:var(--good);color:var(--surface);display:grid;place-items:center;margin:0 auto 4px}
+.dn{position:relative;cursor:pointer}.dnx{position:absolute;top:8px;right:8px;width:40px;height:40px;border:0;border-radius:50%;background:transparent;color:var(--mut,#888);font-size:20px;cursor:pointer}.dn .ok{width:72px;height:72px;border-radius:50%;background:var(--good);color:var(--surface);display:grid;place-items:center;margin:0 auto 4px}
 .dn .ok svg{width:40px;height:40px;stroke-width:3}
 .dn .ok path{stroke-dasharray:30;stroke-dashoffset:30;animation:draw .45s .12s ease-out forwards}
 @keyframes draw{to{stroke-dashoffset:0}}
@@ -1424,7 +1424,7 @@ function printCheck(x) {
   const html = `<!doctype html><html><head><meta charset="utf-8"><title>Чек</title><style>
     @page{margin:0}
     *{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff;color:#000}
-    body{width:100%;max-width:${inner}mm;padding:1mm 4mm 8mm 1mm;font:600 ${w === 58 ? 12 : 14}px/1.3 Arial,Helvetica,sans-serif;-webkit-print-color-adjust:exact}
+    body{width:100%;max-width:${inner}mm;padding:1mm 4mm 8mm 1mm;font:600 ${w === 58 ? 11 : 12}px/1.3 Arial,Helvetica,sans-serif;-webkit-print-color-adjust:exact}
     .c{text-align:center}.b{font-weight:800}.big{font-size:1.5em}.it{margin-top:4px}.r{text-align:right;white-space:nowrap}
     .hr{border-top:2px dashed #000;margin:5px 0}.tot{display:flex;justify-content:space-between;gap:8px;white-space:nowrap;font-weight:800;font-size:1.3em;margin-top:5px}.ln{white-space:nowrap;gap:8px}
     .ln{display:flex;justify-content:space-between}
@@ -1443,23 +1443,20 @@ function printCheck(x) {
   const d = f.contentWindow.document; d.open(); d.write(html); d.close();
   setTimeout(() => { try { f.contentWindow.focus(); f.contentWindow.print(); } catch (e) { toast('Не удалось открыть печать.', true); } }, 250);
 }
+let DONE_T = 0;
 function showDone(x) {
-  const el = $('#done');
-  el.innerHTML = `<div class="dn"><span class="ok" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span><h2>Чек пробит</h2><p class="sum">${money(x.total)}</p>
-    <p class="mut">${PAYS[x.pay]}${x.pay === 'debt' ? ': ' + esc(x.dn) : ''} · ${x.units} ${plural(x.units, 'товар', 'товара', 'товаров')}${x.disc ? ' · скидка ' + money(x.disc) : ''}</p>
-    ${isFinite(x.change) ? (x.change >= 0 ? `<p class="chg">Сдача: <b>${money(x.change)}</b></p>` : `<p class="chg c-bad">Не хватает ${money(-x.change)}</p>`) : ''}
-    <button class="btn big full" id="dnNew">Новый чек</button>
-    <button class="btn ghost full mt8" id="dnPrn">🖨 Печать чека</button>
-    <div class="row2"><button class="btn ghost" id="dnCopy">${I.copy}Текст чека</button><button class="btn ghost danger" id="dnUndo">${I.undo}Отменить</button></div></div>`;
+  const el = $('#done'), auto = PRN().auto && x.total > 0, chg = isFinite(x.change);
+  el.innerHTML = `<div class="dn"><button class="dnx" id="dnX" aria-label="Закрыть">✕</button><span class="ok" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span><h2>Чек пробит</h2><p class="sum">${money(x.total)}</p>
+    <p class="mut">${PAYS[x.pay]}${x.pay === 'debt' ? ': ' + esc(x.dn) : ''}${x.disc ? ' · скидка ' + money(x.disc) : ''}</p>
+    ${chg ? (x.change >= 0 ? `<p class="chg">Сдача: <b>${money(x.change)}</b></p>` : `<p class="chg c-bad">Не хватает ${money(-x.change)}</p>`) : ''}
+    ${auto ? '' : '<button class="btn ghost full" id="dnPrn">🖨 Печать чека</button>'}</div>`;
   el.hidden = false; document.body.classList.add('noscroll'); cartbarUI();
-  $('#dnNew').onclick = closeDone;
-  setTimeout(() => { const b = $('#dnNew'); if (b) b.focus(); }, 50);
-  $('#dnPrn').onclick = () => printCheck(x);
-  if (PRN().auto && x.total > 0) printCheck(x);
-  $('#dnCopy').onclick = () => copy(checkText(x), 'Текст чека скопирован. Его можно отправить покупательнице.');
-  armed($('#dnUndo'), 'Точно отменить чек?', async () => { if (await act(() => delCheck(x.ck, x.d, x.pay === 'debt'), 'Чек отменён, товары вернулись на склад.')) closeDone(); });
+  el.onclick = e => { if (!e.target.closest('#dnPrn')) closeDone(); };
+  const pb = $('#dnPrn'); if (pb) pb.onclick = () => { clearTimeout(DONE_T); printCheck(x); DONE_T = setTimeout(closeDone, 3000); };
+  if (auto) printCheck(x);
+  clearTimeout(DONE_T); DONE_T = setTimeout(closeDone, chg ? 6000 : (auto ? 2500 : 4000));
 }
-function closeDone() { $('#done').hidden = true; if ($('#sheet').hidden) document.body.classList.remove('noscroll'); window.scrollTo(0, 0); cartbarUI(); }
+function closeDone() { clearTimeout(DONE_T); if ($('#done').hidden) return; $('#done').hidden = true; if ($('#sheet').hidden) document.body.classList.remove('noscroll'); window.scrollTo(0, 0); cartbarUI(); }
 async function delCheck(ck, d, isDebt) {
   const debt = DEBTS.find(x => x.id === ck), rb = D.retBy[ck] || {};
   if (Object.keys(rb).some(k => rb[k] > 0)) throw {code: 'has_returns'};
