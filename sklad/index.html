@@ -1652,7 +1652,7 @@ BIND.goods = () => {
   $('#gAdd').onclick = () => editSheet(null, {});
   $('#gIn').onclick = () => receiveSheet();
   $('#gRev').onclick = revisionSheet;
-  const gc = $('#gChk'); if (gc) gc.onclick = () => checkSheet();
+  const gc = $('#gChk'); if (gc) gc.onclick = () => goodsCheckSheet();
   const q = $('#gq');
   q.oninput = () => { GQ = q.value; GN = 60; gList(); };
   q.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); const v = q.value.trim(); if (looksLikeCode(v)) { const p = byCode(v); q.blur(); if (p) productSheet(p.id); else unknownCode(v, 'goods'); } else q.blur(); } };
@@ -2129,14 +2129,14 @@ function checkGroups() {
 }
 function checkCount() { const s = new Set(); checkGroups().forEach(g => g.L.forEach(p => s.add(p.id))); return s.size; }
 let CHK_OPEN = '';
-function checkSheet() {
+function goodsCheckSheet() {
   const G = checkGroups();
   const rows = g => g.L.slice(0, 200).map(p => `<li><button class="prow" data-chk="${esc(p.id)}">${thumb(p)}<span class="pr-t"><b>${esc(p.name)}</b><span>${esc(g.s ? g.s(p) : money(p.sell) + ' · ' + (p.cat || 'Без категории'))}</span></span></button></li>`).join('') + (g.L.length > 200 ? `<li class="empty">и ещё ${g.L.length - 200}</li>` : '');
   openSheet(`<div class="sh-head"><div class="t"><p class="kicker">Товары</p><h2>Проверка товаров</h2></div>${closeBtn}</div>
     ${G.length ? `<p class="small">Нажмите на товар, исправьте и сохраните — он сам уйдёт из списка.</p>` + G.map(g => `<details class="more-f mt8" data-g="${g.k}"${CHK_OPEN === g.k ? ' open' : ''}><summary><span>${esc(g.t)}</span><span class="mut">${fmtN(g.L.length)}</span></summary>${g.h ? `<p class="small mut">${esc(g.h)}</p>` : ''}<ul class="plist mt8">${rows(g)}</ul></details>`).join('') : '<p>Всё в порядке: ошибок в товарах не найдено.</p>'}`, {kind: 'check'});
   const sh = $('#sheet');
   $$('details[data-g]', sh).forEach(d => d.ontoggle = () => { if (d.open) { CHK_OPEN = d.dataset.g; $$('details[data-g]', sh).forEach(x => { if (x !== d) x.open = false; }); } });
-  $$('[data-chk]', sh).forEach(b => b.onclick = () => editSheet(b.dataset.chk, null, {then: () => checkSheet()}));
+  $$('[data-chk]', sh).forEach(b => b.onclick = () => editSheet(b.dataset.chk, null, {then: () => goodsCheckSheet()}));
   fixImgs(sh);
 }
 
