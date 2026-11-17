@@ -1415,16 +1415,47 @@ function checkText(x) {
   L.push('', 'Сатып алғаныңызға рахмет!', 'Спасибо за покупку!');
   return L.join('\n');
 }
+/* ---------- печать чека на термопринтер (Xprinter и т. п.) через обычную печать браузера ---------- */
+const PRN = () => Object.assign({w: 80, auto: false}, lsGet('sk-prn', {}));
+function printCheck(x) {
+  const P = PRN(), w = P.w === 58 ? 58 : 80, inner = w === 58 ? 48 : 72;
+  const nm = n => fmtN(n) + ' ₸';
+  const rows = x.lines.map((l, i) => { const p = l.orig != null ? l.orig : (l.full || l.price); return `<div class="it">${i + 1}. ${esc(l.name)}</div><div class="r">${fmtN(Math.abs(l.qty))} × ${fmtN(p)} = ${nm(l.qty * p)}</div>`; }).join('<div class="hr"></div>');
+  const html = `<!doctype html><html><head><meta charset="utf-8"><title>Чек</title><style>
+    @page{size:${w}mm auto;margin:0}
+    *{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff;color:#000}
+    body{width:${inner}mm;margin:0 auto;padding:2mm 0 6mm;font:${w === 58 ? 11 : 12.5}px/1.35 Arial,Helvetica,sans-serif}
+    .c{text-align:center}.b{font-weight:700}.big{font-size:1.45em}.it{margin-top:3px}.r{text-align:right}
+    .hr{border-top:1px dashed #000;margin:4px 0}.tot{display:flex;justify-content:space-between;font-weight:700;font-size:1.3em;margin-top:4px}
+    .ln{display:flex;justify-content:space-between}
+  </style></head><body>
+    <div class="c b big">Dimursal</div><div class="c">Шалкар, Карагулин 74м</div><div class="c">${esc(fDot(x.d) + (x.t ? ' ' + x.t : ''))}</div>
+    <div class="hr"></div>${rows}<div class="hr"></div>
+    ${x.disc ? `<div class="ln"><span>Скидка</span><span>−${nm(x.disc)}</span></div>` : ''}
+    ${x.pay ? `<div class="ln"><span>${esc(PAYS[x.pay] || '')}</span><span>${nm(x.total)}</span></div>` : ''}
+    <div class="tot"><span>ИТОГ</span><span>${nm(x.total)}</span></div>
+    <div class="hr"></div><div class="c">Сатып алғаныңызға рахмет!</div><div class="c">Спасибо за покупку!</div>
+  </body></html>`;
+  let f = $('#prnFrame'); if (f) f.remove();
+  f = document.createElement('iframe'); f.id = 'prnFrame'; f.setAttribute('aria-hidden', 'true');
+  f.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';
+  document.body.appendChild(f);
+  const d = f.contentWindow.document; d.open(); d.write(html); d.close();
+  setTimeout(() => { try { f.contentWindow.focus(); f.contentWindow.print(); } catch (e) { toast('Не удалось открыть печать.', true); } }, 250);
+}
 function showDone(x) {
   const el = $('#done');
   el.innerHTML = `<div class="dn"><span class="ok" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span><h2>Чек пробит</h2><p class="sum">${money(x.total)}</p>
     <p class="mut">${PAYS[x.pay]}${x.pay === 'debt' ? ': ' + esc(x.dn) : ''} · ${x.units} ${plural(x.units, 'товар', 'товара', 'товаров')}${x.disc ? ' · скидка ' + money(x.disc) : ''}</p>
     ${isFinite(x.change) ? (x.change >= 0 ? `<p class="chg">Сдача: <b>${money(x.change)}</b></p>` : `<p class="chg c-bad">Не хватает ${money(-x.change)}</p>`) : ''}
     <button class="btn big full" id="dnNew">Новый чек</button>
+    <button class="btn ghost full mt8" id="dnPrn">🖨 Печать чека</button>
     <div class="row2"><button class="btn ghost" id="dnCopy">${I.copy}Текст чека</button><button class="btn ghost danger" id="dnUndo">${I.undo}Отменить</button></div></div>`;
   el.hidden = false; document.body.classList.add('noscroll'); cartbarUI();
   $('#dnNew').onclick = closeDone;
   setTimeout(() => { const b = $('#dnNew'); if (b) b.focus(); }, 50);
+  $('#dnPrn').onclick = () => printCheck(x);
+  if (PRN().auto && x.total > 0) printCheck(x);
   $('#dnCopy').onclick = () => copy(checkText(x), 'Текст чека скопирован. Его можно отправить покупательнице.');
   armed($('#dnUndo'), 'Точно отменить чек?', async () => { if (await act(() => delCheck(x.ck, x.d, x.pay === 'debt'), 'Чек отменён, товары вернулись на склад.')) closeDone(); });
 }
@@ -1492,12 +1523,14 @@ function checkSheet(ck, back) {
       <div class="card" style="padding:2px 14px">${c.lines.map(l => { const r = rb[l.pid || l.name] || 0; return `<div class="li"><span class="t"><b>${esc(l.name)}</b><span>${fmtN(Math.abs(l.qty))} × ${fmtN(l.price)} ₸${l.full > l.price ? ' (без скидки ' + fmtN(l.full) + ')' : ''}${r > 0 && l.qty > 0 ? ' · возвращено ' + pcs(r) : ''}</span></span><span class="v">${money(l.qty * l.price)}</span></div>`; }).join('')}</div>
       <p class="small mt8">${c.pay ? 'Оплата: ' + PAYS[c.pay] : 'Оплата не указана'}${c.who ? ' · продавец: ' + esc(c.who) : ''}${disc ? ' · скидка ' + money(disc) : ''}${c.ret && D.checks[c.ret] ? ' · по чеку от ' + esc(fDs(D.checks[c.ret].d) + (D.checks[c.ret].t ? ' ' + D.checks[c.ret].t : '')) : ''}</p>
       ${debt ? `<button class="li mt8 card" style="padding:10px 14px" id="ckDebt"><span class="t"><b>Долг: ${esc(debt.name)}</b><span>${debt.closed ? 'оплачен полностью' : 'осталось ' + money(debt.sum - debt.paid)}</span></span>${I.right}</button>` : ''}
-      <div class="acts">${canRet ? `<button id="ckRet">${I.undo}Возврат</button>` : ''}<button id="ckCopy">${I.copy}Текст чека</button><button id="ckDel">${I.trash}Удалить чек</button></div>
+      <div class="acts">${canRet ? `<button id="ckRet">${I.undo}Возврат</button>` : ''}<button id="ckPrn">🖨 Печать</button><button id="ckCopy">${I.copy}Текст чека</button><button id="ckDel">${I.trash}Удалить чек</button></div>
       <p class="hint mt8">«Удалить» исправляет ошибку: чек исчезнет, товар вернётся на склад. Если покупательница вернула товар, нажмите «Возврат»: так день продажи не изменится.</p>`, st);
     const bk = $('#ckBack'); if (bk) bk.onclick = back;
     const r = $('#ckRet'); if (r) r.onclick = () => returnSheet(ck);
     const db = $('#ckDebt'); if (db) db.onclick = () => debtSheet(ck);
-    $('#ckCopy').onclick = () => copy(checkText({d: c.d, t: c.t, lines: c.lines.map(l => ({name: l.name, qty: l.qty, orig: l.full > l.price ? l.full : l.price})), disc, total: c.sum, pay: c.pay}), 'Текст чека скопирован.');
+    const cx = {d: c.d, t: c.t, lines: c.lines.map(l => ({name: l.name, qty: l.qty, orig: l.full > l.price ? l.full : l.price})), disc, total: c.sum, pay: c.pay};
+    $('#ckPrn').onclick = () => printCheck(cx);
+    $('#ckCopy').onclick = () => copy(checkText(cx), 'Текст чека скопирован.');
     armed($('#ckDel'), 'Точно удалить?', () => act(() => delCheck(ck, c.d, c.pay === 'debt'), 'Чек удалён.').then(ok => { if (ok) { if (back) back(); else closeSheet(); } }));
   };
   st.redraw();
@@ -2778,6 +2811,10 @@ function settingsSheet() {
       <section class="card"><h3>Кто работает на этом телефоне</h3><div class="catpick">${['Акнур', 'Рахман'].map(n => `<button data-who="${n}" aria-pressed="${!F.own && F.who === n}">${n}</button>`).join('')}<button data-who="__own" aria-pressed="${F.own}">Другое имя</button><button data-who="" aria-pressed="${!F.own && !F.who}">Не указывать</button></div>${F.own ? `<input id="stWho" class="mt8" autocomplete="off" placeholder="Имя" value="${esc(F.who)}" aria-label="Имя продавца">` : ''}<p class="hint mt8">Имя появится в чеках, чтобы было видно, кто продал.</p></section>
       <section class="card mt"><h3>Для обоих телефонов</h3><div class="form"><div class="row2"><label class="f" for="stMk">Наценка для новых, %<input id="stMk" inputmode="numeric" autocomplete="off" value="${esc(F.markup)}"></label><label class="f" for="stLow">«Мало», если ≤ шт<input id="stLow" inputmode="numeric" autocomplete="off" value="${esc(F.low)}"></label></div><p class="err" id="stErr"></p><button class="btn" id="stSave">Сохранить</button></div></section>
       <section class="card mt"><h3>Резервная копия</h3><p class="small">Раз в неделю сохраняйте копию на телефон. Если что-то случится, её можно загрузить обратно.</p>${lsGet('dimursal-lastbk', '') && MODE === 'db' ? `<p class="hint mt8">Последняя копия с этого телефона: ${esc(fDm(lsGet('dimursal-lastbk', '')))}.</p>` : ''}<div class="form mt8">${DL ? `<button class="btn" id="stBk">${I.save}Сохранить копию</button>` : ''}<button class="btn ghost" id="stRs">${I.upload}Загрузить копию</button>${DL ? `<button class="btn ghost" id="stCsv">${I.save}Товары и остатки для Excel</button>` : ''}</div></section>
+      <section class="card mt"><h3>Печать чека</h3><p class="small">Для чекового принтера на этом устройстве (например, Xprinter на компьютере магазина).</p>
+        <div class="seg mt8" role="group" aria-label="Ширина ленты">${[58, 80].map(w => `<button data-pw="${w}" aria-pressed="${PRN().w === w}" class="${PRN().w === w ? 'on' : ''}">Лента ${w} мм</button>`).join('')}</div>
+        <label class="li mt8" style="cursor:pointer"><span class="t"><b>Печатать сразу после «Пробить чек»</b><span>иначе — кнопкой «Печать чека»</span></span><input type="checkbox" id="pAuto" ${PRN().auto ? 'checked' : ''} style="width:22px;height:22px"></label>
+        <button class="btn ghost full mt8" id="pTest">🖨 Пробная печать</button></section>
       ${!MC && MODE === 'db' && DB && DB.fs ? `<section class="card mt"><h3>Витрина для покупательниц</h3><p class="small">Показывает товары в наличии, а также товары с фото, даже если их сейчас нет (с пометкой «под заказ»). Закупочные цены и остатки покупательницы не видят. Обновляется сама через несколько секунд после продажи или прихода товара.</p><a class="btn ghost mt8 full" href="../vitrina/" target="_blank" rel="noopener">Открыть витрину</a></section>` : ''}
       ${MC && MODE === 'db' ? `<section class="card mt"><h3>Витрина для покупательниц</h3><p class="small">Обновляется сама каждое утро в 8:32. Если поменяли товары или цены, можно обновить сразу: это займёт несколько минут и потратит немного лимита Claude.</p><button class="btn ghost mt8 full" id="stVit">${I.recount}Обновить витрину сейчас</button><p class="hint mt8" id="stVitMsg"></p></section>` : ''}
       ${MODE === 'db' && FBUSER ? `<section class="card mt"><h3>Вход</h3><p class="small">Вы вошли как ${esc(FBUSER.email || '')}.</p><button class="btn ghost mt8 full" id="stOut">Выйти на этом телефоне</button></section>` : ''}
@@ -2801,6 +2838,9 @@ function settingsSheet() {
     const lo = $('#stOut'); if (lo) lo.onclick = () => { closeSheet(); fbLogout(); };
     const cs = $('#stCsv'); if (cs) cs.onclick = saveCsvGoods;
     $('#stRs').onclick = restoreFlow;
+    $$('[data-pw]').forEach(b => b.onclick = () => { const P = PRN(); P.w = Number(b.dataset.pw); lsSet('sk-prn', P); $$('[data-pw]').forEach(x => { x.setAttribute('aria-pressed', x === b); x.classList.toggle('on', x === b); }); });
+    $('#pAuto').onchange = e => { const P = PRN(); P.auto = e.target.checked; lsSet('sk-prn', P); };
+    $('#pTest').onclick = () => printCheck({d: TODAY(), t: new Date().toTimeString().slice(0, 5), lines: [{name: 'Пробный товар', qty: 1, orig: 1000}, {name: 'Второй товар с длинным названием для проверки переноса', qty: 2, orig: 2500}], disc: 0, total: 6000, pay: 'cash'});
     const sv = $('#stVit');
     if (sv) sv.onclick = async () => {
       const msg = $('#stVitMsg'); sv.disabled = true;
